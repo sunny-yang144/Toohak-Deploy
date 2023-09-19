@@ -1,3 +1,7 @@
+function adminQuizRemove ( authUserId, quizId ) {
+    return {};
+}
+
 function adminQuizList ( authUserId ) {
     return { quizzes: [
         {
