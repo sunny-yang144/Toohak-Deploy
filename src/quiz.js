@@ -22,3 +22,7 @@ function adminQuizInfo ( authUserId, quizId ) {
 function adminQuizRemove ( authUserId, quizId ) {
   return {};
 }
+
+function adminQuizNameUpdate ( authUserId, quizId, name ) {
+  return {};
+}
