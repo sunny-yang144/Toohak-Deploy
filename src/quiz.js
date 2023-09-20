@@ -1,6 +1,3 @@
-function adminQuizRemove ( authUserId, quizId ) {
-    return {};
-}
 
 function adminQuizList ( authUserId ) {
     return { quizzes: [
@@ -12,12 +9,6 @@ function adminQuizList ( authUserId ) {
     }
 }
 
-function adminQuizCreate ( authUserId, name, description ) {
-    return {
-        quizId: 2
-      }
-}
-
 function adminQuizInfo ( authUserId, quizId ) {
     return {
       quizId: 1,
@@ -26,8 +17,4 @@ function adminQuizInfo ( authUserId, quizId ) {
       timeLastEdited: 1683125871,
       description: 'This is my quiz',
     }
-}
-
-function adminQuizNameUpdate ( authUserId, quizId, name ) {
-    return {};
 }
