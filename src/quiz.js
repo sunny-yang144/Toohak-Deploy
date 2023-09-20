@@ -9,6 +9,12 @@ function adminQuizList ( authUserId ) {
     }
 }
 
+function adminQuizCreate ( authUserId, name, description ) {
+  return {
+    quizId: 2
+  }
+}
+
 function adminQuizInfo ( authUserId, quizId ) {
     return {
       quizId: 1,
