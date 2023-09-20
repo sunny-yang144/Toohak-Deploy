@@ -18,3 +18,7 @@ function adminQuizInfo ( authUserId, quizId ) {
       description: 'This is my quiz',
     }
 }
+
+function adminQuizRemove ( authUserId, quizId ) {
+  return {};
+}
