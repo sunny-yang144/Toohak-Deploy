@@ -1,6 +1,6 @@
 ## Group Meeting notes
 
-*Meeting 1 - date/time*
+*Week 2 Meeting 1 - @ 19/09/2023 -- 18:30 for 1hr 20m*
 - Read through Iteration 0 **Definitely no mistakes**.
 - Tony and Sunny discussed the implimentation of data.md.
 - Katarina and Timothy completed 2 function during the meeting.
@@ -9,14 +9,14 @@
 
 > WINNINGS: [Link text](https://www.winnings.com.au/)
 
-*Meeting 2 - date/time*
+*Week 2 Meeting 2 - @ 20/09/2023 -- 8:00 for 30m*
 - Tony and Sunny explained the implimentation of data.md to Timothy and Shannon.
 - All group members fixed merge requests as stated by iteration 0.
 - [x] **Mistake**.
 - ![Alt text](https://i.imgflip.com/73oqh6.png)
 - Shannon completed two functions.
-- Tested git implimentation.
-- Discussed mechanical keyboards.
+- Tested how git push and pull actually worked in a team environment.
+- Discussed mechanical keyboards recommendations :D.
 
 ### This is header 3
 
