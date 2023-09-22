@@ -9,16 +9,18 @@ let data = {
     /*
         || ATTRIBUTES OF USER ||
 
-    attribute           type
+    attribute                               type
 
-    username:           string        
-    userId:             int
-    nameFirst:          string
-    nameLast:           string
-    email:              string
-    bio:                string
-    quizzesCreated:     int
-    quizzesPlayed:      int
+    username:                               string        
+    userId:                                 int
+    nameFirst:                              string
+    nameLast:                               string
+    email:                                  string
+    bio:                                    string
+    quizzesCreated:                         int
+    quizzesPlayed:                          int
+    numSuccessfulLogins:                    int
+    numFailedPasswordsSinceLastLogin:       int
 
     */
 
@@ -31,6 +33,8 @@ let data = {
         bio: "I like marvel comics",
         quizzesCreated: 3,
         quizzesPlayed: 109,
+        numSuccessfulLogins: 3,
+        numFailedPasswordsSinceLastLogin: 1,
     }
 
 
@@ -48,6 +52,8 @@ let data = {
     rating:             double
     favourited:         int
     tags:               string
+    timeCreated:        int
+    timeLastEdited:     int
 
 
     */
@@ -62,6 +68,8 @@ let data = {
         rating: 3.76, 
         favourited: 7,
         tags:   "#marvel, #iron, #man, #ironman",
+        timeCreate: 1683125870,
+        timeLastEdited: 1683125871,
     }
 
 }
