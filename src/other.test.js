@@ -23,27 +23,10 @@ beforeEach(() => {
     clear();
 });
 
-
-describe('Tests for adminQuizList', () => {
-
-});
-
-describe('Tests for adminQuizCreate', () => {
+// Please think of how you actually want to implement this
+// Will you create a global database then add elements and
+// see if elements are removed?
+describe('Tests for clear', () => {
 
 });
 
-describe('Tests for adminQuizRemove', () => {
-
-});
-
-describe('Tests for adminQuizInfo', () => {
-
-});
-
-describe('Tests for adminQuizNameUpdate', () => {
-
-});
-
-describe('Tests for adminQuizDescriptionUpdate', () => {
-
-});

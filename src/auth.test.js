@@ -23,27 +23,21 @@ beforeEach(() => {
     clear();
 });
 
+// You could also structure this to have error cases
+describe('Tests for adminAuthRegister', () => {
+    /*test('REMOVE ME', () => {
+        expect(somefunction(param1, param2, param3)).toStrictEqual(
+            {error: this is not a test}
+        );
+    });
+    */
+});
 
-describe('Tests for adminQuizList', () => {
+describe('Tests for adminAuthLogin', () => {
 
 });
 
-describe('Tests for adminQuizCreate', () => {
+describe('Tests for adminUserDetails', () => {
 
 });
 
-describe('Tests for adminQuizRemove', () => {
-
-});
-
-describe('Tests for adminQuizInfo', () => {
-
-});
-
-describe('Tests for adminQuizNameUpdate', () => {
-
-});
-
-describe('Tests for adminQuizDescriptionUpdate', () => {
-
-});
