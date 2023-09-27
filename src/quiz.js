@@ -1,12 +1,11 @@
-
 export function adminQuizList ( authUserId ) {
-    return { quizzes: [
-        {
-          quizId: 1,
-          name: 'My Quiz',
-        }
-      ]
-    }
+  return { quizzes: [
+      {
+        quizId: 1,
+        name: 'My Quiz',
+      }
+    ]
+  }
 }
 
 export function adminQuizCreate ( authUserId, name, description ) {
@@ -16,13 +15,13 @@ export function adminQuizCreate ( authUserId, name, description ) {
 }
 
 export function adminQuizInfo ( authUserId, quizId ) {
-    return {
+  return {
       quizId: 1,
       name: 'My Quiz',
       timeCreated: 1683125870,
       timeLastEdited: 1683125871,
       description: 'This is my quiz',
-    }
+  }
 }
 
 export function adminQuizRemove ( authUserId, quizId ) {
@@ -34,5 +33,5 @@ export function adminQuizNameUpdate ( authUserId, quizId, name ) {
 }
 
 export function adminQuizDescriptionUpdate (authUserId, quizId, description) {
-    return {};
+  return {};
 }
