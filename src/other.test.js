@@ -23,9 +23,11 @@ beforeEach(() => {
     clear();
 });
 
-// Please think of how you actually want to implement this
-// Will you create a global database then add elements and
-// see if elements are removed?
+// Couple suggestions:
+// Add a test where once data is erased many other functions wouldn't
+// work since there is not Id reference
+// Can also check if data is empty where data is stored in
+// dataStore.js
 describe('Tests for clear', () => {
 
 });

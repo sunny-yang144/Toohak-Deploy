@@ -25,7 +25,7 @@ beforeEach(() => {
 
 
 describe('Tests for adminQuizList', () => {
-
+    
 });
 
 describe('Tests for adminQuizCreate', () => {
