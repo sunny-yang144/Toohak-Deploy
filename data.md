@@ -24,7 +24,8 @@ let data = {
 
     */
 
-   {
+   users: [
+    {
         username: "jimster", 
         userId: 1, 
         nameFirst: "Jimmy", 
@@ -35,7 +36,8 @@ let data = {
         quizzesPlayed: 109,
         numSuccessfulLogins: 3,
         numFailedPasswordsSinceLastLogin: 1,
-    }
+    },
+   ],
 
 
     // Draft of what a 'quiz' object would be like
@@ -58,7 +60,8 @@ let data = {
 
     */
 
-    {
+    quizzes: [
+        {
         quizName: "Iron Man", 
         description:    "Iron Man's biggest secrets revealed!", 
         quizId: 2, 
@@ -70,8 +73,8 @@ let data = {
         tags:   "#marvel, #iron, #man, #ironman",
         timeCreate: 1683125870,
         timeLastEdited: 1683125871,
-    }
-
+        },
+    ],
 }
 ```
 
