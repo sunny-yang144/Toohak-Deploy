@@ -1,26 +1,26 @@
 import {
-    adminAuthRegister,
-    adminAuthLogin,
-    adminUserDetails,
+  adminAuthRegister,
+  adminAuthLogin,
+  adminUserDetails,
 } from './auth.js';
 
 import {
-    adminQuizList,
-    adminQuizCreate,
-    adminQuizRemove,
-    adminQuizInfo,
-    adminQuizNameUpdate,
-    adminQuizDescriptionUpdate,
+  adminQuizList,
+  adminQuizCreate,
+  adminQuizRemove,
+  adminQuizInfo,
+  adminQuizNameUpdate,
+  adminQuizDescriptionUpdate,
 } from './quiz.js';
 
 import {
-    clear,
+  clear,
 } from './other.js'
 
 // Clears any lingering data elements before each test group
 // eliminates any unexpected bugs.
 beforeEach(() => {          
-    clear();
+  clear();
 });
 
 // Couple suggestions:
