@@ -17,6 +17,7 @@ let data = {
     nameLast:                               string
     email:                                  string
     bio:                                    string
+    ownedquizzes:                           int[]  "number array, containing quizIds"
     quizzesCreated:                         int
     quizzesPlayed:                          int
     numSuccessfulLogins:                    int
