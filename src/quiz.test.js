@@ -52,28 +52,28 @@ describe('Tests for adminQuizCreate', () => {
     })
 
 	test('Contains Symbol', () => {
-		expect(adminQuizCreate(1, 'hell o1!', 'description')).toStrictEqual({error: expect.any(String)}); // 'Invalid Characters'
+		expect(adminQuizCreate(user.authUserId, 'hell o1!', 'description')).toStrictEqual({error: expect.any(String)}); // 'Invalid Characters'
 	});
 	test('Less Than 3 Characters', () => {
-		expect(adminQuizCreate(1, 'h1', 'description')).toStrictEqual({error: expect.any(String)}); // 'Name Too Short'
+		expect(adminQuizCreate(user.authUserId, 'h1', 'description')).toStrictEqual({error: expect.any(String)}); // 'Name Too Short'
 	});
 	test('More Than 30 Characters', () => {
-		expect(adminQuizCreate('1', 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh1', 
+		expect(adminQuizCreate(user.authUserId, 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh1', 
 		'description')).toStrictEqual({error: expect.any(String)}); // 'Name Too Long'
 	});
 	test('Existing Quiz', () => {
 		//	Quiz with the same name has already been
 		//	created by the user which mean this assumes
 		//	a quiz already exists
-		expect(adminQuizCreate('1', 'The Perfect Quiz 3', 'description')).toStrictEqual({error: expect.any(String)}); // Existing Quiz
+		expect(adminQuizCreate(user.authUserId, 'The Perfect Quiz 3', 'description')).toStrictEqual({error: expect.any(String)}); // Existing Quiz
 	});
 	test('authUserId not valid', () => {
 		//using 2 for now since the return for authUserId is currently 1
-		expect(adminQuizCreate('2', 'The Perfect Quiz 2', 'description')).toStrictEqual({error: expect.any(String)}); // Invalid User
+		expect(adminQuizCreate(user.authUserId + 1, 'The Perfect Quiz 2', 'description')).toStrictEqual({error: expect.any(String)}); // Invalid User
 	});
 	test('Description is More than 100 Characters', () => {
 		//using 2 for now since the return for authUserId is currently 1
-		expect(adminQuizCreate('1', 'The Perfect Quiz 2', "This description is to be really long" +
+		expect(adminQuizCreate(user.authUserId, 'The Perfect Quiz 2', "This description is to be really long" +
 		"and even longer than 100 characters which I don't really know how to do")).toStrictEqual({error: expect.any(String)}); // Description Too Long
 	});
 });
