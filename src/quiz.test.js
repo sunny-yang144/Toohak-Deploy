@@ -54,6 +54,10 @@ describe('Tests for adminQuizCreate', () => {
 		expect(adminQuizCreate('1', 'The Perfect Quiz 2', "This description is to be really long" +
 		"and even longer than 100 characters which I don't really know how to do")).toStrictEqual({error: 'Description Too Long'});
 	});
+	test('Working Quiz', () => {
+		//using 2 for now since the return for authUserId is currently 1
+		expect(adminQuizCreate('1', 'The Perfect Quiz 2', "This description is perfect")).toStrictEqual({quizId: '2'});
+	});
 });
 
 describe('Tests for adminQuizRemove', () => {
