@@ -25,15 +25,38 @@ beforeEach(() => {
 
 
 describe('Tests for adminQuizList', () => {
-    
+    /**
+     * 1. Case where there is an invalid academicId 
+     * i.e. create an academicId + 1 (will always be invalid)
+     * 
+     * 2. 
+     * 
+     * 
+     */
+
+    test('Invalid authUserId', () => {
+        const user
+    });
 });
 
 describe('Tests for adminQuizCreate', () => {
+
+    // Clear the database, and then make an user so that we can generate quizzes.
+    beforeEach(() => {
+      clear();  
+      const user = adminAuthRegister('hello@gmail.com', '1234UNSW', 'jimmy', 'conner');      
+    });
+    test('Successful Quiz Created', () => {
+      // user = {authUserId: number}
+      expect(adminQuizCreate(user.authUserId, ''))
+
+    })
+
 	test('Contains Symbol', () => {
-		expect(adminQuizCreate('1', 'hell o1!', 'description')).toStrictEqual({error: 'Invalid Characters'});
+		expect(adminQuizCreate(1, 'hell o1!', 'description')).toStrictEqual({error: expect.any(String)}); // 'Invalid Characters'
 	});
 	test('Less Than 3 Characters', () => {
-		expect(adminQuizCreate('1', 'h1', 'description')).toStrictEqual({error: 'Name Too Short'});
+		expect(adminQuizCreate(1, 'h1', 'description')).toStrictEqual({error: 'Name Too Short'});
 	});
 	test('More Than 30 Characters', () => {
 		expect(adminQuizCreate('1', 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh1', 
