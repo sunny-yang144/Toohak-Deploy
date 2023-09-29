@@ -64,9 +64,48 @@ describe('Tests for adminQuizInfo', () => {
 
 });
 
-describe('Tests for adminQuizNameUpdate', () => {
 
+describe('Tests for adminQuizNameUpdate', () => {
+  // Clear and create a valid quiz and user for the test to apply adminQuizNameUpdate
+  beforeEach(() => {
+    clear();
+    const user = adminAuthRegister('hehexd@gmail.com', 'ilovetyler1', 'Tyler', 'One');
+    const quiz = adminQuizCreate(user.authUserId, 'PC games quiz', 'FPS games only');
+  });
+
+  test('Sucessfully updated quiz name', () => {
+    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'Valid Name')).toStrictEqual({}); // Returns {} on success
+  })
+
+  test('Invalid AuthUserID', () => {
+    expect(adminQuizNameUpdate(user.authUserId + 1, quiz.quizId, 'Valid Name')).toStrictEqual({error: expect.any(String)}); // authUserId isnt valid
+  });
+
+  test('Given QuizID does not match a valid quiz', () => {
+    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId + 1, 'Valid Name')).toStrictEqual({error: expect.any(String)}); // No matching QuizID
+  });
+
+  test('Given QuizID is not owned by user', () => {
+    const user2 = adminAuthRegister('doesntownquiz@gmail.com', 'returnerror2', 'John', 'Smith');
+    expect(adminQuizNameUpdate(user2.authUserId)).toStrictEqual({error: expect.any(String)}) // User2 does not own the quiz 
+  });
+
+  test('Name contains invalid characters', () => {
+    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'Inval!d Name')),toStrictEqual({error: expect.any(String)}); // Updated quiz name contains symbols
+  });
+
+  test('Name is Less than 3 characters', () => {
+    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'to')),toStrictEqual({error: expect.any(String)}); // Updated quiz name is too short (<3)
+  });
+  test('Name is More than 30 characters', () => {
+    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'theGivenUpdatedNameIsWaayTooLong')),toStrictEqual({error: expect.any(String)}); // Updated quiz name is too long (>30)
+  });
+  test('Name is already used by current logged in user for another quiz', () => {
+    const quiz2 = adminQuizCreate(user.authUserId, 'Soccer quiz', 'SUIII');
+    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'Soccer quiz')),toStrictEqual({error: expect.any(String)}); // User already owns a quiz with the provided name
+  });
 });
+
 
 describe('Tests for adminQuizDescriptionUpdate', () => {
 
