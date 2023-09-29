@@ -287,24 +287,24 @@ describe('Tests for adminQuizNameUpdate', () => {
   });
 
   test('Name contains invalid characters', () => {
-    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'Inval!d Name')),toStrictEqual({error: expect.any(String)}); // Updated quiz name contains symbols
+    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'Inval!d Name')).toStrictEqual({error: expect.any(String)}); // Updated quiz name contains symbols
   });
 
   test('Name is Less than 3 characters', () => {
-    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'to')),toStrictEqual({error: expect.any(String)}); // Updated quiz name is too short (<3)
+    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'to')).toStrictEqual({error: expect.any(String)}); // Updated quiz name is too short (<3)
   });
   test('Name is More than 30 characters', () => {
-    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'theGivenUpdatedNameIsWaayTooLong')),toStrictEqual({error: expect.any(String)}); // Updated quiz name is too long (>30)
+    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'theGivenUpdatedNameIsWayTooLong')),toStrictEqual({error: expect.any(String)}); // Updated name is too long (>30)
   });
   test('Name is already used by current logged in user for another quiz', () => {
     const quiz2 = adminQuizCreate(user.authUserId, 'Soccer quiz', 'SUIII');
-    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'Soccer quiz')),toStrictEqual({error: expect.any(String)}); // User already owns a quiz with the provided name
+    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'Soccer quiz')).toStrictEqual({error: expect.any(String)}); // User already owns a quiz with the provided name
   });
 });
 
 
 describe('Tests for adminQuizDescriptionUpdate', () => {
-  // Clear and create a valid quiz and user for the test to apply adminQuizNameUpdate
+  // Clear and create a valid quiz and user for the test to apply adminQuizDescriptionUpdate
   beforeEach(() => {
     clear();
     const user = adminAuthRegister('valid@gmail.com', 'validPassword1', 'Tyler', 'One');
