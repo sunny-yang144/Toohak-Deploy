@@ -128,7 +128,19 @@ describe('Tests for adminAuthRegister', () => {
 });
 
 describe('Tests for adminAuthLogin', () => {
+  let email = 'admin@example.com';
+  let password = 'Chickens123';
+  test('Login Success', () => {expect(adminAuthLogin(email, password)).toStrictEqual(
+    {authUserId: expect.any(Number)});
+  });
 
+  test('Email does not exist', () => {expect(adminAuthLogin('notareal@email.com', password)).toStrictEqual(
+    {error: expect.any(String)});
+  });
+
+  test('Incorrect password.', () => {expect(adminAuthLogin(email, 'wrongpassword')).toStrictEqual(
+    {error: expect.any(String)});
+  });
 });
 
 describe('Tests for adminUserDetails', () => {
