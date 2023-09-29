@@ -4,6 +4,7 @@
     },
     "dependencies": {
         "rewire": "^6.0.0",
+        "uniqid": "^5.4.0",
         "validator": "^13.7.0"
     },
     "devDependencies": {

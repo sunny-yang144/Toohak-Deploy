@@ -127,12 +127,50 @@ describe('Tests for adminAuthRegister', () => {
   
 });
 
-
 describe('Tests for adminAuthLogin', () => {
+  let email = 'admin@example.com';
+  let password = 'Chickens123';
+  test('Login Success', () => {expect(adminAuthLogin(email, password)).toStrictEqual(
+    {authUserId: expect.any(Number)});
+  });
 
+  test('Email does not exist', () => {expect(adminAuthLogin('notareal@email.com', password)).toStrictEqual(
+    {error: expect.any(String)});
+  });
+
+  test('Incorrect password.', () => {expect(adminAuthLogin(email, 'wrongpassword')).toStrictEqual(
+    {error: expect.any(String)});
+  });
 });
 
 describe('Tests for adminUserDetails', () => {
   
+  beforeEach(() => {          
+    clear();
+  }); 
+
+  test('Succesful accessing of a users details', () => {
+    //If there user id exists, then return user details.
+    const user = adminAuthRegister('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella');
+
+    expect(adminUserDetails(user.authUserId)).toStrictEqual
+    ({ user:
+      {
+        userId: user.authUserId,
+        name: 'Jack Rizzella',
+        email: 'helloworld@gmail.com',
+        numSuccessfulLogins: expect.any(Number),
+        numFailedPasswordsSinceLastLogin: expect.any(Number),
+      }
+    }); 
+  });
+
+  test('Error when an invalid id is passed', () => {
+    // We know that there are no ids are valid since clear has been run so
+    // an arbitrary number can be chosen.
+    expect(adminUserDetails(1)).toStrictEqual
+    ({error: expect.any(String)}); //"This is not a valid UserId" 
+  });
+
 });
 
