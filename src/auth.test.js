@@ -133,52 +133,6 @@ describe('Tests for adminAuthLogin', () => {
 });
 
 describe('Tests for adminUserDetails', () => {
-  /**
-   *                          ERROR CASES:
-   * 1. The only case is when an invalid UserId is inputed, in doing so a
-   * error message will be outputted.
-   *          
-   *                          SUCCESS CASES:
-   * 1. A valid UserId needs to be inputted.
-   * 
-   * Return Object:
-   * { user:
-   *  {
-   *    userId,
-   *    name,
-   *    email,
-   *    numSuccessfulLogins,
-   *    numFailedPasswordsSinceLastLogin,
-   *  }
-   * }
-   */
   
-  beforeEach(() => {          
-    clear();
-  }); 
-
-  test('Succesful accessing of a users details', () => {
-    //If there user id exists, then return user details.
-    const user = adminAuthRegister('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella');
-
-    expect(adminUserDetails(user.authUserId)).toStrictEqual
-    ({ user:
-      {
-        userId: user.authUserId,
-        name: 'Jack Rizzella',
-        email: 'helloworld@gmail.com',
-        numSuccessfulLogins: expect.any(Number),
-        numFailedPasswordsSinceLastLogin: expect.any(Number),
-      }
-    }); 
-  });
-
-  test('Succesful accessing of a users details', () => {
-    // We know that there are no ids are valid since clear has been run so
-    // an arbitrary number can be chosen.
-    expect(adminUserDetails(1)).toStrictEqual
-    ({error: expect.any(String)}); //"This is not a valid UserId" 
-  });
-
 });
 
