@@ -73,7 +73,7 @@ describe('Tests for adminQuizDescriptionUpdate', () => {
   // Clear and create a valid quiz and user for the test to apply adminQuizNameUpdate
   beforeEach(() => {
     clear();
-    const user = adminAuthRegister('hehexd@gmail.com', 'ilovetyler1', 'Tyler', 'One');
+    const user = adminAuthRegister('valid@gmail.com', 'valid1', 'Tyler', 'One');
     const quiz = adminQuizCreate(user.authUserId, 'PC games quiz', 'FPS games only');
   });
 
