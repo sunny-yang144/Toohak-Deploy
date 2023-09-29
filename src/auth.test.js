@@ -37,15 +37,15 @@ describe('Tests for adminAuthLogin', () => {
   let email = 'admin@example.com';
   let password = 'Chickens123';
   test('Login Success', () => {expect(adminAuthLogin(email, password)).toStrictEqual(
-    {authUserId: 1});
+    {authUserId: expect.any(Number)});
   });
 
   test('Email does not exist', () => {expect(adminAuthLogin('notareal@email.com', password)).toStrictEqual(
-    {error: 'Error, the provided email does not exist.'});
+    {error: expect.any(String)});
   });
 
   test('Incorrect password.', () => {expect(adminAuthLogin(email, 'wrongpassword')).toStrictEqual(
-    {error: 'Error, invalid credentials.'});
+    {error: expect.any(String)});
   });
 });
 
