@@ -42,9 +42,10 @@ describe('Tests for adminQuizList', () => {
 describe('Tests for adminQuizCreate', () => {
 
     // Clear the database, and then make an user so that we can generate quizzes.
+    let user;
     beforeEach(() => {
       clear();  
-      const user = adminAuthRegister('hello@gmail.com', '1234UNSW', 'jimmy', 'conner');      
+      user = adminAuthRegister('hello@gmail.com', '1234UNSW', 'jimmy', 'conner');      
     });
     test('Successful Quiz Created', () => {
       // user = {authUserId: number}
