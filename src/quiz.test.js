@@ -73,7 +73,7 @@ describe('Tests for adminQuizList', () => {
     { quizzes: [
       {
         quizId: quiz.quizId,
-        name: quiz.name,
+        name: expect.any(String),
       }
     ]
     });
@@ -99,8 +99,8 @@ describe('Tests for adminQuizList', () => {
   });
 
   test('Non quiz owner -> no list, quiz owner -> gives list', () => {
-    const user1 = adminAuthLogin('someonenamedjames@gmail.com', '1234UNSW', 'James', 'Toually');
-    const user2 = adminAuthLogin('someonenamedjill@gmail.com', 'NOTPASSWORD1234', 'Jill', 'Toually');
+    const user1 = adminAuthRegister('someonenamedjames@gmail.com', '1234UNSW', 'James', 'Toually');
+    const user2 = adminAuthRegister('someonenamedjill@gmail.com', 'NOTPASSWORD1234', 'Jill', 'Toually');
     const quiz = adminQuizCreate(user1.authUserId, 'Baby Names', 'Top 10 baby names for girls');
 
     expect(adminQuizList(user2.authUserId)).toStrictEqual({error: expect.any(String)}) // 'This user doesn't own any quizzes'
@@ -109,7 +109,7 @@ describe('Tests for adminQuizList', () => {
       { quizzes: [
         {
           quizId: quiz.quizId,
-          name: quiz.name,
+          name: expect.any(String),
         }
       ]
     });
@@ -161,6 +161,8 @@ describe('Tests for adminQuizRemove', () => {
 
 describe('Tests for adminQuizInfo', () => {
   /**
+   * 1. [x] 2. [x] 3. [x] 4. [x] 5. []
+   * 
    * Function structure
    * 
    * Parameters:
@@ -190,15 +192,72 @@ describe('Tests for adminQuizInfo', () => {
      * Check if other user is unable to check Info on quiz.
      * 
      *            SUCCESS CASES
-     * 1. Create user and create quiz using userId, use the 
+     * 4. Create user and create quiz using userId, use the 
      * quiz owner to check info (match return object)
      * 
-     * 2. Create user and multiple quizzes using userId, 
+     * 5. Create user and multiple quizzes using userId, 
      * find info on first quiz, then second quiz.
      * 
      */
 
-  test
+  test('Invalid authUserId', () => {
+    const user = adminAuthRegister('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella');
+    const quiz = adminQuizCreate(user.authUserId, 'World Quiz', 'About flags, countries and capitals!');
+    expect(adminQuizInfo(user.authUserId + 1, quiz.quizId)).toStrictEqual({error: expect.any(String)}); // 'authUserId is not a valid Id'
+  });
+
+  test('User is accessing a quiz that doesnt exit', () => {
+    const user = adminAuthRegister('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella');
+    const quiz = adminQuizCreate(user.authUserId, 'World Quiz', 'About flags, countries and capitals!');
+    expect(adminQuizInfo(user.authUserId, quiz.quizId + 1)).toStrictEqual({error: expect.any(String)}); // 'Quiz does not exist'
+  });
+
+  test('User is accessing a quiz that the user does not own', () => {
+    const user1 = adminAuthRegister('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella');
+    const user2 = adminAuthRegister('someonenamedjill@gmail.com', 'NOTPASSWORD1234', 'Jill', 'Toually');
+    const quiz = adminQuizCreate(user1.authUserId, 'World Quiz', 'About flags, countries and capitals!');
+    expect(adminQuizInfo(user2.authUserId, quiz.quizId)).toStrictEqual({error: expect.any(String)}); // 'Quiz is not owned by user'
+  });
+  
+  test('Successful retrival of quiz info', () => {
+    const user = adminAuthRegister('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella');
+    const quiz = adminQuizCreate(user.authUserId, 'World Quiz', 'About flags, countries and capitals!');
+
+    expect(adminQuizInfo(user.authUserId, quiz.quizId)).toStrictEqual(
+      {
+        quizId: quiz.quizId,
+        name: expect.any(String),
+        timeCreated: expect.any(Number),
+        timeLastEdited: expect.any(Number),
+        description: expect.any(String),
+      }
+    );
+  });
+
+  test('Multiple quizzes created and info checked', () => {
+    const user = adminAuthRegister('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella');
+    const quiz1 = adminQuizCreate(user.authUserId, 'Football Quiz', 'GOOOAAAALLLL');
+    const quiz2 = adminQuizCreate(user.authUserId, 'Soccer Quiz', 'GOOOAAAALLLL (Part 2)');
+
+    expect(adminQuizInfo(user.authUserId, quiz1.quizId)).toStrictEqual(
+      {
+        quizId: quiz1.quizId,
+        name: expect.any(String),
+        timeCreated: expect.any(Number),
+        timeLastEdited: expect.any(Number),
+        description: expect.any(String),
+      }
+    );
+    expect(adminQuizInfo(user.authUserId, quiz2.quizId)).toStrictEqual(
+      {
+        quizId: quiz2.quizId,
+        name: expect.any(String),
+        timeCreated: expect.any(Number),
+        timeLastEdited: expect.any(Number),
+        description: expect.any(String),
+      }
+    );
+  });
 });
 
 describe('Tests for adminQuizNameUpdate', () => {
