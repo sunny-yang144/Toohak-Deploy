@@ -25,34 +25,95 @@ beforeEach(() => {
 
 
 describe('Tests for adminQuizList', () => {
-    /**
-     *            ERROR CASES
-     * 1. Case where there is an invalid authUserId
-     * i.e. create an authUserId + 1 (will always be invalid)
-     * 
-     *            SUCCESS CASES/MISC 
-     * 2. Single quiz created, list generated after inputing quiz owner
-     * 
-     * 3. Case where multiple quizzes are created with the same Id
-     * i.e. gives back a list of quizzes
-     * 
-     * 4. Case where multiple authUserId, create a quiz, then use
-     * another Id to create another quiz. Check if:
-     * given wrong id -> ERROR
-     * given correct id -> gives list.
-     * 
-     * Return Object
-     * { quizzes: [
-     *  { quizId,
-     *    name,
-     *  }
-     *  ]
-     * }
-     */
+  /**
+   * 1. [x] 2. [x] 3. [x] 4. [x] 5. [x] 
+   * 
+   *            ERROR CASES
+   * 1. Case where there is an invalid authUserId
+   * i.e. create an authUserId + 1 (will always be invalid)
+   * 
+   * 2. No Quiz is created
+   * 
+   *            SUCCESS CASES/MISC 
+   * 3. Single quiz created, list generated after inputing quiz owner
+   * 
+   * 4. Case where multiple quizzes are created with the same Id
+   * i.e. gives back a list of quizzes
+   * 
+   * 5. Case where multiple authUserId, create a quiz, then use
+   * another Id to create another quiz. Check if:
+   * given wrong id -> ERROR
+   * given correct id -> gives list.
+   * 
+   * Return Object
+   * { quizzes: [
+   *  { quizId,
+   *    name,
+   *  }
+   *  ]
+   * }
+   */
+  
+  test('Invalid authUserId', () => {
+    const user = adminAuthRegister('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella');
+    const quiz = adminQuizCreate(user.authUserId, 'World Quiz', 'About flags, countries and capitals!');
+    expect(adminQuizList(user.authUserId + 1)).toStrictEqual({error: expect.any(String)}); // 'authUserId is not a valid Id'
+  });
 
-    test('Invalid authUserId', () => {
-        
+  test('No quiz created by a user', () => {
+    const user = adminAuthRegister('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella');
+    expect(adminQuizList(user.authUserId)).toStrictEqual({quizzes: []}); // 'This user doesn't own any quizzes.' (Return empty array)
+  })
+
+  test('Successful output of quizzes owned by a User', () => {
+    const user = adminAuthRegister('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella');
+    const quiz = adminQuizCreate(user.authUserId, 'World Quiz', 'About flags, countries and capitals!');
+
+    expect(adminQuizList(user.authUserId)).toStrictEqual(
+    { quizzes: [
+      {
+        quizId: quiz.quizId,
+        name: quiz.name,
+      }
+    ]
     });
+  });
+
+  test('Multiple quizzes created and a list of multiple quizzes outputted', () => {
+    const user = adminAuthRegister('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella');
+    const quiz1 = adminQuizCreate(user.authUserId, 'Football Quiz', 'GOOOAAAALLLL');
+    const quiz2 = adminQuizCreate(user.authUserId, 'Soccer Quiz', 'GOOOAAAALLLL (Part 2)');
+
+    expect(adminQuizList(user.authUserId)).toStrictEqual(
+      { quizzes: [
+        {
+          quizId: quiz1.quizId,
+          name: quiz1.name
+        }, 
+        {
+          quizId: quiz2.quizId,
+          name: quiz2.quizname
+        },
+      ]
+    });
+  });
+
+  test('Non quiz owner -> no list, quiz owner -> gives list', () => {
+    const user1 = adminAuthLogin('someonenamedjames@gmail.com', '1234UNSW', 'James', 'Toually');
+    const user2 = adminAuthLogin('someonenamedjill@gmail.com', 'NOTPASSWORD1234', 'Jill', 'Toually');
+    const quiz = adminQuizCreate(user1.authUserId, 'Baby Names', 'Top 10 baby names for girls');
+
+    expect(adminQuizList(user2.authUserId)).toStrictEqual({error: expect.any(String)}) // 'This user doesn't own any quizzes'
+
+    expect(adminQuizList(user1.authUserId)).toStrictEqual(
+      { quizzes: [
+        {
+          quizId: quiz.quizId,
+          name: quiz.name,
+        }
+      ]
+    });
+  });
 });
 
 describe('Tests for adminQuizCreate', () => {
