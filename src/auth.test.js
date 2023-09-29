@@ -127,7 +127,6 @@ describe('Tests for adminAuthRegister', () => {
   
 });
 
-
 describe('Tests for adminAuthLogin', () => {
 
 });
@@ -173,7 +172,7 @@ describe('Tests for adminUserDetails', () => {
     }); 
   });
 
-  test('Succesful accessing of a users details', () => {
+  test('Error when an invalid id is passed', () => {
     // We know that there are no ids are valid since clear has been run so
     // an arbitrary number can be chosen.
     expect(adminUserDetails(1)).toStrictEqual
