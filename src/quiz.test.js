@@ -245,5 +245,33 @@ describe('Tests for adminQuizNameUpdate', () => {
 
 
 describe('Tests for adminQuizDescriptionUpdate', () => {
+  // Clear and create a valid quiz and user for the test to apply adminQuizNameUpdate
+  beforeEach(() => {
+    clear();
+    const user = adminAuthRegister('valid@gmail.com', 'validPassword1', 'Tyler', 'One');
+    const quiz = adminQuizCreate(user.authUserId, 'PC games quiz', 'FPS games only');
+  });
+
+  test('Sucessfully updated quiz description', () => {
+    expect(adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, 'Valid Description')).toStrictEqual({}); // Returns {} on success
+  })
+
+  test('Invalid AuthUserID', () => {
+    expect(adminQuizDescriptionUpdate(user.authUserId + 1, quiz.quizId, 'Valid Description')).toStrictEqual({error: expect.any(String)}); // authUserId isnt valid
+  });
+
+  test('Given QuizID does not match a valid quiz', () => {
+    expect(adminQuizDescriptionUpdate(user.authUserId, quiz.quizId + 1, 'Valid Name')).toStrictEqual({error: expect.any(String)}); // No matching QuizID
+  });
+
+  test('Given QuizID is not owned by user', () => {
+    const user2 = adminAuthRegister('doesntownquiz@gmail.com', 'returnerror2', 'John', 'Smith');
+    expect(adminQuizDescriptionUpdate(user2.authUserId)).toStrictEqual({error: expect.any(String)}) // User2 does not own the quiz 
+  });
+
+  test('Name is More than 100 characters', () => {
+    expect(adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, 'theGivenUpdatedNameIsWaaaaaaaaaaaaaaaaaaaaaaayTooLong'
+    + 'RanOutOfThingsToTypeSoHereIGoOnRambling' + 'ReallyHopeThisIsEnough')).toStrictEqual({error: expect.any(String)}); // Updated quiz description is too long (>100)
+  });
 
 });
