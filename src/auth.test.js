@@ -128,8 +128,11 @@ describe('Tests for adminAuthRegister', () => {
 });
 
 describe('Tests for adminAuthLogin', () => {
-  let email = 'admin@example.com';
-  let password = 'Chickens123';
+  clear();
+  let email = 'ilovekfc@chicken.com';
+  let password = 'chickenWing6';
+  adminAuthRegister(email, password, 'Colonel', 'Sanders');
+
   test('Login Success', () => {expect(adminAuthLogin(email, password)).toStrictEqual(
     {authUserId: expect.any(Number)});
   });
