@@ -157,12 +157,32 @@ describe('Tests for adminQuizCreate', () => {
 });
 
 describe('Tests for adminQuizRemove', () => {
+  clear();
+  let authUserId = adminAuthRegister('ilovekfc@chicken.com', 'chickenWing6', 'Colonel', 'Sanders');
+  let otherAuthUserId = adminAuthRegister('nugget@chicken.com', 'chickenTender7', 'Small', 'Child');
+  let quizId = adminQuizCreate(authUserId, 'Chicken Anatomy', 'cluckcluckcluckcluck');
+  
+  test('Correct parameters given.', () => {expect(adminQuizRemove(authUserId, quizId)).toStrictEqual(
+    {});
+  });
 
+  test('Invalid User ID.', () => {expect(adminQuizRemove(10, quizId)).toStrictEqual(
+    {error: expect.any(String)});
+  });
+
+  test('Invalid quiz ID.', () => {expect(adminQuizRemove(authUserId, 10)).toStrictEqual(
+    {error: expect.any(String)});
+  });
+
+  test('User does not own quiz.', () => {expect(adminQuizRemove(otherAuthUserId, 3)).toStrictEqual(
+    {error: expect.any(String)});
+  });
 });
 
 describe('Tests for adminQuizInfo', () => {
   /**
-   * 1. [x] 2. [x] 3. [x] 4. [x] 5. []
+
+  * 1. [x] 2. [x] 3. [x] 4. [x] 5. []
    * 
    * Function structure
    * 
