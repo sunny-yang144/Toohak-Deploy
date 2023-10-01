@@ -17,7 +17,7 @@ let data = {
     nameLast:                               string
     email:                                  string
     bio:                                    string
-    ownedquizzes:                           int[]  "number array, containing quizIds"
+    ownedQuizzes:                           int[]  "number array, containing quizIds"
     quizzesCreated:                         int
     quizzesPlayed:                          int
     numSuccessfulLogins:                    int
@@ -33,6 +33,7 @@ let data = {
         nameLast: "Stanley",
         email:  "jimmy.stan68@gmail.com",
         bio: "I like marvel comics",
+        ownedQuizzes: [1,2,3],
         quizzesCreated: 3,
         quizzesPlayed: 109,
         numSuccessfulLogins: 3,
