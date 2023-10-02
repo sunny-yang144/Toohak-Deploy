@@ -147,25 +147,6 @@ describe('Tests for adminAuthLogin', () => {
 });
 
 describe('Tests for adminUserDetails', () => {
-  /**
-   *                          ERROR CASES:
-   * 1. The only case is when an invalid UserId is inputed, in doing so a
-   * error message will be outputted.
-   *          
-   *                          SUCCESS CASES:
-   * 1. A valid UserId needs to be inputted.
-   * 
-   * Return Object:
-   * { user:
-   *  {
-   *    userId,
-   *    name,
-   *    email,
-   *    numSuccessfulLogins,
-   *    numFailedPasswordsSinceLastLogin,
-   *  }
-   * }
-   */
   
   beforeEach(() => {          
     clear();
