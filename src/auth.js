@@ -1,11 +1,17 @@
 function adminUserDetails ( authUserId ) {
-  return { user:
-    {
-      userId: 1,
-      name: 'Hayden Smith',
-      email: 'hayden.smith@unsw.edu.au',
-      numSuccessfulLogins: 3,
-      numFailedPasswordsSinceLastLogin: 1,
+  let data = getData();
+  const user = dataStore.users.find(user => user.authUserId === authUserId);
+  if (!user) {
+    return {error: 'This is not a valid UserId'}
+  } else {
+    return { user:
+      {
+        userId: authUserId,
+        name: `${user.nameFirst} ${user.nameLast}`,
+        email: user.email,
+        numSuccessfulLogins: user.numSuccessfulLogins,
+        numFailedPasswordsSinceLastLogin: user.numFailedPasswordsSinceLastLogin,
+      }
     }
   }
 }
