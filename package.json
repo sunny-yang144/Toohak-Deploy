@@ -1,7 +1,10 @@
 {
     "scripts": {
+<<<<<<< package.json
         "test": "jest --testMatch '**/?(*.)+(test).js'",
         "jest": "jest"
+
+>>>>>>> package.json
     },
     "dependencies": {
         "rewire": "^6.0.0",
