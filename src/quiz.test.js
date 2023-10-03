@@ -323,7 +323,7 @@ describe('Tests for adminQuizNameUpdate', () => {
     const quiz = adminQuizCreate(user.authUserId, 'PC games quiz', 'FPS games only');
     expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'theGivenUpdatedNameIsWayTooLong')).toStrictEqual({error: expect.any(String)}); // Updated name is too long (>30)
   });
-  test.only('Name is already used by current logged in user for another quiz', () => {
+  test('Name is already used by current logged in user for another quiz', () => {
     const user = adminAuthRegister('valid@gmail.com', 'validPassword1', 'Tyler', 'One');
     const quiz1 = adminQuizCreate(user.authUserId, 'PC games quiz', 'FPS games only');
     const quiz2 = adminQuizCreate(user.authUserId, 'Soccer quiz', 'SUIII');
@@ -331,33 +331,40 @@ describe('Tests for adminQuizNameUpdate', () => {
   });
 });
 
-
 describe('Tests for adminQuizDescriptionUpdate', () => {
   // Clear and create a valid quiz and user for the test to apply adminQuizDescriptionUpdate
   beforeEach(() => {
     clear();
-    let user = adminAuthRegister('valid@gmail.com', 'validPassword1', 'Tyler', 'One');
-    let quiz = adminQuizCreate(user.authUserId, 'PC games quiz', 'FPS games only');
   });
 
   test('Sucessfully updated quiz description', () => {
+    const user = adminAuthRegister('valid@gmail.com', 'validPassword1', 'Tyler', 'One');
+    const quiz = adminQuizCreate(user.authUserId, 'PC games quiz', 'FPS games only');
     expect(adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, 'Valid Description')).toStrictEqual({}); // Returns {} on success
   })
 
   test('Invalid AuthUserID', () => {
+    const user = adminAuthRegister('valid@gmail.com', 'validPassword1', 'Tyler', 'One');
+    const quiz = adminQuizCreate(user.authUserId, 'PC games quiz', 'FPS games only');
     expect(adminQuizDescriptionUpdate(user.authUserId + 1, quiz.quizId, 'Valid Description')).toStrictEqual({error: expect.any(String)}); // authUserId isnt valid
   });
 
   test('Given QuizID does not match a valid quiz', () => {
+    const user = adminAuthRegister('valid@gmail.com', 'validPassword1', 'Tyler', 'One');
+    const quiz = adminQuizCreate(user.authUserId, 'PC games quiz', 'FPS games only');
     expect(adminQuizDescriptionUpdate(user.authUserId, quiz.quizId + 1, 'Valid Name')).toStrictEqual({error: expect.any(String)}); // No matching QuizID
   });
 
   test('Given QuizID is not owned by user', () => {
-    let user2 = adminAuthRegister('doesntownquiz@gmail.com', 'returnerror2', 'John', 'Smith');
+    const user1 = adminAuthRegister('valid@gmail.com', 'validPassword1', 'Tyler', 'One');
+    const user2 = adminAuthRegister('doesntownquiz@gmail.com', 'returnerror2', 'John', 'Smith');
+    const quiz = adminQuizCreate(user1.authUserId, 'PC games quiz', 'FPS games only');
     expect(adminQuizDescriptionUpdate(user2.authUserId)).toStrictEqual({error: expect.any(String)}) // User2 does not own the quiz 
   });
 
   test('Name is More than 100 characters', () => {
+    const user = adminAuthRegister('valid@gmail.com', 'validPassword1', 'Tyler', 'One');
+    const quiz = adminQuizCreate(user.authUserId, 'PC games quiz', 'FPS games only');
     expect(adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, 'theGivenUpdatedNameIsWaaaaaaaaaaaaaaaaaaaaaaayTooLong'
     + 'RanOutOfThingsToTypeSoHereIGoOnRambling' + 'ReallyHopeThisIsEnough')).toStrictEqual({error: expect.any(String)}); // Updated quiz description is too long (>100)
   });

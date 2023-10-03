@@ -57,8 +57,7 @@ export function adminQuizCreate ( authUserId, name, description ) {
   }
   // Check if the quiz name is already used by the current logged in user for
   // another quiz
-  const quiz = data.quizzes.find(quiz => quiz.ownerId === authUserId && quiz.name === name);
-  if (quiz) {
+  if (data.quizzes.find(quiz => quiz.ownerId === authUserId && quiz.name === name)) {
     return { error: `User ID ${authUserId} already has quiz with name: ${name}` };
   }
   // Check if description length is more than 100 characters
@@ -175,9 +174,9 @@ export function adminQuizNameUpdate ( authUserId, quizId, name ) {
   if (name.length > 30) {
     return { error: `The name ${name} is too long (<30).` };
   };
-  
-  if (data.quizzes.some(quiz => quiz.quizName === name && quiz.ownerId === authUserId)) {
-    return { error: `${name} is already used by another quiz!` }
+
+  if (data.quizzes.find(quiz => quiz.ownerId === authUserId && quiz.name === name)) {
+    return { error: `The name ${name} is already used by another quiz!` };
   };
 
   // goto the quiz object with matching id, and change name.
@@ -216,18 +215,21 @@ function isAlphanumericWithSpaces(str) {
 export function adminQuizDescriptionUpdate ( authUserId, quizId, description ) {
   let data = getData();
 
-  if (!data.users.some(user => user.userId === authUserId)) {
+  let user = data.users.find(user => user.userId === authUserId);
+
+  if (!user) {
     return { error: `The user ID ${authUserId} is invalid!` };
-  };
+  };  
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `The quiz Id ${quizId} is invalid!`};
   };
-  if (!data.users.ownedQuizzes.includes(quizId)) {
+  if (!user.ownedQuizzes.includes(quizId)) {
     return { error: `This quiz ${quizId} is not owned by this User!`};
   };
-  if (data.length > 100) {
+  if (description.length > 100) {
     return { error: 'Description is too long (<100)!'};
   }
+
   // goto the quiz object with matching id, and change description.
   let editedQuiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   editedQuiz.description = description;
