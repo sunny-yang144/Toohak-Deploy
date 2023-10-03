@@ -17,9 +17,9 @@ import { getData, setData } from './dataStore.js'
  */
 
 export function adminQuizList ( authUserId ) {
-  let data = getData;
+  let data = getData();
   // Find user with the inputted Id
-  const user = data.users.find(user => user.UserId === authUserId);
+  const user = data.users.find(user => user.userId === authUserId);
   // Check whether authUsedId is valid
   if (!user) {
     return { error: `The user ID ${authUserId} is invalid!` };
@@ -41,14 +41,13 @@ export function adminQuizList ( authUserId ) {
 
 export function adminQuizCreate ( authUserId, name, description ) {
   let data = getData();
-  // Find user with the inputted Id
-  const user = data.users.find(user => user.UserId === authUserId);
+  let user = data.users.find(user => user.userId === authUserId)
   // Check whether authUsedId is valid
   if (!user) {
     return { error: `The user ID ${authUserId} is invalid!` };
   };
-  // Searches for white space, then removes it from the string
-  if (isAlphanumeric(name, 'en- AU', "-") == false) {
+  // Checks for invalid characters
+  if (!isAlphanumericWithSpaces(name)) {
     return { error: `The quiz name ${name} contains invalid characters.` };
   }
   // Check if name is less than 3 characters long, or more than 30
@@ -58,14 +57,14 @@ export function adminQuizCreate ( authUserId, name, description ) {
   }
   // Check if the quiz name is already used by the current logged in user for
   // another quiz
-  const quiz = data.quizzes.find(quiz => quiz.ownerId === authUserId && quiz.name === name);
-  if (quiz) {
+  if (data.quizzes.find(quiz => quiz.ownerId === authUserId && quiz.name === name)) {
     return { error: `User ID ${authUserId} already has quiz with name: ${name}` };
   }
   // Check if description length is more than 100 characters
   if (description.length > 100) {
     return { error: `Description is more than 100 characters.` };
   }
+
   // Add new quiz
   let newQuiz = { 
     quizId: data.quizzes.length,
@@ -73,6 +72,8 @@ export function adminQuizCreate ( authUserId, name, description ) {
     name: name,
     description: description
   };
+
+  user.ownedQuizzes.push(newQuiz.quizId)
 
   data.quizzes.push(newQuiz);
   setData(data);
@@ -100,9 +101,9 @@ export function adminQuizCreate ( authUserId, name, description ) {
 * }} | errorMessage
 */
 export function adminQuizInfo ( authUserId, quizId ) {
-  let data = getData;
+  let data = getData();
   // Check whether authUsedId is valid
-  if (!data.users.some(user => user.UserId === authUserId)) {
+  if (!data.users.some(user => user.userId === authUserId)) {
     return { error: `The user ID ${authUserId} is invalid!` };
   };
   // Check whether quiz with quizId exists
@@ -153,13 +154,15 @@ export function adminQuizRemove ( authUserId, quizId ) {
 export function adminQuizNameUpdate ( authUserId, quizId, name ) {
   let data = getData();
 
-  if (!data.users.some(user => user.UserId === authUserId)) {
+  let user = data.users.find(user => user.userId === authUserId);
+
+  if (!user) {
     return { error: `The user ID ${authUserId} is invalid!` };
   };
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `The quiz Id ${quizId} is invalid!`};
   };
-  if (!data.users.ownedQuizzes.includes(quizId)) {
+  if (!user.ownedQuizzes.includes(quizId)) {
     return { error: `This quiz ${quizId} is not owned by this User!`};
   };
   if (!isAlphanumericWithSpaces(name)) {
@@ -171,8 +174,9 @@ export function adminQuizNameUpdate ( authUserId, quizId, name ) {
   if (name.length > 30) {
     return { error: `The name ${name} is too long (<30).` };
   };
-  if (data.quizzes.some(quiz => quiz.quizName === name)) {
-    return { error: `${name} is already used by another quiz!` }
+
+  if (data.quizzes.find(quiz => quiz.ownerId === authUserId && quiz.name === name)) {
+    return { error: `The name ${name} is already used by another quiz!` };
   };
 
   // goto the quiz object with matching id, and change name.
@@ -211,18 +215,21 @@ function isAlphanumericWithSpaces(str) {
 export function adminQuizDescriptionUpdate ( authUserId, quizId, description ) {
   let data = getData();
 
-  if (!data.users.some(user => user.UserId === authUserId)) {
+  let user = data.users.find(user => user.userId === authUserId);
+
+  if (!user) {
     return { error: `The user ID ${authUserId} is invalid!` };
-  };
+  };  
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `The quiz Id ${quizId} is invalid!`};
   };
-  if (!data.users.ownedQuizzes.includes(quizId)) {
+  if (!user.ownedQuizzes.includes(quizId)) {
     return { error: `This quiz ${quizId} is not owned by this User!`};
   };
-  if (data.length > 100) {
+  if (description.length > 100) {
     return { error: 'Description is too long (<100)!'};
   }
+
   // goto the quiz object with matching id, and change description.
   let editedQuiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   editedQuiz.description = description;

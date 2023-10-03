@@ -12,7 +12,7 @@ let data = {
     attribute                               type
 
     username:                               string        
-    userId:                                 int
+    authUserId:                             int
     nameFirst:                              string
     nameLast:                               string
     email:                                  string
