@@ -40,9 +40,45 @@ export function adminQuizList ( authUserId ) {
 }
 
 export function adminQuizCreate ( authUserId, name, description ) {
-  return {
-    quizId: 2
+  let data = getData();
+  // Find user with the inputted Id
+  const user = data.users.find(user => user.UserId === authUserId);
+  // Check whether authUsedId is valid
+  if (!user) {
+    return { error: `The user ID ${authUserId} is invalid!` };
+  };
+  // Searches for white space, then removes it from the string
+  if (isAlphanumeric(name, 'en- AU', "-") == false) {
+    return { error: `The quiz name ${name} contains invalid characters.` };
   }
+  // Check if name is less than 3 characters long, or more than 30
+  // characters long
+  if (name.length < 3 || name.length > 30) {
+    return { error: `The quiz name ${name} is of invalid length.` };
+  }
+  // Check if the quiz name is already used by the current logged in user for
+  // another quiz
+  const quiz = data.quizzes.find(quiz => quiz.ownerId === authUserId && quiz.name === name);
+  if (quiz) {
+    return { error: `User ID ${authUserId} already has quiz with name: ${name}` };
+  }
+  // Check if description length is more than 100 characters
+  if (description.length > 100) {
+    return { error: `Description is more than 100 characters.` };
+  }
+  // Add new quiz
+  let newQuiz = { 
+    quizId: data.quizzes.length,
+    ownerId: authUserId,
+    name: name,
+    description: description
+  };
+
+  data.quizzes.push(newQuiz);
+  setData(data);
+  return {
+    quizId: newQuiz.quizId
+  };
 }
 
 /**
