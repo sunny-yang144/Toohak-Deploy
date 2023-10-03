@@ -3,7 +3,7 @@ import { getData, setData } from './dataStore.js'
 
 export function adminUserDetails ( authUserId ) {
   let data = getData();
-  const user = data.users.find(user => user.authUserId === authUserId);
+  const user = data.users.find(user => user.userId === authUserId);
   if (!user) {
     return {error: 'This is not a valid UserId'}
   } else {
