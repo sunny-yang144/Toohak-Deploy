@@ -55,14 +55,14 @@ export function adminAuthRegister( email, password, nameFirst, nameLast ) {
   }
   const userId = data.users.length;
   const user = {
-    authUserId: userId,
+    userId: userId,
     email: email,
     nameFirst: nameFirst,
     nameLast: nameLast,
     password: password,
     numSuccessfulLogins: 0,
     numFailedPasswordsSinceLastLogin: 0,
-
+    ownedQuizzes: [],
   };
   data.users.push(user);
   setData(data);
