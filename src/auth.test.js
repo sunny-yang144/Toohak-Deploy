@@ -39,25 +39,21 @@ describe('Tests for adminAuthRegister', () => {
    * Return Object:
    * { authUserId }
    */
+  let user;
   beforeEach(() => {          
     clear();
+    user = adminAuthRegister('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella')
   }); 
 
   test('Successful User Created when given valid parameters', () => {
-  
-    expect(adminAuthRegister
-      ('helloworld@gmail.com', '1234UNSW', 'Jack', 'Rizzella')).toStrictEqual
-      ({ authUserId: expect.any(Number)}); 
+    expect(user).toStrictEqual({authUserId: expect.any(Number)}); 
   });
 
   test('Error when given an email address is already used', () => {
     // Created a user successfully
-    const user = adminAuthRegister
-    ('ThisEmailIsAlreadyInUse@gmail.com', '1234UNSW', 'Jack', 'Rizzella');
+    const user2 = adminAuthRegister('helloworld@gmail.com', '4321UNSW', 'Jamie', 'Oliver');
     // Another user with the same email
-    expect(adminAuthRegister
-      ('ThisEmailIsAlreadyInUse@gmail.com', '1234UNSW', 'Jack2', 'Rizzella')).toStrictEqual
-      ({ error: expect.any(String)}); // "This email is already in use"
+    expect(adminAuthRegister(user2)).toStrictEqual({error: expect.any(String)}); // "This email is already in use"
   });
 
   test('Error when a non-valid email is used', () => {

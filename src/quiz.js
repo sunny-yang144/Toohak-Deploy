@@ -1,5 +1,6 @@
-import { getData, setData } from './dataStore'
+import { getData, setData } from './dataStore.js'
 import { isAlphanumeric } from 'validator'
+
 
 /**
  * Lists out all of the Quizzes a user owns
