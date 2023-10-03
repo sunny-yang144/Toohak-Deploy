@@ -18,12 +18,12 @@ import { isAlphanumeric } from 'validator'
 
 export function adminQuizList ( authUserId ) {
   let data = getData;
-  // Check whether authUsedId is valid
-  if (!data.users.some(user => user.UserId === authUserId)) {
-    return { error: 'The user ID ${authUserId} is invalid!' };
-  };
   // Find user with the inputted Id
   const user = data.users.find(user => user.UserId === authUserId);
+  // Check whether authUsedId is valid
+  if (!user) {
+    return { error: `The user ID ${authUserId} is invalid!` };
+  };
   const quizzes = [];
   // Iterate through users quizzes and add their information to an array
   for (let quizId of user.ownedQuizzes) {
