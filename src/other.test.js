@@ -30,5 +30,24 @@ beforeEach(() => {
 // dataStore.js
 describe('Tests for clear', () => {
 
+  test('Successfully returns empty object', () => {
+    expect(clear()).toStrictEqual({});
+  });
+
+  test('Sucessfully removes user', () => {
+    const user = adminAuthRegister('RealEmail@gmail.com', 'GoodPassword123', 'Real', 'Name');
+    clear();
+    // Since an error occurs, user must have been removed
+    expect(adminQuizList(user.userId)).toStrictEqual({ error: expect.any(String)});
+  });
+
+  test('Sucessfully removes quiz', () => {
+    const user = adminAuthRegister('RealEmail@gmail.com', 'GoodPassword123', 'Real', 'Name');
+    const quiz = adminQuizCreate(user.userId, 'I have atleast 5', '');
+    clear();
+    const user2 = adminAuthRegister('Another@gmail.com', 'GoodPassword123', 'AnotherReal', 'Name');
+    // Since an error occurs, quiz must have been removed
+    expect(adminQuizInfo(user2.userId, quiz.quizId)).toStrictEqual({ error: expect.any(String)});
+  });
 });
 
