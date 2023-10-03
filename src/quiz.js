@@ -1,5 +1,5 @@
-import { getData, setData } from './dataStore'
-import { isAlphanumeric } from 'validator'
+import { getData, setData } from './dataStore.js'
+
 
 /**
  * Lists out all of the Quizzes a user owns
@@ -182,6 +182,16 @@ export function adminQuizNameUpdate ( authUserId, quizId, name ) {
   return {};
 }
 
+/**
+ * Checks if characters in the string are alphanumeric
+ * or spaces
+ * 
+ * @param {string} str 
+ * @returns {boolean}
+ */
+function isAlphanumericWithSpaces(str) {
+  return /^[A-Za-z0-9\s]+$/.test(str);
+}
 
 /**
  * Updates the description of a quiz

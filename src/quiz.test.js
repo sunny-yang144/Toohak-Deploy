@@ -45,13 +45,6 @@ describe('Tests for adminQuizList', () => {
    * given wrong id -> ERROR
    * given correct id -> gives list.
    * 
-   * Return Object
-   * { quizzes: [
-   *  { quizId,
-   *    name,
-   *  }
-   *  ]
-   * }
    */
   
   test('Invalid authUserId', () => {
@@ -126,7 +119,7 @@ describe('Tests for adminQuizCreate', () => {
     });
     test('Successful Quiz Created', () => {
       // user = {authUserId: number}
-      expect(adminQuizCreate(user.authUserId, 'The Perfect Quiz 1', 'The Perfect Description')).toStrictEqual({quizId: expect.any(number)});
+      expect(adminQuizCreate(user.authUserId, 'The Perfect Quiz 1', 'The Perfect Description')).toStrictEqual({quizId: expect.any(Number)});
     })
 
 	test('Contains Symbol', () => {

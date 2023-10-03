@@ -1,6 +1,7 @@
 import validator from 'validator';
+import { getData, setData } from './dataStore.js'
 
-function adminUserDetails ( authUserId ) {
+export function adminUserDetails ( authUserId ) {
   let data = getData();
   const user = data.users.find(user => user.authUserId === authUserId);
   if (!user) {
@@ -18,11 +19,11 @@ function adminUserDetails ( authUserId ) {
   }
 }
 
-function adminAuthRegister( email, password, nameFirst, nameLast ) {
+export function adminAuthRegister( email, password, nameFirst, nameLast ) {
   let data = getData();
   const searchEmail = data.users.find(searchEmail => searchEmail.email === email);
   
-  if (!searchEmail) {
+  if (searchEmail) {
     return {error: 'This email is already in use'}
   }
   if (!validator.isEmail(email)) {
@@ -52,17 +53,22 @@ function adminAuthRegister( email, password, nameFirst, nameLast ) {
   if (!(letterCheck.test(password) && numberCheck.test(password))) {
     return {error: 'This is not a valid password'}
   }
-  let user = {
-    authUserId: data.users.length,
+  const userId = data.users.length;
+  const user = {
+    authUserId: userId,
     email: email,
     nameFirst: nameFirst,
     nameLast: nameLast,
     password: password,
+    numSuccessfulLogins: 0,
+    numFailedPasswordsSinceLastLogin: 0,
+
   };
   data.users.push(user);
   setData(data);
+  
   return {
-    authUserId: authUserId
+    authUserId: userId
   }
 }
 
