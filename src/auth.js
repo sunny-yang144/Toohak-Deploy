@@ -22,7 +22,6 @@ export function adminUserDetails ( authUserId ) {
 export function adminAuthRegister( email, password, nameFirst, nameLast ) {
   let data = getData();
   const searchEmail = data.users.find(searchEmail => searchEmail.email === email);
-  console.log(searchEmail);
   
   if (searchEmail) {
     return {error: 'This email is already in use'}
@@ -61,6 +60,9 @@ export function adminAuthRegister( email, password, nameFirst, nameLast ) {
     nameFirst: nameFirst,
     nameLast: nameLast,
     password: password,
+    numSuccessfulLogins: 0,
+    numFailedPasswordsSinceLastLogin: 0,
+
   };
   data.users.push(user);
   setData(data);
