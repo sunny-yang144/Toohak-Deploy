@@ -1,14 +1,42 @@
 import { getData, setData } from './dataStore'
 import { isAlphanumeric } from 'validator'
 
+/**
+ * Lists out all of the Quizzes a user owns
+ * 
+ * Gives an error when:
+ * 1. AuthUserId is not a valid user
+ *
+ * @param {number} authUserId
+ * @returns {{ quizzes: 
+ *      Array<{
+ *        quizId: number,
+ *        name: string
+ *      }>
+ * }} | errorMessage
+ */
+
 export function adminQuizList ( authUserId ) {
-  return { quizzes: [
-      {
-        quizId: 1,
-        name: 'My Quiz',
-      }
-    ]
+  let data = getData;
+  // Find user with the inputted Id
+  const user = data.users.find(user => user.UserId === authUserId);
+  // Check whether authUsedId is valid
+  if (!user) {
+    return { error: `The user ID ${authUserId} is invalid!` };
+  };
+  const quizzes = [];
+  // Iterate through users quizzes and add their information to an array
+  for (let quizId of user.ownedQuizzes) {
+    const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+    // The "quiz" object that will go into the quizzes array
+    const quizObject = {
+      quizId: quiz.quizId,
+      name: quiz.name
+    };
+    // Add this object to the quizzes array
+    quizzes.push(quizObject);
   }
+  return { quizzes: quizzes };
 }
 
 export function adminQuizCreate ( authUserId, name, description ) {
@@ -18,13 +46,7 @@ export function adminQuizCreate ( authUserId, name, description ) {
 }
 
 export function adminQuizInfo ( authUserId, quizId ) {
-  return {
-    quizId: 1,
-    name: 'My Quiz',
-    timeCreated: 1683125870,
-    timeLastEdited: 1683125871,
-    description: 'This is my quiz',
-  }
+  return quizInfo;
 }
 
 export function adminQuizRemove ( authUserId, quizId ) {
