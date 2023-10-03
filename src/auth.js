@@ -1,4 +1,4 @@
-import isEmail from 'validator/lib/isEmail';
+import validator from 'validator';
 
 function adminUserDetails ( authUserId ) {
   let data = getData();
