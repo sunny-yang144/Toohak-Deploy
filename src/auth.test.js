@@ -53,13 +53,13 @@ describe('Tests for adminAuthRegister', () => {
     // Created a user successfully
     const user2 = adminAuthRegister('helloworld@gmail.com', '4321UNSW', 'Jamie', 'Oliver');
     // Another user with the same email
-    expect(adminAuthRegister(user2)).toStrictEqual({error: expect.any(String)}); // "This email is already in use"
+    expect(user2).toStrictEqual({error: expect.any(String)}); // "This email is already in use"
   });
 
   test('Error when a non-valid email is used', () => {
     // Does not satisfy the validator.isEmail function
     expect(adminAuthRegister
-      ('helloworld@VeryLegitEmails.com', '1234UNSW', 'Jack', 'Rizzella')).toStrictEqual
+      ('helloworld@VeryLegitEmailscom', '1234UNSW', 'Jack', 'Rizzella')).toStrictEqual
       ({ error: expect.any(String)}); //"This is not a valid email"
   });
 
