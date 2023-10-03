@@ -2,7 +2,7 @@ import isEmail from 'validator/lib/isEmail';
 
 function adminUserDetails ( authUserId ) {
   let data = getData();
-  const user = dataStore.users.find(user => user.authUserId === authUserId);
+  const user = data.users.find(user => user.authUserId === authUserId);
   if (!user) {
     return {error: 'This is not a valid UserId'}
   } else {
@@ -20,7 +20,7 @@ function adminUserDetails ( authUserId ) {
 
 function adminAuthRegister( email, password, nameFirst, nameLast ) {
   let data = getData();
-  const searchEmail = dataStore.users.find(searchEmail => searchEmail.email === email);
+  const searchEmail = data.users.find(searchEmail => searchEmail.email === email);
   
   if (!searchEmail) {
     return {error: 'This email is already in use'}
@@ -53,13 +53,14 @@ function adminAuthRegister( email, password, nameFirst, nameLast ) {
     return {error: 'This is not a valid password'}
   }
   let user = {
-    authUserId: dataStore.users.length,
+    authUserId: data.users.length,
     email: email,
-    nameFirst: name,
-    nameLast: name,
+    nameFirst: nameFirst,
+    nameLast: nameLast,
     password: password,
   };
-  dataStore.users.push(user);
+  data.users.push(user);
+  setData(data);
   return {
     authUserId: authUserId
   }
