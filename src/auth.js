@@ -88,9 +88,12 @@ export function adminAuthLogin ( email, password ) {
   }
   // Then check if password is correct for email
   if (user.password !== password) {
+    user.numFailedPasswordsSinceLastLogin += 1;
     return { error: 'Incorrect password'};
   }
-  // Return authUserId if success
+  // Return authUserId if success, reset login count
+  user.numFailedPasswordsSinceLastLogin = 0;
+  user.numSuccessfulLogins += 1;
   return {
     authUserId: user.userId
   };
