@@ -151,26 +151,33 @@ describe('Tests for adminQuizCreate', () => {
 });
 
 describe('Tests for adminQuizRemove', () => {
-  clear();
-  let authUserId = adminAuthRegister('ilovekfc@chicken.com', 'chickenWing6', 'Colonel', 'Sanders');
-  let otherAuthUserId = adminAuthRegister('nugget@chicken.com', 'chickenTender7', 'Small', 'Child');
-  let quizId = adminQuizCreate(authUserId, 'Chicken Anatomy', 'cluckcluckcluckcluck');
+  let user1;
+  let user2;
+  let quiz;
+
+  beforeEach(() => {
+    clear();
+    user1 = adminAuthRegister('ilovekfc@gmail.com', 'chickenWing6', 'Colonel', 'Sanders');
+    user2 = adminAuthRegister('nugget@gmail.com', 'chickenTender7', 'Small', 'Child');
+    quiz = adminQuizCreate(user1.authUserId, 'Chicken Anatomy', 'cluckcluckcluckcluck');
+  });
   
-  test('Correct parameters given.', () => {expect(adminQuizRemove(authUserId, quizId)).toStrictEqual(
-    {});
+  test('Invalid User ID.', () => {
+    expect(adminQuizRemove(10, quiz.quizId)).toStrictEqual({error: expect.any(String)});
   });
 
-  test('Invalid User ID.', () => {expect(adminQuizRemove(10, quizId)).toStrictEqual(
-    {error: expect.any(String)});
+  test('Invalid quiz ID.', () => {
+    expect(adminQuizRemove(user1.authUserId, 10)).toStrictEqual({error: expect.any(String)});
   });
 
-  test('Invalid quiz ID.', () => {expect(adminQuizRemove(authUserId, 10)).toStrictEqual(
-    {error: expect.any(String)});
+  test('User does not own quiz.', () => {
+    expect(adminQuizRemove(user2.authUserId, quiz.quizId)).toStrictEqual({error: expect.any(String)});
   });
 
-  test('User does not own quiz.', () => {expect(adminQuizRemove(otherAuthUserId, 3)).toStrictEqual(
-    {error: expect.any(String)});
+  test('Correct parameters given.', () => {
+    expect(adminQuizRemove(user1.authUserId, quiz.quizId)).toStrictEqual({});
   });
+
 });
 
 describe('Tests for adminQuizInfo', () => {
