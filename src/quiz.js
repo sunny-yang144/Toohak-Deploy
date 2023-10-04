@@ -126,7 +126,10 @@ export function adminQuizInfo ( authUserId, quizId ) {
   return quizInfo;
 }
 /*
-  Permanently remove quiz given a quizId
+  Permanently remove quiz given a quizId, removes from
+    - Owned quizzes array
+    - Quizzes array
+
   Returns error if:
     - AuthUserId is not valid
     - QuizId does not refer to a valid quiz
@@ -147,14 +150,14 @@ export function adminQuizRemove ( authUserId, quizId ) {
     return { error: `Given quizId ${quizId} is not valid` }   
   };
   // Error, userId does not own quizId
-  const ownQuiz = user.ownedQuizzes.find(ownQuiz => ownQuiz === quizId);
-  if (!ownQuiz) {
+  const ownQuizIndex = user.ownedQuizzes.findIndex(ownQuiz => ownQuiz === quizId);
+  if (ownQuizIndex === -1) {
     return { error: `Given authUserId ${authUserId} does not own quiz ${quizId}` }
   };
-  // Success, remove quiz from array at index then return empty
+  // Success, remove quiz then return empty
   data.quizzes.splice(quizIndex, 1);
+  user.ownedQuizzes.splice(ownQuizIndex, 1);
   setData(data);
-
   return {};
 }
 
