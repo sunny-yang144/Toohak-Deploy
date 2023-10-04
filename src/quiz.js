@@ -125,8 +125,39 @@ export function adminQuizInfo ( authUserId, quizId ) {
   }
   return quizInfo;
 }
+/*
+  Permanently remove quiz given a quizId, removes from
+    - Owned quizzes array
+    - Quizzes array
 
+  Returns error if:
+    - AuthUserId is not valid
+    - QuizId does not refer to a valid quiz
+    - QuizId does not refer to a quiz the user owns
+*/
 export function adminQuizRemove ( authUserId, quizId ) {
+  let data = getData();
+
+  // Find given user
+  const user = data.users.find(userFind => userFind.userId === authUserId);
+  // Error, no authUserId found in users
+  if (!user) {
+    return { error: `Given authUserId ${authUserId} is not valid` }
+  };
+  // Error, no quizId found in quizzes
+  const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
+  if (quizIndex === -1) {
+    return { error: `Given quizId ${quizId} is not valid` }   
+  };
+  // Error, userId does not own quizId
+  const ownQuizIndex = user.ownedQuizzes.findIndex(ownQuiz => ownQuiz === quizId);
+  if (ownQuizIndex === -1) {
+    return { error: `Given authUserId ${authUserId} does not own quiz ${quizId}` }
+  };
+  // Success, remove quiz then return empty
+  data.quizzes.splice(quizIndex, 1);
+  user.ownedQuizzes.splice(ownQuizIndex, 1);
+  setData(data);
   return {};
 }
 

@@ -72,8 +72,29 @@ export function adminAuthRegister( email, password, nameFirst, nameLast ) {
   }
 }
 
-function adminAuthLogin ( email, password ) {
-  return {
-    authUserId: 1
+/* 
+Returns authUserId given a valid registered user email and password
+Returns error if:
+  - Email address does not exist
+  - Password is not correct for given email
+*/
+export function adminAuthLogin ( email, password ) {
+  let data = getData();
+  // Find user with email
+  const user = data.users.find(user => user.email === email);
+  // First check if email is valid
+  if (!user) {
+    return { error: `The given email ${email} does not exist`};
   }
+  // Then check if password is correct for email
+  if (user.password !== password) {
+    user.numFailedPasswordsSinceLastLogin += 1;
+    return { error: 'Incorrect password'};
+  }
+  // Return authUserId if success, reset login count
+  user.numFailedPasswordsSinceLastLogin = 0;
+  user.numSuccessfulLogins += 1;
+  return {
+    authUserId: user.userId
+  };
 }
