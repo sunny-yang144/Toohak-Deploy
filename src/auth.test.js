@@ -124,22 +124,27 @@ describe('Tests for adminAuthRegister', () => {
 });
 
 describe('Tests for adminAuthLogin', () => {
-  clear();
-  let email = 'ilovekfc@chicken.com';
-  let password = 'chickenWing6';
-  adminAuthRegister(email, password, 'Colonel', 'Sanders');
+  let email;
+  let password;
+  beforeEach(() => {          
+    clear();
+    email = 'ilovekfc@gmail.com';
+    password = 'chickenWing6';
+    adminAuthRegister(email, password, 'Colonel', 'Sanders');
+  }); 
 
-  test('Login Success', () => {expect(adminAuthLogin(email, password)).toStrictEqual(
-    {authUserId: expect.any(Number)});
+  test('Email does not exist', () => {
+    expect(adminAuthLogin('nonexistant@email.com', password)).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('Email does not exist', () => {expect(adminAuthLogin('notareal@email.com', password)).toStrictEqual(
-    {error: expect.any(String)});
+  test('Incorrect password.', () => {
+    expect(adminAuthLogin(email, 'wrongpassword')).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('Incorrect password.', () => {expect(adminAuthLogin(email, 'wrongpassword')).toStrictEqual(
-    {error: expect.any(String)});
+  test('Login Success', () => {
+    expect(adminAuthLogin(email, password)).toStrictEqual({ authUserId: expect.any(Number) });
   });
+
 });
 
 describe('Tests for adminUserDetails', () => {

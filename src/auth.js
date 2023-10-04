@@ -81,20 +81,17 @@ Returns error if:
 export function adminAuthLogin ( email, password ) {
   let data = getData();
   // Find user with email
-  const userWithEmail = data.users.find(user => user.email === email);
-
+  const user = data.users.find(user => user.email === email);
   // First check if email is valid
-  if (!userWithEmail) {
+  if (!user) {
     return { error: `The given email ${email} does not exist`};
   }
-
   // Then check if password is correct for email
-  if (userWithEmail.password !== password) {
+  if (user.password !== password) {
     return { error: 'Incorrect password'};
   }
-
   // Return authUserId if success
   return {
-    authUserId: userWithEmail.userId
+    authUserId: user.userId
   };
 }
