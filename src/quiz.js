@@ -147,7 +147,7 @@ export function adminQuizRemove ( authUserId, quizId ) {
     return { error: `Given quizId ${quizId} is not valid` }   
   };
   // Error, userId does not own quizId
-  const ownQuiz = user.ownedQuizzes.find(ownQuiz => ownQuiz.ownedQuizzes === quizId);
+  const ownQuiz = user.ownedQuizzes.find(ownQuiz => ownQuiz === quizId);
   if (!ownQuiz) {
     return { error: `Given authUserId ${authUserId} does not own quiz ${quizId}` }
   };

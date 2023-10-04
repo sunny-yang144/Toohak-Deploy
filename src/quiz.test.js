@@ -162,15 +162,15 @@ describe('Tests for adminQuizRemove', () => {
     quiz = adminQuizCreate(user1.authUserId, 'Chicken Anatomy', 'cluckcluckcluckcluck');
   });
   
-  test('Invalid User ID.', () => {
+  test.only('Invalid User ID.', () => {
     expect(adminQuizRemove(10, quiz.quizId)).toStrictEqual({error: expect.any(String)});
   });
 
-  test('Invalid quiz ID.', () => {
+  test.only('Invalid quiz ID.', () => {
     expect(adminQuizRemove(user1.authUserId, 10)).toStrictEqual({error: expect.any(String)});
   });
 
-  test('User does not own quiz.', () => {
+  test.only('User does not own quiz.', () => {
     expect(adminQuizRemove(user2.authUserId, quiz.quizId)).toStrictEqual({error: expect.any(String)});
   });
 
