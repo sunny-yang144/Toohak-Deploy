@@ -81,11 +81,11 @@ describe('Tests for adminQuizList', () => {
       { quizzes: [
         {
           quizId: quiz1.quizId,
-          name: quiz1.name
+          name: 'Football Quiz'
         }, 
         {
           quizId: quiz2.quizId,
-          name: quiz2.quizname
+          name: 'Soccer Quiz'
         },
       ]
     });
@@ -96,7 +96,7 @@ describe('Tests for adminQuizList', () => {
     const user2 = adminAuthRegister('someonenamedjill@gmail.com', 'NOTPASSWORD1234', 'Jill', 'Toually');
     const quiz = adminQuizCreate(user1.authUserId, 'Baby Names', 'Top 10 baby names for girls');
 
-    expect(adminQuizList(user2.authUserId)).toStrictEqual({error: expect.any(String)}) // 'This user doesn't own any quizzes'
+    expect(adminQuizList(user2.authUserId)).toStrictEqual({quizzes: []}) // 'This user doesn't own any quizzes'
 
     expect(adminQuizList(user1.authUserId)).toStrictEqual(
       { quizzes: [

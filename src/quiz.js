@@ -41,7 +41,7 @@ export function adminQuizList ( authUserId ) {
 
 export function adminQuizCreate ( authUserId, name, description ) {
   let data = getData();
-  let user = data.users.find(user => user.userId === authUserId)
+  let user = data.users.find(user => user.userId === authUserId);
   // Check whether authUsedId is valid
   if (!user) {
     return { error: `The user ID ${authUserId} is invalid!` };
@@ -66,11 +66,16 @@ export function adminQuizCreate ( authUserId, name, description ) {
   }
 
   // Add new quiz
+  // Get time in Unix format
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime()/1000);
   let newQuiz = { 
     quizId: data.quizzes.length,
     ownerId: authUserId,
     name: name,
-    description: description
+    description: description,
+    timeCreated: unixtimeSeconds,
+    timeLastEdited: unixtimeSeconds
   };
 
   user.ownedQuizzes.push(newQuiz.quizId)
@@ -102,8 +107,9 @@ export function adminQuizCreate ( authUserId, name, description ) {
 */
 export function adminQuizInfo ( authUserId, quizId ) {
   let data = getData();
+  let user = data.users.find(user => user.userId === authUserId);
   // Check whether authUsedId is valid
-  if (!data.users.some(user => user.userId === authUserId)) {
+  if (!user) {
     return { error: `The user ID ${authUserId} is invalid!` };
   };
   // Check whether quiz with quizId exists
@@ -111,7 +117,7 @@ export function adminQuizInfo ( authUserId, quizId ) {
     return { error: `The quiz Id ${quizId} is invalid!`};
   };
   // Check whether quiz with quizId is owned by user with authUserId
-  if (!data.users.ownedQuizzes.includes(quizId)) {
+  if (!user.ownedQuizzes.includes(quizId)) {
     return { error: `This quiz ${quizId} is not owned by this User!`};
   };
   // Find quiz with the inputted Id
@@ -213,6 +219,10 @@ export function adminQuizNameUpdate ( authUserId, quizId, name ) {
   // goto the quiz object with matching id, and change name.
   let editedQuiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   editedQuiz.quizName = name;
+  // Get and update the time edited
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime()/1000);
+  editedQuiz.timeLastEdited = unixtimeSeconds;
   setData(data);
   return {};
 }
@@ -264,6 +274,10 @@ export function adminQuizDescriptionUpdate ( authUserId, quizId, description ) {
   // goto the quiz object with matching id, and change description.
   let editedQuiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   editedQuiz.description = description;
+  // Get and update the time edited
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime()/1000);
+  editedQuiz.timeLastEdited = unixtimeSeconds;
   setData(data);
   return {};
 }
