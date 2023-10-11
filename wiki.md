@@ -34,34 +34,42 @@ What I am going to do: complete adminQuizDescriptionUpdate, will complete by ton
 *Week 4 Meeting 1 - @ 4/10/2023 -- 18:30 for
 - Tony, Shannon, Timothy and Katrina and Sunny all showed up on time.
 - We looked through everyone's code and checked up on whether their functions were passing the tests or not
+
 Week 4 Standup Tony
-Standups
-Worked on adminAuthRegister and adminUserDetails
-learning to implement isEmail
-going to go through other people's code during the merge requests
+- Worked on adminAuthRegister and adminUserDetails
+- Learning to implement isEmail
+- Going to go through other people's code during the merge requests
 
 Week 4 Standup Katrina
-Standups
-Worked on adminQuizCreate + test functions for adminAuthLogin and adminQuizRemove
-Writing conditions for adminQuizCreate
-Try to help people with the remainder of the code or fix any of my code
+- Worked on adminQuizCreate + test functions for adminAuthLogin and adminQuizRemove
+- Writing conditions for adminQuizCreate
+- Try to help people with the remainder of the code or fix any of my code
+
 Week 4 Standup Sunny
-Main update:
-Passed tests for QuizCreate, QuizNameUpdate, QuizDescription update.
-Clear function implemented.
+- Passed tests for QuizCreate, QuizNameUpdate, QuizDescription update. Clear function implemented.
+- Some changes made: -QuizCreate added ownedQuizzes key into users authUserId standardised to usedId when pushed into dataStore
+- Issues: I think more rigorous testing needs to be done for quizCreate.
+- Whats next: waiting on next iteration.
 
-Some changes made: -QuizCreate added ownedQuizzes key into users
-
--authUserId standardised to usedId when pushed into dataStore
-
-Issues: I think more rigorous testing needs to be done for quizCreate.
-
-Whats next: waiting on next iteration.
 Week 4 Shannon
-Made changes to adminAuthLogin and AdminQuizRemove tests
-Change domain of emails to for correct casts
-Fixing code for the functions to pass all tests
+- Made changes to adminAuthLogin and AdminQuizRemove tests
+- Change domain of emails to for correct casts
+- Fixing code for the functions to pass all tests
 
+Week 4 Timothy
+- Worked on adminQuizList and adminQuizInfo and test functions for adminUserDetails and adminUserRegister.
+- Fixing the implemention of adminQuizCreate and adminQuizNameUpdate
+- Going to fix tests for adminQuizList and adminQuizInfo
+
+Week 4 Shannon
+- Finalised adminAuthLogin and AdminQuizRemove tests (changed beforeEach conditions)
+- Finalised and merged adminAuthLogin and AdminQuizRemove (now tracks number of successful/failed logins + removes quiz from both quizzes and quizzes owned)
+- Ready for next iteration
+
+* Week 5 Meeting 11/10/23 19:30 2hrs
+- Discussed our progress in lab05 since we need it for iteration 2
+- Merged Iteration 2 and then discussed everything as a group, sent questions we had about it to Tam
+- Ordered the functions and what we had to do. changed our method from assigning work to people to just having a spreadsheet of what needs to be done and anyone can work on it
 
 ### This is header 3
 
