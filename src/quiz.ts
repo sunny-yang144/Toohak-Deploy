@@ -17,6 +17,7 @@ import { getData, setData, User, Quiz } from './dataStore'
  */
 interface ErrorObject {
   error: string;
+  statusCode: number;
 }
 interface adminQuizListReturn {
   quizzes: Quiz[]
@@ -35,7 +36,7 @@ interface adminQuizInfoReturn {
 }
 interface adminQuizRemoveReturn {}
 interface adminQuizNameUpdateReturn {}
-interface adminQuizDescriptionUpdate {}
+interface adminQuizDescriptionUpdateReturn {}
 
 
 export const adminQuizList = ( authUserId: number ): adminQuizListReturn | ErrorObject => {
@@ -44,7 +45,7 @@ export const adminQuizList = ( authUserId: number ): adminQuizListReturn | Error
   const user = data.users.find(user => user.userId === authUserId);
   // Check whether authUsedId is valid
   if (!user) {
-    return { error: `The user ID ${authUserId} is invalid!` };
+    return { error: `The user ID ${authUserId} is invalid!`, statusCode: 401 };
   };
   const quizzes = [];
   // Iterate through users quizzes and add their information to an array
@@ -66,25 +67,25 @@ export const adminQuizCreate = ( authUserId: number, name: string, description: 
   let user = data.users.find(user => user.userId === authUserId);
   // Check whether authUsedId is valid
   if (!user) {
-    return { error: `The user ID ${authUserId} is invalid!` };
+    return { error: `The user ID ${authUserId} is invalid!`, statusCode: 401 };
   };
   // Checks for invalid characters
   if (!isAlphanumericWithSpaces(name)) {
-    return { error: `The quiz name ${name} contains invalid characters.` };
+    return { error: `The quiz name ${name} contains invalid characters.`, statusCode: 400 };
   }
   // Check if name is less than 3 characters long, or more than 30
   // characters long
   if (name.length < 3 || name.length > 30) {
-    return { error: `The quiz name ${name} is of invalid length.` };
+    return { error: `The quiz name ${name} is of invalid length.`, statusCode: 400 };
   }
   // Check if the quiz name is already used by the current logged in user for
   // another quiz
   if (data.quizzes.find(quiz => quiz.ownerId === authUserId && quiz.name === name)) {
-    return { error: `User ID ${authUserId} already has quiz with name: ${name}` };
+    return { error: `User ID ${authUserId} already has quiz with name: ${name}`, statusCode: 400 };
   }
   // Check if description length is more than 100 characters
   if (description.length > 100) {
-    return { error: `Description is more than 100 characters.` };
+    return { error: `Description is more than 100 characters.`, statusCode: 400 };
   }
 
   // Add new quiz
@@ -132,15 +133,15 @@ export const adminQuizInfo = ( authUserId: number, quizId: number ): adminQuizIn
   let user = data.users.find(user => user.userId === authUserId);
   // Check whether authUsedId is valid
   if (!user) {
-    return { error: `The user ID ${authUserId} is invalid!` };
+    return { error: `The user ID ${authUserId} is invalid!`, statusCode: 401};
   };
   // Check whether quiz with quizId exists
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
-    return { error: `The quiz Id ${quizId} is invalid!`};
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400};
   };
   // Check whether quiz with quizId is owned by user with authUserId
   if (!user.ownedQuizzes.includes(quizId)) {
-    return { error: `This quiz ${quizId} is not owned by this User!`};
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403};
   };
   // Find quiz with the inputted Id
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
@@ -170,17 +171,17 @@ export const adminQuizRemove = ( authUserId: number, quizId: number ): adminQuiz
   const user = data.users.find(userFind => userFind.userId === authUserId);
   // Error, no authUserId found in users
   if (!user) {
-    return { error: `Given authUserId ${authUserId} is not valid` }
+    return { error: `Given authUserId ${authUserId} is not valid`, statusCode: 401 }
   };
   // Error, no quizId found in quizzes
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
   if (quizIndex === -1) {
-    return { error: `Given quizId ${quizId} is not valid` }   
+    return { error: `Given quizId ${quizId} is not valid`, statusCode: 400}   
   };
   // Error, userId does not own quizId
   const ownQuizIndex = user.ownedQuizzes.findIndex(ownQuiz => ownQuiz === quizId);
   if (ownQuizIndex === -1) {
-    return { error: `Given authUserId ${authUserId} does not own quiz ${quizId}` }
+    return { error: `Given authUserId ${authUserId} does not own quiz ${quizId}`, statusCode: 403 }
   };
   // Success, remove quiz then return empty
   data.quizzes.splice(quizIndex, 1);
@@ -210,32 +211,32 @@ export const adminQuizRemove = ( authUserId: number, quizId: number ): adminQuiz
  * @returns {{}} | errorMessage
  */
 
-export const adminQuizNameUpdate = ( authUserId: number, quizId: number, name: string ): adminQuizNameUpdatereturn | ErrorObject => {
+export const adminQuizNameUpdate = ( authUserId: number, quizId: number, name: string ): adminQuizNameUpdateReturn | ErrorObject => {
   let data = getData();
 
   let user = data.users.find(user => user.userId === authUserId);
 
   if (!user) {
-    return { error: `The user ID ${authUserId} is invalid!` };
+    return { error: `The user ID ${authUserId} is invalid!`, statusCode: 401 };
   };
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
-    return { error: `The quiz Id ${quizId} is invalid!`};
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   };
-  if (!user.ownedQuizzes.includes(quizId)) {
-    return { error: `This quiz ${quizId} is not owned by this User!`};
+  if (!user.ownedQuizzes.includes(quizId)) { 
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   };
   if (!isAlphanumericWithSpaces(name)) {
-    return { error: `The name ${name} contains invalid characters`};
+    return { error: `The name ${name} contains invalid characters`, statusCode: 400 };
   };
   if (name.length < 3) {
-    return { error: `The name ${name} is too short (>2).` };
+    return { error: `The name ${name} is too short (>2).`, statusCode: 400 };
   };
   if (name.length > 30) {
-    return { error: `The name ${name} is too long (<30).` };
+    return { error: `The name ${name} is too long (<30).`, statusCode: 400 };
   };
 
   if (data.quizzes.find(quiz => quiz.ownerId === authUserId && quiz.name === name)) {
-    return { error: `The name ${name} is already used by another quiz!` };
+    return { error: `The name ${name} is already used by another quiz!`, statusCode: 400 };
   };
 
   // goto the quiz object with matching id, and change name.
@@ -281,16 +282,16 @@ export const adminQuizDescriptionUpdate = ( authUserId: number, quizId: number, 
   let user = data.users.find(user => user.userId === authUserId);
 
   if (!user) {
-    return { error: `The user ID ${authUserId} is invalid!` };
+    return { error: `The user ID ${authUserId} is invalid!`, statusCode: 401 };
   };  
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
-    return { error: `The quiz Id ${quizId} is invalid!`};
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   };
   if (!user.ownedQuizzes.includes(quizId)) {
-    return { error: `This quiz ${quizId} is not owned by this User!`};
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   };
   if (description.length > 100) {
-    return { error: 'Description is too long (<100)!'};
+    return { error: 'Description is too long (<100)!', statusCode: 400 };
   }
 
   // goto the quiz object with matching id, and change description.
