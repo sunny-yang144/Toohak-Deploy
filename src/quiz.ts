@@ -1,4 +1,5 @@
 import { getData, setData, User, Quiz } from './dataStore'
+import validator from 'validator';
 
 
 /**
@@ -49,7 +50,7 @@ export const adminQuizList = ( authUserId: number ): adminQuizListReturn | Error
   };
   const quizzes = [];
   // Iterate through users quizzes and add their information to an array
-  for (let quizId of user.ownedQuizzes) {
+  for (const quizId of user.ownedQuizzes) {
     const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
     // The "quiz" object that will go into the quizzes array
     const quizObject = {

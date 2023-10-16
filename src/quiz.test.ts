@@ -1,6 +1,7 @@
 import request from 'sync-request-curl';
 
 import { port, url } from './config.json';
+import { adminQuizInfo } from './quiz';
 const SERVER_URL = `${url}:${port}`;
 
 // Clears any lingering data elements before each test group
@@ -224,7 +225,7 @@ describe('Tests for adminQuizCreate', () => {
     expect(result.statusCode).toStrictEqual(400);
 	});
 	test('More Than 30 Characters', () => {
-		expect(adminQuizCreate(user.authUserId, 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh1', validDetails.QUIZDESCRIPITON)).toStrictEqual({error: expect.any(String)}); // 'Name Too Long'
+		expect(adminQuizCreate(user.authUserId, 'h'.repeat(31), validDetails.QUIZDESCRIPITON)).toStrictEqual({error: expect.any(String)}); // 'Name Too Long'
     expect(result.statusCode).toStrictEqual(400);
 	});
 	test('Existing Quiz', () => {
@@ -342,17 +343,17 @@ describe('Tests for adminQuizInfo', () => {
     expect(result.statusCode).toStrictEqual(400);
   });
   
-  test('Successful retrival of quiz info', () => {
+  test('Successful retrieval of quiz info', () => {
     const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
 
     expect(adminQuizInfo(user.authUserId, quiz.quizId)).toStrictEqual(
       {
         quizId: quiz.quizId,
-        name: expect.any(String),
-        timeCreated: expect.any(Number),
-        timeLastEdited: expect.any(Number),
-        description: expect.any(String),
+        name: quiz.name,
+        timeCreated: quiz.timeCreated,
+        timeLastEdited: quiz.timeLastEdited,
+        description: quiz.description,
       }
     );
     expect(result.statusCode).toStrictEqual(200);
@@ -366,19 +367,19 @@ describe('Tests for adminQuizInfo', () => {
     expect(adminQuizInfo(user.authUserId, quiz1.quizId)).toStrictEqual(
       {
         quizId: quiz1.quizId,
-        name: expect.any(String),
-        timeCreated: expect.any(Number),
-        timeLastEdited: expect.any(Number),
-        description: expect.any(String),
+        name: quiz1.name,
+        timeCreated: quiz1.timeCreated,
+        timeLastEdited: quiz1.timeLastEdited,
+        description: quiz1.description,
       }
     );
     expect(adminQuizInfo(user.authUserId, quiz2.quizId)).toStrictEqual(
       {
         quizId: quiz2.quizId,
-        name: expect.any(String),
-        timeCreated: expect.any(Number),
-        timeLastEdited: expect.any(Number),
-        description: expect.any(String),
+        name: quiz2.name,
+        timeCreated: quiz2.timeCreated,
+        timeLastEdited: quiz2.timeLastEdited,
+        description: quiz2.description,
       }
     );
     expect(result.statusCode).toStrictEqual(200);
@@ -459,6 +460,13 @@ describe('Tests for adminQuizDescriptionUpdate', () => {
     const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
     expect(adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, 'Valid Description')).toStrictEqual({}); // Returns {} on success
+    expect(adminQuizInfo(user.authUserId, quiz.quizId)).toStrictEqual({
+        quizId: quiz.quizId,
+        name: quiz.name,
+        timeCreated: quiz.timeCreated,
+        timeLastEdited: quiz.timeLastEdited,
+        description: quiz.description,
+    })
     expect(result.statusCode).toStrictEqual(200);
   })
 
@@ -487,7 +495,7 @@ describe('Tests for adminQuizDescriptionUpdate', () => {
   test('Name is More than 100 characters', () => {
     const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, 'theGivenUpdatedNameIsWaaaaaaaaaaaaaaaaaaaaaaayTooLong'
+    expect(adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, 'c'.repeat(101)
     + 'RanOutOfThingsToTypeSoHereIGoOnRambling' + 'ReallyHopeThisIsEnough')).toStrictEqual({error: expect.any(String)}); // Updated quiz description is too long (>100)
     expect(result.statusCode).toStrictEqual(400);
   });
