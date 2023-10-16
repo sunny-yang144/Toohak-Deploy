@@ -101,7 +101,7 @@ export const adminQuizCreate = ( authUserId: number, name: string, description: 
     timeLastEdited: unixtimeSeconds
   };
 
-  user.ownedQuizzes.push(newQuiz.quizId)
+  user.ownedQuizzes.push(newQuiz);
 
   data.quizzes.push(newQuiz);
   setData(data);
@@ -140,7 +140,7 @@ export const adminQuizInfo = ( authUserId: number, quizId: number ): adminQuizIn
     return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400};
   };
   // Check whether quiz with quizId is owned by user with authUserId
-  if (!user.ownedQuizzes.includes(quizId)) {
+  if (!user.ownedQuizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403};
   };
   // Find quiz with the inputted Id
@@ -222,8 +222,8 @@ export const adminQuizNameUpdate = ( authUserId: number, quizId: number, name: s
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   };
-  if (!user.ownedQuizzes.includes(quizId)) { 
-    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
+  if (!user.ownedQuizzes.some(quiz => quiz.quizId === quizId)) {
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403};
   };
   if (!isAlphanumericWithSpaces(name)) {
     return { error: `The name ${name} contains invalid characters`, statusCode: 400 };
@@ -287,8 +287,8 @@ export const adminQuizDescriptionUpdate = ( authUserId: number, quizId: number, 
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   };
-  if (!user.ownedQuizzes.includes(quizId)) {
-    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
+  if (!user.ownedQuizzes.some(quiz => quiz.quizId === quizId)) {
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403};
   };
   if (description.length > 100) {
     return { error: 'Description is too long (<100)!', statusCode: 400 };
