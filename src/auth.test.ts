@@ -6,7 +6,7 @@ const SERVER_URL = `${url}:${port}`;
 function requestAdminAuthRegister (email: string, password: string, nameFirst: string, nameLast: string) {
   const res = request(
     'POST',
-    SERVER_URL + 'admin/auth/register',
+    SERVER_URL + '/v1/admin/auth/register',
     {
       json: {
         email,
@@ -24,7 +24,7 @@ function requestAdminAuthRegister (email: string, password: string, nameFirst: s
 function requestAdminAuthLogin (email: string, password: string) {
   const res = request(
     'POST',
-    SERVER_URL + 'admin/auth/login',
+    SERVER_URL + '/v1/admin/auth/login',
     {
       json: {
         email,
@@ -40,7 +40,7 @@ function requestAdminAuthLogin (email: string, password: string) {
 function requestAdminUserDetails (authUserId: number) {
   const res = request(
     'GET',
-    SERVER_URL + 'admin/auth/details',
+    SERVER_URL + '/v1/admin/auth/details',
     {
       qs: {}
     }

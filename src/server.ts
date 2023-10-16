@@ -82,6 +82,19 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   res.json(response);
 });
 
+app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  const response = adminQuizList(token);
+
+  if ('error in response') {
+    return res.status(response.statusCode).json(response);
+  }
+  res.json(response);
+});
+
+app.post('/v1/admin/quiz')
+
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================

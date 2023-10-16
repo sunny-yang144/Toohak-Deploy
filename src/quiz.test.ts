@@ -8,7 +8,7 @@ const SERVER_URL = `${url}:${port}`;
 function requestAdminQuizList ( authUserId: number ) {
   const res = request(
     'GET',
-    SERVER_URL + 'admin/quiz/list',
+    SERVER_URL + '/v1/admin/quiz/list',
     {
       qs: {}
     }
@@ -22,7 +22,7 @@ function requestAdminQuizList ( authUserId: number ) {
 function requestAdminQuizCreate (authUserId: number, name: string, description: string) {
   const res = request(
     'POST',
-    SERVER_URL + 'admin/quiz',
+    SERVER_URL + '/v1/admin/quiz',
     {
       json: {
         authUserId,
@@ -39,7 +39,7 @@ function requestAdminQuizCreate (authUserId: number, name: string, description: 
 function requestAdminQuizInfo (authUserId: number, quizId: number ) {
   const res = request(
     'GET',
-    SERVER_URL + `admin/quiz/${quizId}`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}`,
     {
       qs: {}
     }
@@ -52,7 +52,7 @@ function requestAdminQuizInfo (authUserId: number, quizId: number ) {
 function requestAdminQuizRemove (authUserId: number, quizId: number ) {
   const res = request(
     'DELETE',
-    SERVER_URL + `admin/quiz/${quizId}`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}`,
     {
       qs: {}
     }
@@ -65,7 +65,7 @@ function requestAdminQuizRemove (authUserId: number, quizId: number ) {
 function requestAdminQuizNameUpdate (authUserId: number, quizId: number, name: string) {
   const res = request(
     'PUT',
-    SERVER_URL + `admin/quiz/${quizId}/name`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/name`,
     {
       json: {
         name,
@@ -80,7 +80,7 @@ function requestAdminQuizNameUpdate (authUserId: number, quizId: number, name: s
 function requestAdminQuizDescriptionUpdate (authUserId: number, quizId: number, description: string) {
   const res = request(
     'PUT',
-    SERVER_URL + `admin/quiz/${quizId}/description`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/description`,
     {
       json: {
         description,
