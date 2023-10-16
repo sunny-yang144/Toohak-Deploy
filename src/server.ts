@@ -32,13 +32,54 @@ const HOST: string = process.env.IP || 'localhost';
 // ====================================================================
 
 // Example get request
+/*
 app.get('/echo', (req: Request, res: Response) => {
-  const data = req.query.echo as string;
-  const ret = echo(data);
-  if ('error' in ret) {
-    res.status(400);
+  const message = req.query.echo as string;
+  const response = echo(message);
+  if ('error' in response) {
+    return res.status(response.statusCode).json({
+      error: response.error
+    });    // when implementing functions add a status code along with the error
   }
-  return res.json(ret);
+  return res.json(response);
+});
+*/
+
+// ========================================================================= //
+// SERVER ROUTES
+// ========================================================================= //
+
+app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
+  const { email, password, nameFirst, nameLast } = req.body;
+
+  const response = adminAuthRegister(email, password, nameFirst, nameLast);
+
+  if ('error' in response) {
+    return res.status(response.statusCode).json(response);
+  }
+  res.json(response);
+});
+
+app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  const response = adminAuthLogin(email, password);
+
+  if ('error' in response) {
+    return res.status(response.statusCode).json(response);
+  }
+  res.json(response);
+});
+
+app.get('/v1/admin/user/details', (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  const response = adminUserDetails(token);
+
+  if ('error' in response) {
+    return res.status(response.statusCode).json(response);
+  }
+  res.json(response);
 });
 
 // ====================================================================
