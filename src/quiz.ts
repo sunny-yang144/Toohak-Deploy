@@ -141,7 +141,7 @@ export const adminQuizInfo = ( authUserId: number, quizId: number ): adminQuizIn
   };
   // Check whether quiz with quizId is owned by user with authUserId
   if (!user.ownedQuizzes.some(quiz => quiz.quizId === quizId)) {
-    return { error: `This quiz ${quizId} is not owned by this User!`};
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403};
   };
   // Find quiz with the inputted Id
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
@@ -223,7 +223,7 @@ export const adminQuizNameUpdate = ( authUserId: number, quizId: number, name: s
     return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   };
   if (!user.ownedQuizzes.some(quiz => quiz.quizId === quizId)) {
-    return { error: `This quiz ${quizId} is not owned by this User!`};
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403};
   };
   if (!isAlphanumericWithSpaces(name)) {
     return { error: `The name ${name} contains invalid characters`, statusCode: 400 };
@@ -288,7 +288,7 @@ export const adminQuizDescriptionUpdate = ( authUserId: number, quizId: number, 
     return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   };
   if (!user.ownedQuizzes.some(quiz => quiz.quizId === quizId)) {
-    return { error: `This quiz ${quizId} is not owned by this User!`};
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403};
   };
   if (description.length > 100) {
     return { error: 'Description is too long (<100)!', statusCode: 400 };
