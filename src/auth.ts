@@ -77,9 +77,8 @@ export const adminUserDetails = (authUserId: number): adminUserDetailsReturn | E
   const user = data.users.find(user => user.userId === authUserId);
   if (!user) {
     return {error: 'This is not a valid UserId', statusCode: 401}
-  } else {
-    return { user }
-  }
+  } 
+  return { user }
 }
 /* 
 Returns authUserId given a valid registered user email and password

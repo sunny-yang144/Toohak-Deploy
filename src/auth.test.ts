@@ -131,7 +131,7 @@ describe('Tests for adminAuthRegister', () => {
   test('Error when Namefirst is too long', () => {
     // This occurs when NameFirst is longer than 20 characters
     expect(requestAdminAuthRegister
-      (validDetails.EMAIL, validDetails.PASSWORD, 'ThisIsAVeryLongNameBanned', validDetails.NAMELAST)).toStrictEqual
+      (validDetails.EMAIL, validDetails.PASSWORD, 'a'.repeat(21), validDetails.NAMELAST)).toStrictEqual
       ({ error: expect.any(String)}); //"This is not a valid first name"
       expect(result.statusCode).toStrictEqual(400);
   });
@@ -156,7 +156,7 @@ describe('Tests for adminAuthRegister', () => {
   test('Error when Namelast is too long', () => {
     // This occurs when NameLast is longer than 20 characters
     expect(requestAdminAuthRegister
-      (validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, 'ThisLastNameIsWayTooLong')).toStrictEqual
+      (validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, 'a'.repeat(21))).toStrictEqual
       ({ error: expect.any(String)}); //"This is not a valid last name"
       expect(result.statusCode).toStrictEqual(400);
   });
