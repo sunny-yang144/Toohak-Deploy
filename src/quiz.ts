@@ -100,7 +100,7 @@ export const adminQuizCreate = ( authUserId: number, name: string, description: 
     timeLastEdited: unixtimeSeconds
   };
 
-  user.ownedQuizzes.push(newQuiz.quizId)
+  user.ownedQuizzes.push(newQuiz);
 
   data.quizzes.push(newQuiz);
   setData(data);
@@ -139,7 +139,7 @@ export const adminQuizInfo = ( authUserId: number, quizId: number ): adminQuizIn
     return { error: `The quiz Id ${quizId} is invalid!`};
   };
   // Check whether quiz with quizId is owned by user with authUserId
-  if (!user.ownedQuizzes.includes(quizId)) {
+  if (!user.ownedQuizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `This quiz ${quizId} is not owned by this User!`};
   };
   // Find quiz with the inputted Id
@@ -221,7 +221,7 @@ export const adminQuizNameUpdate = ( authUserId: number, quizId: number, name: s
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `The quiz Id ${quizId} is invalid!`};
   };
-  if (!user.ownedQuizzes.includes(quizId)) {
+  if (!user.ownedQuizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `This quiz ${quizId} is not owned by this User!`};
   };
   if (!isAlphanumericWithSpaces(name)) {
@@ -286,7 +286,7 @@ export const adminQuizDescriptionUpdate = ( authUserId: number, quizId: number, 
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `The quiz Id ${quizId} is invalid!`};
   };
-  if (!user.ownedQuizzes.includes(quizId)) {
+  if (!user.ownedQuizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `This quiz ${quizId} is not owned by this User!`};
   };
   if (description.length > 100) {

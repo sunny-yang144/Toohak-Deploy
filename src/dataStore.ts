@@ -16,6 +16,28 @@ export interface Quiz {
   timeLastEdited: number;
   description: string;
 }
+// We need to add array of questions and array of answers Iteration 2 functions
+// 
+/*
+"numQuestions": 1,
+  "questions": [
+    {
+      "questionId": 5546,
+      "question": "Who is the Monarch of England?",
+      "duration": 4,
+      "points": 5,
+      "answers": [
+        {
+          "answerId": 2384,
+          "answer": "Prince Charles",
+          "colour": "red",
+          "correct": true
+        }
+      ]
+    }
+  ],
+  "duration": 44
+*/
 
 interface DataStore {
   users: User[],
