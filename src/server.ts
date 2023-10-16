@@ -93,7 +93,69 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   res.json(response);
 });
 
-app.post('/v1/admin/quiz')
+app.post('/v1/admin/quiz', (req: Request, res: Response) => {
+  const { token, name, description } = req.body;
+
+  const response = adminQuizCreate(token, name, description);
+
+  if ('error' in response) {
+    return res.status(response.statusCode).json(response);
+  }
+  res.json(response);
+});
+
+app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token } = req.body;
+
+  const response = adminQuizRemove(token, quizId);
+
+  if ('error' in response) {
+    return res.status(response.statusCode).json(response);
+  }
+  res.json(response);
+});
+
+app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token } = req.body;
+
+  const response = adminQuizInfo(token, quizId);
+
+  if ('error' in response) {
+    return res.status(response.status).json(response);
+  }
+  res.json(response);
+});
+
+app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token, name } = req.body;
+  
+  const response = adminQuizNameUpdate(token, quizId, name);
+
+  if ('error' in response) {
+    return res.status(response.status).json(response);
+  }
+  res.json(response);
+});
+
+app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token, description } = req.body;
+  
+  const response = adminQuizDescriptionUpdate(token, quizId, description);
+
+  if ('error' in response) {
+    return res.status(response.status).json(response);
+  }
+  res.json(response);
+});
+
+app.delete('/v1/clear', (req: Request, res: Response) => {
+  const response = clear();
+  res.json(response);
+});
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
