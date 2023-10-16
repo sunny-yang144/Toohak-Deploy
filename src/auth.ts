@@ -4,6 +4,7 @@ import { getData, setData, User, Quiz } from './dataStore'
 
 interface ErrorObject {
   error: string;
+  statusCode: number;
 }
 interface adminUserDetailsReturn {
   user: {
@@ -26,34 +27,34 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
   const searchEmail = data.users.find(searchEmail => searchEmail.email === email);
   
   if (searchEmail) {
-    return {error: 'This email is already in use'}
+    return {error: 'This email is already in use', statusCode: 400}
   }
   if (!validator.isEmail(email)) {
-    return {error: 'This is not a valid email'}
+    return {error: 'This is not a valid email', statusCode: 400}
   }
   var pattern = /^[a-zA-Z\s\-']+$/;
   if (!pattern.test(nameFirst)) {
-    return {error: 'This is not a valid first name'}
+    return {error: 'This is not a valid first name', statusCode: 400}
   }
   const firstNameLength = nameFirst.length;
   if ((firstNameLength < 2) || (firstNameLength > 20)) {
-    return {error: 'This is not a valid first name'}
+    return {error: 'This is not a valid first name', statusCode: 400}
   }
   if (!pattern.test(nameLast)) {
-    return {error: 'This is not a valid last name'}
+    return {error: 'This is not a valid last name', statusCode: 400}
   }
   const lastNameLength = nameLast.length;
   if ((lastNameLength < 2) || (lastNameLength > 20)) {
-    return {error: 'This is not a valid last name'}
+    return {error: 'This is not a valid last name', statusCode: 400}
   }
   const passwordLength = password.length;
   if (passwordLength < 8) {
-    return {error: 'This is not a valid password'}
+    return {error: 'This is not a valid password', statusCode: 400}
   }
   const letterCheck = /[a-zA-Z]/;
   const numberCheck= /\d/;
   if (!(letterCheck.test(password) && numberCheck.test(password))) {
-    return {error: 'This is not a valid password'}
+    return {error: 'This is not a valid password', statusCode: 400}
   }
   const userId = data.users.length;
   const user = {
@@ -75,7 +76,7 @@ export const adminUserDetails = (authUserId: number): adminUserDetailsReturn | E
   let data = getData();
   const user = data.users.find(user => user.userId === authUserId);
   if (!user) {
-    return {error: 'This is not a valid UserId'}
+    return {error: 'This is not a valid UserId', statusCode: 401}
   } else {
     return { user }
   }
@@ -88,18 +89,14 @@ Returns error if:
 */
 export const adminAuthLogin = (email: string, password: string ): adminAuthLoginReturn | ErrorObject => {
   let data = getData();
-  // Find user with email
   const user = data.users.find(user => user.email === email);
-  // First check if email is valid
   if (!user) {
-    return { error: `The given email ${email} does not exist`};
+    return { error: `The given email ${email} does not exist`, statusCode: 400};
   }
-  // Then check if password is correct for email
   if (user.password !== password) {
     user.numFailedPasswordsSinceLastLogin += 1;
-    return { error: 'Incorrect password'};
+    return { error: 'Incorrect password', statusCode: 400};
   }
-  // Return authUserId if success, reset login count
   user.numFailedPasswordsSinceLastLogin = 0;
   user.numSuccessfulLogins += 1;
   
