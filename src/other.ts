@@ -1,4 +1,4 @@
-import { setData, Token, User, DataStore } from './dataStore'
+import { setData, getData, Token, User, DataStore } from './dataStore'
 
 export function clear (): Record<string, never> {
   setData({
@@ -16,7 +16,7 @@ export function clear (): Record<string, never> {
  * 
  * @returns { Number } Max + 1
  */
-function generateId (idArray: Token[]) {
+export function generateId (idArray: Token[]) {
   if (idArray.length === 0) {
     return 0;
   }
@@ -31,14 +31,14 @@ function generateId (idArray: Token[]) {
 
 /**
  * 
- * @param { DataStore } data 
  * @param { User } user 
  * Generates a sessionId, makes a new token and pushes it to the respective user,
  * then pushes to a tokens array with a reference to the user who owns the token.
  * 
  * @returns { Number } Token
  */
-export function generateToken (data: DataStore, user: User) {
+export function generateToken (user: User) {
+  let data = getData();
   const sessionId = generateId(data.tokens);
   const token = {
     sessionId: sessionId,
@@ -46,5 +46,6 @@ export function generateToken (data: DataStore, user: User) {
   };
   user.tokens.push(token);
   data.tokens.push(token);
+  setData(data);
   return token;
 }

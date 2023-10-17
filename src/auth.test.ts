@@ -42,7 +42,9 @@ function requestAdminUserDetails (token: number) {
     'GET',
     SERVER_URL + '/v1/admin/user/details',
     {
-      qs: {}
+      qs: { 
+        token 
+      }
     }
   );
   return {
@@ -217,8 +219,8 @@ describe('Tests for adminUserDetails', () => {
   test('Succesful accessing of a users details', () => {
     //If there user id exists, then return user details.
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-
-    expect(requestAdminUserDetails(user.body.token)).toStrictEqual(
+    const response = requestAdminUserDetails(user.body.token);
+    expect(response.body).toStrictEqual(
       { user:
         {
           userId: expect.any(Number),
@@ -229,15 +231,15 @@ describe('Tests for adminUserDetails', () => {
         }
       }
     ); 
-    expect(user.statusCode).toStrictEqual(200);
+    expect(response.statusCode).toStrictEqual(200);
   });
 
   test('Error when an invalid id is passed', () => {
-    // We know that there are no ids are valid since clear has been run so
+    // We know that there are no tokens which are valid since clear has been run so
     // an arbitrary number can be chosen.
-    const user = requestAdminUserDetails(1);
-    expect(user).toStrictEqual({ error: expect.any(String) }); // "This is not a valid UserId" 
-    expect(user.statusCode).toStrictEqual(400);
+    const response = requestAdminUserDetails(1);
+    expect(response.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid UserId" 
+    expect(response.statusCode).toStrictEqual(401);
   });
 });
 
