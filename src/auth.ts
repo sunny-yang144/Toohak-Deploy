@@ -1,5 +1,5 @@
 import validator from 'validator';
-import { getData, setData, User, Quiz } from './dataStore'
+import { getData, setData, User, Quiz, generateToken } from './dataStore'
 
 
 interface ErrorObject {
@@ -66,20 +66,14 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
     numSuccessfulLogins: 0,
     numFailedPasswordsSinceLastLogin: 0,
     ownedQuizzes: [],
+    tokens: [],
   };
   data.users.push(user);
+
+  generateToken(data, user);
+
   setData(data);
-  
-  return { userId }
-}
-export const adminUserDetails = (authUserId: number): adminUserDetailsReturn | ErrorObject => {
-  let data = getData();
-  const user = data.users.find(user => user.userId === authUserId);
-  if (!user) {
-    return {error: 'This is not a valid UserId', statusCode: 401}
-  } else {
-    return { user }
-  }
+  return { token: sessionId }
 }
 /* 
 Returns authUserId given a valid registered user email and password
@@ -100,7 +94,26 @@ export const adminAuthLogin = (email: string, password: string ): adminAuthLogin
   user.numFailedPasswordsSinceLastLogin = 0;
   user.numSuccessfulLogins += 1;
   
-  return {
-    authUserId: user.userId
-  };
+  generateToken(data, user);
+
+  setData(data);
+  return { token: sessionId };
+}
+
+export const adminUserDetails = (token: number): adminUserDetailsReturn | ErrorObject => {
+  let data = getData();
+  const validToken = data.tokens.find(valToken => token.sessionId === token);
+  const loginUser = validToken.user;
+  if (!validToken) {
+    return {error: 'This is not a valid user token', statusCode: 401}
+  } else {
+    user = {
+      userId: loginUser.userId,
+      name: loginUser.name,
+      email: loginUser.email,
+      numSuccessfulLogins: loginUser.numSuccessfulLogins,
+      numFailedPasswordsSinceLastLogin: loginUser.numFailedPasswordsSinceLastLogin,
+    }
+    return { user }
+  }
 }

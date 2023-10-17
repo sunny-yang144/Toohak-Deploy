@@ -8,6 +8,7 @@ export interface User {
   numSuccessfulLogins: number,
   numFailedPasswordsSinceLastLogin: number,
   ownedQuizzes: Quiz[],
+  tokens: Token[],       // If we have a user, we can check what token they are assigned.
 }
 export interface Quiz {
   quizId: number;
@@ -39,8 +40,14 @@ export interface Quiz {
   "duration": 44
 */
 
+interface Token {
+  sessionId: number;
+  user: User;     // Associate a user from a inputted token.
+}
+
 interface DataStore {
   users: User[],
+  tokens: Token[]     // Valid tokens, allows server to search existing tokens.
 }
 let dataStore: DataStore = {
   users: [],
