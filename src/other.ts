@@ -9,6 +9,9 @@ export function clear (): Record<string, never> {
 }
 
 function generateId (idArray: Token[]) {
+  if (idArray.length === 0) {
+    return 0;
+  }
   let max = idArray[0].sessionId;
   for (const token of idArray) {
     if (token.sessionId > max) {
