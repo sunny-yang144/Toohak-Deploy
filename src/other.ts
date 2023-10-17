@@ -1,4 +1,4 @@
-import { setData } from './dataStore.ts'
+import { setData, Token, User, DataStore } from './dataStore'
 
 export function clear (): Record<string, never> {
   setData({
@@ -26,4 +26,5 @@ export function generateToken (data: DataStore, user: User) {
   };
   user.tokens.push(token);
   data.tokens.push(token);
+  return token;
 }

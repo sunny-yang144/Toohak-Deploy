@@ -40,17 +40,18 @@ export interface Quiz {
   "duration": 44
 */
 
-interface Token {
+export interface Token {
   sessionId: number;
   user: User;     // Associate a user from a inputted token.
 }
 
-interface DataStore {
+export interface DataStore {
   users: User[],
   tokens: Token[]     // Valid tokens, allows server to search existing tokens.
 }
 let dataStore: DataStore = {
   users: [],
+  tokens: [],
 }
 function setData(newData: DataStore) {
   dataStore = newData;

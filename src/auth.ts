@@ -1,5 +1,6 @@
 import validator from 'validator';
-import { getData, setData, User, Quiz, generateToken } from './dataStore'
+import { getData, setData, User, Quiz } from './dataStore'
+import { generateToken } from './other'
 
 
 interface ErrorObject {
@@ -16,10 +17,10 @@ interface adminUserDetailsReturn {
   }
 }
 interface adminAuthRegisterReturn {
-  authUserId: number
+  token: number
 }
 interface adminAuthLoginReturn {
-  authUserId: number
+  token: number
 }
 
 export const adminAuthRegister = (email: string, password: string, nameFirst: string, nameLast: string): adminAuthRegisterReturn | ErrorObject => {
@@ -57,7 +58,7 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
     return {error: 'This is not a valid password', statusCode: 400}
   }
   const userId = data.users.length;
-  const user = {
+  const user: User = {
     userId: userId,
     email: email,
     nameFirst: nameFirst,
@@ -70,7 +71,8 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
   };
   data.users.push(user);
 
-  generateToken(data, user);
+  const token = generateToken(data, user);
+  const sessionId = token.sessionId;
 
   setData(data);
   return { token: sessionId }
@@ -94,7 +96,8 @@ export const adminAuthLogin = (email: string, password: string ): adminAuthLogin
   user.numFailedPasswordsSinceLastLogin = 0;
   user.numSuccessfulLogins += 1;
   
-  generateToken(data, user);
+  const token = generateToken(data, user);
+  const sessionId = token.sessionId;
 
   setData(data);
   return { token: sessionId };
@@ -102,14 +105,14 @@ export const adminAuthLogin = (email: string, password: string ): adminAuthLogin
 
 export const adminUserDetails = (token: number): adminUserDetailsReturn | ErrorObject => {
   let data = getData();
-  const validToken = data.tokens.find(valToken => token.sessionId === token);
+  const validToken = data.tokens.find(valToken => valToken.sessionId === token);
   const loginUser = validToken.user;
   if (!validToken) {
     return {error: 'This is not a valid user token', statusCode: 401}
   } else {
-    user = {
+    const user = {
       userId: loginUser.userId,
-      name: loginUser.name,
+      name: `${loginUser.nameFirst} ${loginUser.nameLast}`,
       email: loginUser.email,
       numSuccessfulLogins: loginUser.numSuccessfulLogins,
       numFailedPasswordsSinceLastLogin: loginUser.numFailedPasswordsSinceLastLogin,
