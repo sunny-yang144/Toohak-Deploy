@@ -40,7 +40,7 @@ function requestAdminAuthLogin (email: string, password: string) {
 function requestAdminUserDetails (token: number) {
   const res = request(
     'GET',
-    SERVER_URL + '/v1/admin/auth/details',
+    SERVER_URL + '/v1/admin/user/details',
     {
       qs: {}
     }
@@ -102,7 +102,7 @@ describe('Tests for adminAuthRegister', () => {
     clear();
   }); 
 
-  test.only('Successful User Created when given valid parameters', () => {
+  test('Successful User Created when given valid parameters', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     expect(user.body).toStrictEqual({ token: expect.any(Number) }); 
     expect(user.statusCode).toStrictEqual(200);
@@ -127,7 +127,7 @@ describe('Tests for adminAuthRegister', () => {
   test('Error when non-valid characters are used in Namefirst', () => {
     // These non-valid characters are characters other than lowercase letters, 
     // uppercase letters, spaces, hyphens, or apostrophes.
-    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, 'Виктор', validDetails.NAMELAST);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, '0000', validDetails.NAMELAST);
     expect(user.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid first name"
     expect(user.statusCode).toStrictEqual(400);
   });
@@ -149,7 +149,7 @@ describe('Tests for adminAuthRegister', () => {
   test('Error when non-valid characters are used in NameLast', () => {
     // These non-valid characters are characters other than lowercase letters, 
     // uppercase letters, spaces, hyphens, or apostrophes.
-    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, 'хлеб');
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, '0000');
     expect(user.body).toStrictEqual({ error: expect.any(String) }); //"This is not a valid last name"
     expect(user.statusCode).toStrictEqual(400);
   });
@@ -191,19 +191,19 @@ describe('Tests for adminAuthLogin', () => {
 
   test('Email does not exist', () => {
     const user = requestAdminAuthLogin('nonexistant@email.com', validDetails.PASSWORD);
-    expect(user).toStrictEqual({ error: expect.any(String) });
+    expect(user.body).toStrictEqual({ error: expect.any(String) });
     expect(user.statusCode).toStrictEqual(400);
   });
 
   test('Incorrect password.', () => {
     const user = requestAdminAuthLogin(validDetails.EMAIL, 'wrongpassword');
-    expect(user).toStrictEqual({ error: expect.any(String) });
+    expect(user.body).toStrictEqual({ error: expect.any(String) });
     expect(user.statusCode).toStrictEqual(400);
   });
 
   test('Login Success', () => {
     const user = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
-    expect(user).toStrictEqual({ token: expect.any(Number) });
+    expect(user.body).toStrictEqual({ token: expect.any(Number) });
     expect(user.statusCode).toStrictEqual(200);
   });
 });
@@ -218,16 +218,17 @@ describe('Tests for adminUserDetails', () => {
     //If there user id exists, then return user details.
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
 
-    expect(requestAdminUserDetails(user.body.token)).toStrictEqual
-    ({ user:
-      {
-        userId: expect.any(Number),
-        name: 'Jack Rizzella',
-        email: 'helloworld@gmail.com',
-        numSuccessfulLogins: expect.any(Number),
-        numFailedPasswordsSinceLastLogin: expect.any(Number),
+    expect(requestAdminUserDetails(user.body.token)).toStrictEqual(
+      { user:
+        {
+          userId: expect.any(Number),
+          name: 'Jack Rizzella',
+          email: 'helloworld@gmail.com',
+          numSuccessfulLogins: expect.any(Number),
+          numFailedPasswordsSinceLastLogin: expect.any(Number),
+        }
       }
-    }); 
+    ); 
     expect(user.statusCode).toStrictEqual(200);
   });
 
