@@ -2,12 +2,14 @@ import request from 'sync-request-curl';
 
 import { port, url } from './config.json';
 const SERVER_URL = `${url}:${port}`;
-function requestAdminQuizTrash () {
+function requestAdminQuizTrash (token: number) {
   const res = request(
     'GET',
     SERVER_URL + '/v1/admin/quiz/trash}',
     {
-      qs: {}
+      qs: {
+				token,
+			}
     }
   );
   return {
@@ -32,11 +34,11 @@ enum validDetails {
 describe('Tests for adminQuizTrash', () => {
   
   test('Successful Trash List', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-		const remove = adminQuizRemove(user.body.token, quiz.body.quizId);
-		const result = adminQuizTrash();
-    expect(result).toStrictEqual({
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
+		const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+		const result = requestAdminQuizTrash(user.body.token);
+    expect(result.body).toStrictEqual({
 			quizzes: [
       {
         quizId: quiz.body.quizId,
@@ -47,21 +49,21 @@ describe('Tests for adminQuizTrash', () => {
     expect(result.statusCode).toStrictEqual(200);
   });
 	test('Empty Trash List', () => {
-		const result = adminQuizTrash();
-    expect(result).toStrictEqual({
+		const result = adminQuizTrash(user.body.token);
+    expect(result.body).toStrictEqual({
 			quizzes: []
     });
     expect(result.statusCode).toStrictEqual(200);
   });
 
   test('Successful Multiple Trash List', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-		const quiz2 = adminQuizCreate(user.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPITON2);
-		const remove = adminQuizRemove(user.body.token, quiz.body.quizId);
-		const remove2 = adminQuizRemove(user.body.token, quiz2.body.quizId);
-		const result = adminQuizTrash();
-    expect(result).toStrictEqual({
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
+		const quiz2 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPITON2);
+		const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+		const remove2 = requestAdminQuizRemove(user.body.token, quiz2.body.quizId);
+		const result = requestAdminQuizTrash(user.body.token);
+    expect(result.body).toStrictEqual({
 			quizzes: [
       {
         quizId: quiz.body.quizId,
@@ -73,5 +75,13 @@ describe('Tests for adminQuizTrash', () => {
     ]
     });
     expect(result.statusCode).toStrictEqual(200);
+  });
+	test('Invalid token', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+		const result = requestAdminQuizTrash(user.body.token + 1);
+    expect(result.body).toStrictEqual({error: expect.any(String)}); // 'Invalid token'
+    expect(result.statusCode).toStrictEqual(401);
   });
 });
