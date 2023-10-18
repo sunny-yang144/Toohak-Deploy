@@ -25,7 +25,8 @@ interface adminAuthLoginReturn {
 
 export const adminAuthRegister = (email: string, password: string, nameFirst: string, nameLast: string): adminAuthRegisterReturn | ErrorObject => {
   let data = getData();
-  const searchEmail = data.users.find(searchEmail => searchEmail.email === email);
+  
+  const searchEmail = data.users.find(user => user.email === email);
   
   if (searchEmail) {
     return {error: 'This email is already in use', statusCode: 400}
@@ -73,8 +74,10 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
 
   const token = generateToken(user);
   const tokenStr = token.sessionId.toString();
-
+  
+  console.log(1);
   setData(data);
+  
   return { token: tokenStr }
 }
 /* 

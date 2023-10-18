@@ -117,7 +117,7 @@ enum validDetails {
   PASSWORD = '1234UNSW',
   NAMEFIRST = 'Jack',
   NAMELAST = 'Rizzella',
-  EMAIL2 = 'helloworld@gmail.com',
+  EMAIL2 = 'helloworld1@gmail.com',
   PASSWORD2 = '4321UNSW',
   NAMEFIRST2 = 'Jamie',
   NAMELAST2 = 'Oliver',
@@ -147,7 +147,7 @@ enum validDetails {
    * given correct id -> gives list.
    * 
    */
-describe.only('Tests for adminQuizList', () => {
+describe('Tests for adminQuizList', () => {
   beforeEach(() => {
     clear();
   });
@@ -201,11 +201,11 @@ describe.only('Tests for adminQuizList', () => {
     expect(response.statusCode).toStrictEqual(200);
   });
 
-  test.only('Non quiz owner -> no list, quiz owner -> gives list', () => {
+  test('Non quiz owner -> no list, quiz owner -> gives list', () => {
     const user1 = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user1.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-
+    
     const user2Response = requestAdminQuizList(user2.body.token);    
     expect(user2Response.body).toStrictEqual({quizzes: []}) // 'This user doesn't own any quizzes'
 

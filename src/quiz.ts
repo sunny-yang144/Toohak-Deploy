@@ -47,6 +47,7 @@ export const adminQuizList = ( token: string ): adminQuizListReturn | ErrorObjec
   let data = getData();
   // Find user with the inputted Id
   console.log(token);
+  console.log(data);
   const tokenNum = parseInt(token);
   const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
   // Check whether token is valid

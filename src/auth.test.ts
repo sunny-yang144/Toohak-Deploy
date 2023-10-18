@@ -182,6 +182,7 @@ describe('Tests for adminAuthRegister', () => {
     expect(user.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid password"
     expect(user.statusCode).toStrictEqual(400);
   });
+  
 });
 
 describe('Tests for adminAuthLogin', () => {
