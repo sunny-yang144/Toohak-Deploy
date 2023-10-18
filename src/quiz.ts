@@ -35,7 +35,7 @@ interface adminQuizInfoReturn {
   }
 }
 interface adminQuizRemoveReturn {}
-interface adminQuizNameUpdateReturn {}
+interface adminQuizNameUpdateReturn {} // Record<string, never>
 interface adminQuizDescriptionUpdateReturn {}
 
 

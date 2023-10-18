@@ -1,4 +1,5 @@
 import request from 'sync-request-curl';
+import { requestAdminAuthRegister, requestAdminAuthLogin, requestAdminUserDetails } from './auth.test'
 
 import { port, url } from './config.json';
 const SERVER_URL = `${url}:${port}`;
@@ -92,6 +93,19 @@ function requestAdminQuizDescriptionUpdate (authUserId: number, quizId: number, 
     statusCode: res.statusCode
   }
 }
+function clear() {
+  const res = request(
+    'DELETE',
+    SERVER_URL + '/v1/clear',
+    {
+      qs: {}
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  }
+}
 beforeEach(() => {          
   clear();
 });
@@ -132,75 +146,82 @@ describe('Tests for adminQuizList', () => {
    * given correct id -> gives list.
    * 
    */
-  
-  test('Invalid authUserId', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizList(user.authUserId + 1)).toStrictEqual({error: expect.any(String)}); // 'authUserId is not a valid Id'
-    expect(result.statusCode).toStrictEqual(400);
+  beforeEach(() => {
+    clear();
+  })
+  test('Invalid token', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizList(user.body.token + 1)
+    expect(response).toStrictEqual({error: expect.any(String)}); // 'Invalid token'
+    expect(response.statusCode).toStrictEqual(400);
   });
 
   test('No quiz created by a user', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    expect(adminQuizList(user.authUserId)).toStrictEqual({quizzes: []}); // 'This user doesn't own any quizzes.' (Return empty array)
-    expect(result.statusCode).toStrictEqual(200);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminQuizList(user.body.token);
+    expect(response.body).toStrictEqual({quizzes: []}); // 'This user doesn't own any quizzes.' (Return empty array)
+    expect(response.statusCode).toStrictEqual(200);
   })
 
   test('Successful output of quizzes owned by a User', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-
-    expect(adminQuizList(user.authUserId)).toStrictEqual(
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizList(user.body.token);
+    expect(response.body).toStrictEqual(
     { quizzes: [
       {
-        quizId: quiz.quizId,
+        quizId: quiz.body.quizId,
         name: expect.any(String),
       }
     ]
     });
-    expect(result.statusCode).toStrictEqual(200);
+    expect(response.statusCode).toStrictEqual(200);
   });
 
   test('Multiple quizzes created and a list of multiple quizzes outputted', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz1 = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    const quiz2 = adminQuizCreate(user.authUserId, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPITON2);
-
-    expect(adminQuizList(user.authUserId)).toStrictEqual(
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const quiz2 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
+    const response = requestAdminQuizList(user.body.token)
+    expect(response).toStrictEqual(
       { quizzes: [
         {
-          quizId: quiz1.quizId,
+          quizId: quiz1.body.quizId,
           name: expect.any(String),
         }, 
         {
-          quizId: quiz2.quizId,
+          quizId: quiz2.body.quizId,
           name: expect.any(String),
         },
       ]
     });
-    expect(result.statusCode).toStrictEqual(200);
+    expect(response.statusCode).toStrictEqual(200);
   });
 
   test('Non quiz owner -> no list, quiz owner -> gives list', () => {
-    const user1 = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = adminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
-    const quiz = adminQuizCreate(user1.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
+    const user1 = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user1.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
 
-    expect(adminQuizList(user2.authUserId)).toStrictEqual({quizzes: []}) // 'This user doesn't own any quizzes'
+    const user2Response = requestAdminQuizList(user2.body.token);    
+    expect(user2Response).toStrictEqual({quizzes: []}) // 'This user doesn't own any quizzes'
 
-    expect(adminQuizList(user1.authUserId)).toStrictEqual(
+    const user1Response = requestAdminQuizList(user1.body.token);
+    expect(user1Response).toStrictEqual(
       { quizzes: [
         {
-          quizId: quiz.quizId,
+          quizId: quiz.body.token,
           name: expect.any(String),
         }
       ]
     });
-    expect(result.statusCode).toStrictEqual(200);
+    expect(user1Response.statusCode).toStrictEqual(200);
+    expect(user2Response.statusCode).toStrictEqual(200);
   });
 });
 
-describe('Tests for adminQuizCreate', () => {
+describe('Tests for AdminQuizCreate', () => {
 
     // Clear the database, and then make an user so that we can generate quizzes.
     
@@ -210,70 +231,97 @@ describe('Tests for adminQuizCreate', () => {
     });
     test('Successful Quiz Created', () => {
       // user = {authUserId: number}
-      const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST); 
-      expect(adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON)).toStrictEqual({quizId: expect.any(Number)});
-      expect(result.statusCode).toStrictEqual(200);
+      const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST); 
+      const response = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+      expect(response).toStrictEqual({ quizId: expect.any(Number) });
+      expect(response.statusCode).toStrictEqual(200);
     })
 
 	test('Contains Symbol', () => {
-		expect(adminQuizCreate(user.authUserId, 'hell o1!', validDetails.QUIZDESCRIPITON)).toStrictEqual({error: expect.any(String)}); // 'Invalid Characters'
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST); 
+		expect(requestAdminQuizCreate(user.body.token, 'hell o1!', validDetails.QUIZDESCRIPTION)).toStrictEqual(
+      { error: expect.any(String), statusCode: 400 }
+    ); // 'Invalid Characters'
 	});
 	test('Less Than 3 Characters', () => {
-		expect(adminQuizCreate(user.authUserId, 'h1', validDetails.QUIZDESCRIPITON)).toStrictEqual({error: expect.any(String)}); // 'Name Too Short'
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST); 
+		expect(requestAdminQuizCreate(user.body.token, 'h1', validDetails.QUIZDESCRIPTION)).toStrictEqual(
+      { error: expect.any(String), statusCode: 400 }
+    ); // 'Name Too Short'
 	});
 	test('More Than 30 Characters', () => {
-		expect(adminQuizCreate(user.authUserId, 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh1', validDetails.QUIZDESCRIPITON)).toStrictEqual({error: expect.any(String)}); // 'Name Too Long'
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+		expect(requestAdminQuizCreate(user.body.token, 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh1', validDetails.QUIZDESCRIPTION)).toStrictEqual(
+      { error: expect.any(String), statusCode: 400 }
+    ); // 'Name Too Long'
 	});
 	test('Existing Quiz', () => {
 		//	Quiz with the same name has already been
 		//	created by the user which mean this assumes
 		//	a quiz already exists
-    adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-		expect(adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON)).toStrictEqual({error: expect.any(String)}); // Existing Quiz
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+		expect(requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION)).toStrictEqual(
+      { error: expect.any(String), statusCode: 400 }
+    ); // Existing Quiz
 	});
-	test('authUserId not valid', () => {
-		//using 2 for now since the return for authUserId is currently 1
-		expect(adminQuizCreate(user.authUserId + 1, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON)).toStrictEqual({error: expect.any(String)}); // Invalid User
-    expect(result.statusCode).toStrictEqual(400);
+	test('Token is not valid', () => {
+		// using 2 for now since the return for authUserId is currently 1
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+		expect(requestAdminQuizCreate(user.body.token + 1, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION)).toStrictEqual(
+      { error: expect.any(String), statusCode: 401 }
+    ); // Invalid Token
 	});
 	test('Description is More than 100 Characters', () => {
 		//using 2 for now since the return for authUserId is currently 1
-		expect(adminQuizCreate(user.authUserId, validDetails.QUIZNAME, "This description is to be really long" +
-		"and even longer than 100 characters which I don't really know how to do")).toStrictEqual({error: expect.any(String)}); // Description Too Long
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+		expect(requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, "This description is to be really long" +
+		"and even longer than 100 characters which I don't really know how to do")).toStrictEqual(
+      { error: expect.any(String), statusCode: 400}
+    ); // Description Too Long
 	});
 });
 
 describe('Tests for adminQuizRemove', () => {
   beforeEach(() => {
     clear();
-    const user1 = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = adminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
-    const quiz = adminQuizCreate(user1.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
   });
   
   test('Invalid User ID.', () => {
-    expect(adminQuizRemove(10, quiz.quizId)).toStrictEqual({error: expect.any(String)});
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+
+    const response = requestAdminQuizRemove(user.body.token + 1, quiz.body.quizId);
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Invalid quiz ID.', () => {
-    expect(adminQuizRemove(user1.authUserId, 10)).toStrictEqual({error: expect.any(String)});
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+
+    const response = requestAdminQuizRemove(user.body.token, quiz.body.quizId + 1)
+    expect(response.body).toStrictEqual({error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
   });
 
   test('User does not own quiz.', () => {
-    expect(adminQuizRemove(user2.authUserId, quiz.quizId)).toStrictEqual({error: expect.any(String)});
-    expect(result.statusCode).toStrictEqual(400);
+    const user1 = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user1.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+
+    const response = requestAdminQuizRemove(user2.body.token, quiz.body.quizId + 1);
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Correct parameters given.', () => {
-    expect(adminQuizRemove(user1.authUserId, quiz.quizId)).toStrictEqual({});
-    expect(result.statusCode).toStrictEqual(200);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+
+    const response = requestAdminQuizRemove(user.body.token, quiz.body.quizId + 1)
+    expect(response.body).toStrictEqual({});
+    expect(response.statusCode).toStrictEqual(200);
   });
 
 });
@@ -320,132 +368,146 @@ describe('Tests for adminQuizInfo', () => {
      * 
      */
 
-  test('Invalid authUserId', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizInfo(user.authUserId + 1, quiz.quizId)).toStrictEqual({error: expect.any(String)}); // 'authUserId is not a valid Id'
-    expect(result.statusCode).toStrictEqual(400);
+  test('Invalid token', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    expect(requestAdminQuizInfo(user.body.token + 1, quiz.body.quizId)).toStrictEqual(
+      { error: expect.any(String), statusCode: 401 }
+    ); // 'authUserId is not a valid Id'
   });
 
   test('User is accessing a quiz that doesnt exit', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizInfo(user.authUserId, quiz.quizId + 1)).toStrictEqual({error: expect.any(String)}); // 'Quiz does not exist'
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    expect(requestAdminQuizInfo(user.body.token, quiz.body.quizId + 1)).toStrictEqual(
+      { error: expect.any(String), statusCode: 400} 
+    ); // 'Quiz does not exist'
   });
 
   test('User is accessing a quiz that the user does not own', () => {
-    const user1 = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = adminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
-    const quiz = adminQuizCreate(user1.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizInfo(user2.authUserId, quiz.quizId)).toStrictEqual({error: expect.any(String)}); // 'Quiz is not owned by user'
-    expect(result.statusCode).toStrictEqual(400);
+    const user1 = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user1.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    expect(requestAdminQuizInfo(user2.body.token, quiz.body.quizId)).toStrictEqual(
+      {error: expect.any(String), statusCode: 403}
+    ); // 'Quiz is not owned by user'
   });
   
   test('Successful retrival of quiz info', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-
-    expect(adminQuizInfo(user.authUserId, quiz.quizId)).toStrictEqual(
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizInfo(user.body.token, quiz.body.quizId);
+    expect(response.body).toStrictEqual(
       {
-        quizId: quiz.quizId,
+        quizId: quiz.body.quizId,
         name: expect.any(String),
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
         description: expect.any(String),
       }
     );
-    expect(result.statusCode).toStrictEqual(200);
+    expect(response.statusCode).toStrictEqual(200);
   });
 
   test('Multiple quizzes created and info checked', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz1 = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    const quiz2 = adminQuizCreate(user.authUserId, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPITON2);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const quiz2 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
+    const response1 = requestAdminQuizInfo(user.body.token, quiz1.body.quizId);
+    expect(response1.body).toStrictEqual(
+      {
+        quizId: quiz1.body.quizId,
+        name: expect.any(String),
+        timeCreated: expect.any(Number),
+        timeLastEdited: expect.any(Number),
+        description: expect.any(String),
+      }
+    );
+    expect(response1.statusCode).toStrictEqual(200);
 
-    expect(adminQuizInfo(user.authUserId, quiz1.quizId)).toStrictEqual(
+    const response2 = requestAdminQuizInfo(user.body.token, quiz2.body.quizId);
+    expect(response2.body).toStrictEqual(
       {
-        quizId: quiz1.quizId,
+        quizId: quiz2.body.quizId,
         name: expect.any(String),
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
         description: expect.any(String),
       }
     );
-    expect(adminQuizInfo(user.authUserId, quiz2.quizId)).toStrictEqual(
-      {
-        quizId: quiz2.quizId,
-        name: expect.any(String),
-        timeCreated: expect.any(Number),
-        timeLastEdited: expect.any(Number),
-        description: expect.any(String),
-      }
-    );
-    expect(result.statusCode).toStrictEqual(200);
+    expect(response2.statusCode).toStrictEqual(200);
   });
 });
 
 
 describe('Tests for adminQuizNameUpdate', () => {
-  // Clear and create a valid quiz and user for the test to apply adminQuizNameUpdate
+  // Clear and create a valid quiz and user for the test to apply requestAdminQuizNameUpdate
   beforeEach(() => {
     clear();
   });
 
   test('Sucessfully updated quiz name', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'Valid Name')).toStrictEqual({}); // Returns {} on success
-    expect(result.statusCode).toStrictEqual(200);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizNameUpdate(user.body.token, quiz.body.quizId, 'Valid Name');
+    expect(response.body).toStrictEqual({}); // Returns {} on success
+    expect(response.statusCode).toStrictEqual(200);
   })
 
-  test('Invalid AuthUserID', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizNameUpdate(user.authUserId + 1, quiz.quizId, 'Valid Name')).toStrictEqual({error: expect.any(String)}); // authUserId isnt valid
-    expect(result.statusCode).toStrictEqual(400);
+  test('Invalid Token', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizNameUpdate(user.body.token + 1, quiz.body.quizId, 'Valid Name');
+    expect(response.body).toStrictEqual({ error: expect.any(String) }); // authUserId isnt valid
+    expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Given QuizID does not match a valid quiz', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId + 1, 'Valid Name')).toStrictEqual({error: expect.any(String)}); // No matching QuizID
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizNameUpdate(user.body.token + 1, quiz.body.quizId, 'Valid Name');
+    expect(response.body).toStrictEqual({ error: expect.any(String) }); // No matching QuizID
+    expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Given QuizID is not owned by user', () => {
-    const user1 = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = adminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
-    const quiz = adminQuizCreate(user1.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizNameUpdate(user2.authUserId)).toStrictEqual({error: expect.any(String)}) // User2 does not own the quiz 
-    expect(result.statusCode).toStrictEqual(400);
+    const user1 = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user1.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizNameUpdate(user2.body.token, quiz.body.quizId, 'New Name');
+    expect(response.body).toStrictEqual({ error: expect.any(String) }) // User2 does not own the quiz 
+    expect(response.statusCode).toStrictEqual(403);
   });
 
   test('Name contains invalid characters', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'Inval!d Name')).toStrictEqual({error: expect.any(String)}); // Updated quiz name contains symbols
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizNameUpdate(user.body.token, quiz.body.quizId, 'Inval!d Name');
+    expect(response.body).toStrictEqual({ error: expect.any(String) }); // Updated quiz name contains symbols
+    expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Name is Less than 3 characters', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'to')).toStrictEqual({error: expect.any(String)}); // Updated quiz name is too short (<3)
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizNameUpdate(user.body.token, quiz.body.quizId, 'to');
+    expect(response.body).toStrictEqual({ error: expect.any(String) }); // Updated quiz name is too short (<3)
+    expect(response.statusCode).toStrictEqual(400);
   });
   test('Name is More than 30 characters', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizNameUpdate(user.authUserId, quiz.quizId, 'theGivenUpdatedNameIsWayTooLong')).toStrictEqual({error: expect.any(String)}); // Updated name is too long (>30)
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizNameUpdate(user.body.token, quiz.body.quizId, 'theGivenUpdatedNameIsWayTooLong');
+    expect(response.body).toStrictEqual({ error: expect.any(String) }); // Updated name is too long (>30)
+    expect(response.statusCode).toStrictEqual(400);
   });
   test('Name is already used by current logged in user for another quiz', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz1 = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    const quiz2 = adminQuizCreate(user.authUserId, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPITON2);
-    expect(adminQuizNameUpdate(user.authUserId, quiz2.quizId, 'PC games quiz')).toStrictEqual({error: expect.any(String)}); // User already owns a quiz with the provided name
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const quiz2 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
+    const response = requestAdminQuizNameUpdate(user.body.token, quiz2.body.quizId, 'PC games quiz');
+    expect(response.body).toStrictEqual({ error: expect.any(String) }); // User already owns a quiz with the provided name
+    expect(response.statusCode).toStrictEqual(400);
   });
 });
 
@@ -456,40 +518,44 @@ describe('Tests for adminQuizDescriptionUpdate', () => {
   });
 
   test('Sucessfully updated quiz description', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, 'Valid Description')).toStrictEqual({}); // Returns {} on success
-    expect(result.statusCode).toStrictEqual(200);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizDescriptionUpdate(user.body.token, quiz.body.quizId, 'Valid Description');
+    expect(response.body).toStrictEqual({}); // Returns {} on success
+    expect(response.statusCode).toStrictEqual(200);
   })
 
-  test('Invalid AuthUserID', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizDescriptionUpdate(user.authUserId + 1, quiz.quizId, 'Valid Description')).toStrictEqual({error: expect.any(String)}); // authUserId isnt valid
-    expect(result.statusCode).toStrictEqual(400);
+  test('Invalid Token', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizDescriptionUpdate(user.body.token + 1, quiz.body.quizId, 'Valid Description');
+    expect(response.body).toStrictEqual({ error: expect.any(String) }); // authUserId isnt valid
+    expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Given QuizID does not match a valid quiz', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizDescriptionUpdate(user.authUserId, quiz.quizId + 1, 'Valid Name')).toStrictEqual({error: expect.any(String)}); // No matching QuizID
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizDescriptionUpdate(user.body.token, quiz.body.quizId + 1, 'New Description');
+    expect(response.body).toStrictEqual({ error: expect.any(String) }); // No matching QuizID
+    expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Given QuizID is not owned by user', () => {
-    const user1 = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = adminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
-    const quiz = adminQuizCreate(user1.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizDescriptionUpdate(user2.authUserId)).toStrictEqual({error: expect.any(String)}) // User2 does not own the quiz 
-    expect(result.statusCode).toStrictEqual(400);
+    const user1 = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user1.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizDescriptionUpdate(user2.body.token, quiz.body.quizId, 'New Description');
+    expect(response.body).toStrictEqual({ error: expect.any(String) }) // User2 does not own the quiz 
+    expect(response.statusCode).toStrictEqual(403);
   });
 
   test('Name is More than 100 characters', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.authUserId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPITON);
-    expect(adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, 'theGivenUpdatedNameIsWaaaaaaaaaaaaaaaaaaaaaaayTooLong'
-    + 'RanOutOfThingsToTypeSoHereIGoOnRambling' + 'ReallyHopeThisIsEnough')).toStrictEqual({error: expect.any(String)}); // Updated quiz description is too long (>100)
-    expect(result.statusCode).toStrictEqual(400);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const response = requestAdminQuizDescriptionUpdate(user.body.token, quiz.body.quizId, 'theGivenUpdatedNameIsWaaaaaaaaaaaaaaaaaaaaaaayTooLong'
+    + 'RanOutOfThingsToTypeSoHereIGoOnRambling' + 'ReallyHopeThisIsEnough');
+    expect(response.body).toStrictEqual({ error: expect.any(String) }); // Updated quiz description is too long (>100)
+    expect(response.statusCode).toStrictEqual(400);
   });
-
 });
