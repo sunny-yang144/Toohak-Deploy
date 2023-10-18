@@ -1,4 +1,5 @@
 import { getData, setData, User, Quiz } from './dataStore'
+import { generateQuizId } from './other'
 
 interface ErrorObject {
   error: string;
@@ -37,10 +38,11 @@ interface adminQuizDescriptionUpdateReturn {}
   *      }>
   * }} | errorMessage
   */
-export const adminQuizList = ( token: number ): adminQuizListReturn | ErrorObject => {
+export const adminQuizList = ( token: string ): adminQuizListReturn | ErrorObject => {
   let data = getData();
   // Find user with the inputted Id
-  const validToken = data.tokens.find((item) => item.SessionId === token);
+  token = parseInt(token);
+  const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
     return { error: `The token ${token} is invalid!`, statusCode: 401 };
@@ -61,12 +63,13 @@ export const adminQuizList = ( token: number ): adminQuizListReturn | ErrorObjec
   return { quizzes };
 }
 
-export const adminQuizCreate = ( token: number, name: string, description: string ): adminQuizCreateReturn | ErrorObject => {
+export const adminQuizCreate = ( token: string, name: string, description: string ): adminQuizCreateReturn | ErrorObject => {
   let data = getData();
-  let user = data.users.find(user => user.userId === token);
-  // Check whether authUsedId is valid
-  if (!user) {
-    return { error: `The user ID ${token} is invalid!`, statusCode: 401 };
+  const tokenNum = parseInt(token);
+  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
+  // Check whether token is valid
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   };
   // Checks for invalid characters
   if (!isAlphanumericWithSpaces(name)) {
@@ -79,8 +82,10 @@ export const adminQuizCreate = ( token: number, name: string, description: strin
   }
   // Check if the quiz name is already used by the current logged in user for
   // another quiz
-  if (data.quizzes.find(quiz => quiz.ownerId === authUserId && quiz.name === name)) {
-    return { error: `User ID ${authUserId} already has quiz with name: ${name}`, statusCode: 400 };
+  const user = validToken.user;
+  console.log(data);
+  if (data.quizzes.find((quiz) => quiz.ownerId === user.userId && quiz.name === name)) {
+    return { error: `User ID ${user.userId} already has quiz with name: ${name}`, statusCode: 400 };
   }
   // Check if description length is more than 100 characters
   if (description.length > 100) {
@@ -90,10 +95,11 @@ export const adminQuizCreate = ( token: number, name: string, description: strin
   // Add new quiz
   // Get time in Unix format
   const currentTime = new Date();
-  const unixtimeSeconds = Math.floor(currentTime.getTime()/1000);
+  const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
+  const quizId = generateQuizId(data.quizzes);
   let newQuiz = { 
-    quizId: data.quizzes.length,
-    ownerId: authUserId,
+    quizId: quizId,
+    ownerId: user.userId,
     name: name,
     description: description,
     timeCreated: unixtimeSeconds,
@@ -101,7 +107,6 @@ export const adminQuizCreate = ( token: number, name: string, description: strin
   };
 
   user.ownedQuizzes.push(newQuiz);
-
   data.quizzes.push(newQuiz);
   setData(data);
   return {

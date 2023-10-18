@@ -47,10 +47,12 @@ export interface Token {
 
 export interface DataStore {
   users: User[],
+  quizzes: Quiz[]     // Quizzes, allows server to generate unique quizId
   tokens: Token[]     // Valid tokens, allows server to search existing tokens.
 }
 let dataStore: DataStore = {
   users: [],
+  quizzes: [],
   tokens: [],
 }
 function setData(newData: DataStore) {

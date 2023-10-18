@@ -6,12 +6,14 @@ const SERVER_URL = `${url}:${port}`;
 
 // Clears any lingering data elements before each test group
 // eliminates any unexpected bugs.
-function requestAdminQuizList ( authUserId: number ) {
+function requestAdminQuizList ( token: number ) {
   const res = request(
     'GET',
     SERVER_URL + '/v1/admin/quiz/list',
     {
-      qs: {}
+      qs: {
+        token,
+      }
     }
   );
   return {
@@ -20,13 +22,13 @@ function requestAdminQuizList ( authUserId: number ) {
   }
 }
 
-function requestAdminQuizCreate (authUserId: number, name: string, description: string) {
+function requestAdminQuizCreate (token: string, name: string, description: string) {
   const res = request(
     'POST',
     SERVER_URL + '/v1/admin/quiz',
     {
       json: {
-        authUserId,
+        token,
         name,
         description,
       }
@@ -124,7 +126,6 @@ enum validDetails {
   QUIZNAME2 = 'Soccer Quiz',
   QUIZDESCRIPTION2 = 'GOOOAAAALLLL (Part 2)'
 }
-describe('Tests for adminQuizList', () => {
   /**
    * 1. [x] 2. [x] 3. [x] 4. [x] 5. [x] 
    * 
@@ -146,10 +147,11 @@ describe('Tests for adminQuizList', () => {
    * given correct id -> gives list.
    * 
    */
+describe('Tests for adminQuizList', () => {
   beforeEach(() => {
     clear();
-  })
-  test.only('Invalid token', () => {
+  });
+  test('Invalid token', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const response = requestAdminQuizList(user.body.token + 1)
@@ -157,7 +159,7 @@ describe('Tests for adminQuizList', () => {
     expect(response.statusCode).toStrictEqual(401);
   });
 
-  test.only('No quiz created by a user', () => {
+  test('No quiz created by a user', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminQuizList(user.body.token);
     expect(response.body).toStrictEqual({quizzes: []}); // 'This user doesn't own any quizzes.' (Return empty array)
@@ -233,7 +235,7 @@ describe('Tests for AdminQuizCreate', () => {
       // user = {authUserId: number}
       const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST); 
       const response = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-      expect(response).toStrictEqual({ quizId: expect.any(Number) });
+      expect(response.body).toStrictEqual({ quizId: expect.any(Number) });
       expect(response.statusCode).toStrictEqual(200);
     })
 

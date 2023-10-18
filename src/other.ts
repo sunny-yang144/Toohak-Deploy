@@ -1,8 +1,9 @@
-import { setData, getData, Token, User, DataStore } from './dataStore'
+import { setData, getData, Token, User, Quiz, DataStore } from './dataStore'
 
 export function clear (): Record<string, never> {
   setData({
     users: [],
+    quizzes: [],
     tokens: [],
   });
   return {}
@@ -16,7 +17,7 @@ export function clear (): Record<string, never> {
  * 
  * @returns { Number } Max + 1
  */
-export function generateId (idArray: Token[]) {
+export function generateTokenId (idArray: Token[]) {
   if (idArray.length === 0) {
     return 0;
   }
@@ -24,6 +25,19 @@ export function generateId (idArray: Token[]) {
   for (const token of idArray) {
     if (token.sessionId > max) {
       max = token.sessionId;
+    }
+  }
+  return max + 1;
+}
+
+export function generateQuizId (idArray: Quiz[]) {
+  if (idArray.length === 0) {
+    return 0;
+  }
+  let max = idArray[0].quizId;
+  for (const quiz of idArray) {
+    if (quiz.quizId > max) {
+      max = quiz.quizId;
     }
   }
   return max + 1;
@@ -39,7 +53,7 @@ export function generateId (idArray: Token[]) {
  */
 export function generateToken (user: User) {
   let data = getData();
-  const sessionId = generateId(data.tokens);
+  const sessionId = generateTokenId(data.tokens);
   const token = {
     sessionId: sessionId,
     user: user,
