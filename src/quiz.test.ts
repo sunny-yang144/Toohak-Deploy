@@ -6,7 +6,7 @@ const SERVER_URL = `${url}:${port}`;
 
 // Clears any lingering data elements before each test group
 // eliminates any unexpected bugs.
-function requestAdminQuizList ( token: number ) {
+function requestAdminQuizList ( token: string ) {
   const res = request(
     'GET',
     SERVER_URL + '/v1/admin/quiz/list',
@@ -147,7 +147,7 @@ enum validDetails {
    * given correct id -> gives list.
    * 
    */
-describe('Tests for adminQuizList', () => {
+describe.only('Tests for adminQuizList', () => {
   beforeEach(() => {
     clear();
   });
@@ -186,7 +186,7 @@ describe('Tests for adminQuizList', () => {
     const quiz1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const quiz2 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
     const response = requestAdminQuizList(user.body.token)
-    expect(response).toStrictEqual(
+    expect(response.body).toStrictEqual(
       { quizzes: [
         {
           quizId: quiz1.body.quizId,
@@ -201,19 +201,19 @@ describe('Tests for adminQuizList', () => {
     expect(response.statusCode).toStrictEqual(200);
   });
 
-  test('Non quiz owner -> no list, quiz owner -> gives list', () => {
+  test.only('Non quiz owner -> no list, quiz owner -> gives list', () => {
     const user1 = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user1.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
 
     const user2Response = requestAdminQuizList(user2.body.token);    
-    expect(user2Response).toStrictEqual({quizzes: []}) // 'This user doesn't own any quizzes'
+    expect(user2Response.body).toStrictEqual({quizzes: []}) // 'This user doesn't own any quizzes'
 
     const user1Response = requestAdminQuizList(user1.body.token);
-    expect(user1Response).toStrictEqual(
+    expect(user1Response.body).toStrictEqual(
       { quizzes: [
         {
-          quizId: quiz.body.token,
+          quizId: quiz.body.quizId,
           name: expect.any(String),
         }
       ]
@@ -241,21 +241,29 @@ describe('Tests for AdminQuizCreate', () => {
 
 	test('Contains Symbol', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST); 
-		expect(requestAdminQuizCreate(user.body.token, 'hell o1!', validDetails.QUIZDESCRIPTION)).toStrictEqual(
-      { error: expect.any(String), statusCode: 400 }
+    const response = requestAdminQuizCreate(user.body.token, 'hell o1!', validDetails.QUIZDESCRIPTION);
+		expect(response.body).toStrictEqual(
+      { error: expect.any(String) }
     ); // 'Invalid Characters'
+    expect(response.statusCode).toStrictEqual(400);
 	});
+
 	test('Less Than 3 Characters', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST); 
-		expect(requestAdminQuizCreate(user.body.token, 'h1', validDetails.QUIZDESCRIPTION)).toStrictEqual(
-      { error: expect.any(String), statusCode: 400 }
+    const response = requestAdminQuizCreate(user.body.token, 'h1', validDetails.QUIZDESCRIPTION);
+		expect(response.body).toStrictEqual(
+      { error: expect.any(String) }
     ); // 'Name Too Short'
+    expect(response.statusCode).toStrictEqual(400);
+
 	});
 	test('More Than 30 Characters', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-		expect(requestAdminQuizCreate(user.body.token, 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh1', validDetails.QUIZDESCRIPTION)).toStrictEqual(
-      { error: expect.any(String), statusCode: 400 }
+    const response = requestAdminQuizCreate(user.body.token, 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh1', validDetails.QUIZDESCRIPTION);
+		expect(response.body).toStrictEqual(
+      { error: expect.any(String) }
     ); // 'Name Too Long'
+    expect(response.statusCode).toStrictEqual(400);
 	});
 	test('Existing Quiz', () => {
 		//	Quiz with the same name has already been
@@ -263,24 +271,31 @@ describe('Tests for AdminQuizCreate', () => {
 		//	a quiz already exists
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-		expect(requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION)).toStrictEqual(
-      { error: expect.any(String), statusCode: 400 }
+    const response = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+		expect(response.body).toStrictEqual(
+      { error: expect.any(String) }
     ); // Existing Quiz
+    expect(response.statusCode).toStrictEqual(400);
 	});
 	test('Token is not valid', () => {
 		// using 2 for now since the return for authUserId is currently 1
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-		expect(requestAdminQuizCreate(user.body.token + 1, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION)).toStrictEqual(
-      { error: expect.any(String), statusCode: 401 }
+    const response = requestAdminQuizCreate(user.body.token + 1, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+		expect(response.body).toStrictEqual(
+      { error: expect.any(String) }
     ); // Invalid Token
+    expect(response.statusCode).toStrictEqual(401);
 	});
+
 	test('Description is More than 100 Characters', () => {
 		//using 2 for now since the return for authUserId is currently 1
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-		expect(requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, "This description is to be really long" +
-		"and even longer than 100 characters which I don't really know how to do")).toStrictEqual(
-      { error: expect.any(String), statusCode: 400}
+    const response = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, "This description is to be really long" +
+		"and even longer than 100 characters which I don't really know how to do");
+		expect(response.body).toStrictEqual(
+      { error: expect.any(String) }
     ); // Description Too Long
+    expect(response.statusCode).toStrictEqual(400);
 	});
 });
 

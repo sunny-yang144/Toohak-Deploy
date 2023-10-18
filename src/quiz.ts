@@ -5,8 +5,13 @@ interface ErrorObject {
   error: string;
   statusCode: number;
 }
+interface quizObject {
+  quizId: number;
+  name: string;
+}
+
 interface adminQuizListReturn {
-  quizzes: Quiz[]
+  quizzes: quizObject[];
 }
 interface adminQuizCreateReturn {
   quizId: number
@@ -41,8 +46,9 @@ interface adminQuizDescriptionUpdateReturn {}
 export const adminQuizList = ( token: string ): adminQuizListReturn | ErrorObject => {
   let data = getData();
   // Find user with the inputted Id
-  token = parseInt(token);
-  const validToken = data.tokens.find((item) => item.sessionId === token);
+  console.log(token);
+  const tokenNum = parseInt(token);
+  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
   // Check whether token is valid
   if (!validToken) {
     return { error: `The token ${token} is invalid!`, statusCode: 401 };
@@ -50,13 +56,11 @@ export const adminQuizList = ( token: string ): adminQuizListReturn | ErrorObjec
   const quizzes = [];
   const user = validToken.user;
   // Iterate through users quizzes and add their information to an array
-  for (const quizId of user.ownedQuizzes) {
-    const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
-    // The "quiz" object that will go into the quizzes array
+  for (const quiz of user.ownedQuizzes) {
     const quizObject = {
       quizId: quiz.quizId,
-      name: quiz.name
-    };
+      name: quiz.name,
+    }
     // Add this object to the quizzes array
     quizzes.push(quizObject);
   }
@@ -83,7 +87,7 @@ export const adminQuizCreate = ( token: string, name: string, description: strin
   // Check if the quiz name is already used by the current logged in user for
   // another quiz
   const user = validToken.user;
-  console.log(data);
+  
   if (data.quizzes.find((quiz) => quiz.ownerId === user.userId && quiz.name === name)) {
     return { error: `User ID ${user.userId} already has quiz with name: ${name}`, statusCode: 400 };
   }
