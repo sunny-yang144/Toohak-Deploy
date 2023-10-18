@@ -236,7 +236,7 @@ describe('Tests for adminUserDetails', () => {
   test('Error when an invalid token is passed', () => {
 
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const response = requestAdminUserDetails(user.body.token + 1);
+    const response = requestAdminUserDetails(parseInt(user.body.token) + 1);
     expect(response.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid UserId" 
     expect(response.statusCode).toStrictEqual(401);
   });

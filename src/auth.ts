@@ -105,10 +105,8 @@ export const adminAuthLogin = (email: string, password: string ): adminAuthLogin
 
 export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorObject => {
   const data = getData();
-  console.log(token);
-  const validToken = data.tokens.find((item) => item.sessionId === token);
-  console.log(data.tokens);
-  console.log(validToken);
+  const tokenNum = parseInt(token);
+  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
   if (!validToken) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
