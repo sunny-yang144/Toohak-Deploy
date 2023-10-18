@@ -17,10 +17,10 @@ interface adminUserDetailsReturn {
   }
 }
 interface adminAuthRegisterReturn {
-  token: number
+  token: string
 }
 interface adminAuthLoginReturn {
-  token: number
+  token: string
 }
 
 export const adminAuthRegister = (email: string, password: string, nameFirst: string, nameLast: string): adminAuthRegisterReturn | ErrorObject => {
@@ -72,10 +72,10 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
   data.users.push(user);
 
   const token = generateToken(user);
-  const sessionId = token.sessionId;
+  const tokenStr = token.sessionId.toString();
 
   setData(data);
-  return { token: sessionId }
+  return { token: tokenStr }
 }
 /* 
 Returns authUserId given a valid registered user email and password
@@ -97,16 +97,18 @@ export const adminAuthLogin = (email: string, password: string ): adminAuthLogin
   user.numSuccessfulLogins += 1;
   
   const token = generateToken(user);
-  const sessionId = token.sessionId;
+  const tokenStr = token.sessionId.toString();
 
   setData(data);
-  return { token: sessionId };
+  return { token: tokenStr };
 }
 
-export const adminUserDetails = (token: number): adminUserDetailsReturn | ErrorObject => {
+export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorObject => {
   const data = getData();
-  const validToken = data.tokens.find((item) => item.SessionId === token);
-
+  console.log(token);
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  console.log(data.tokens);
+  console.log(validToken);
   if (!validToken) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }

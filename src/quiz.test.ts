@@ -149,15 +149,15 @@ describe('Tests for adminQuizList', () => {
   beforeEach(() => {
     clear();
   })
-  test('Invalid token', () => {
+  test.only('Invalid token', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const response = requestAdminQuizList(user.body.token + 1)
-    expect(response).toStrictEqual({error: expect.any(String)}); // 'Invalid token'
-    expect(response.statusCode).toStrictEqual(400);
+    expect(response.body).toStrictEqual({error: expect.any(String)}); // 'Invalid token'
+    expect(response.statusCode).toStrictEqual(401);
   });
 
-  test('No quiz created by a user', () => {
+  test.only('No quiz created by a user', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminQuizList(user.body.token);
     expect(response.body).toStrictEqual({quizzes: []}); // 'This user doesn't own any quizzes.' (Return empty array)

@@ -77,7 +77,7 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 });
 
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
-  const { token } = req.body;
+  const token = req.query.token as string;
 
   const response = adminUserDetails(token);
 
@@ -90,7 +90,7 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
 });
 
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
-  const { token } = req.body;
+  const token  = req.query.message as string;
 
   const response = adminQuizList(token);
 

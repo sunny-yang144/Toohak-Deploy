@@ -105,7 +105,7 @@ describe('Tests for adminAuthRegister', () => {
 
   test('Successful User Created when given valid parameters', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    expect(user.body).toStrictEqual({ token: expect.any(Number) }); 
+    expect(user.body).toStrictEqual({ token: expect.any(String) }); 
     expect(user.statusCode).toStrictEqual(200);
   });
 
@@ -204,7 +204,7 @@ describe('Tests for adminAuthLogin', () => {
 
   test('Login Success', () => {
     const user = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
-    expect(user.body).toStrictEqual({ token: expect.any(Number) });
+    expect(user.body).toStrictEqual({ token: expect.any(String) });
     expect(user.statusCode).toStrictEqual(200);
   });
 });
@@ -216,7 +216,7 @@ describe('Tests for adminUserDetails', () => {
   }); 
 
   test('Succesful accessing of a users details', () => {
-    //If there user id exists, then return user details.
+    // If there user id exists, then return user details.
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminUserDetails(user.body.token);
     expect(response.body).toStrictEqual(
@@ -233,10 +233,10 @@ describe('Tests for adminUserDetails', () => {
     expect(response.statusCode).toStrictEqual(200);
   });
 
-  test('Error when an invalid id is passed', () => {
-    // We know that there are no tokens which are valid since clear has been run so
-    // an arbitrary number can be chosen.
-    const response = requestAdminUserDetails(1);
+  test('Error when an invalid token is passed', () => {
+
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserDetails(user.body.token + 1);
     expect(response.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid UserId" 
     expect(response.statusCode).toStrictEqual(401);
   });

@@ -1,20 +1,5 @@
 import { getData, setData, User, Quiz } from './dataStore'
 
-
-/**
- * Lists out all of the Quizzes a user owns
- * 
- * Gives an error when:
- * 1. AuthUserId is not a valid user
- *
- * @param {number} authUserId
- * @returns {{ quizzes: 
- *      Array<{
- *        quizId: number,
- *        name: string
- *      }>
- * }} | errorMessage
- */
 interface ErrorObject {
   error: string;
   statusCode: number;
@@ -38,18 +23,32 @@ interface adminQuizRemoveReturn {}
 interface adminQuizNameUpdateReturn {} // Record<string, never>
 interface adminQuizDescriptionUpdateReturn {}
 
-
-export const adminQuizList = ( authUserId: number ): adminQuizListReturn | ErrorObject => {
+/**
+ * Lists out all of the Quizzes a user owns
+ * 
+ * Gives an error when:
+ * 1. Token is not a valid
+ *
+ * @param {number} token
+ * @returns {{ quizzes: 
+*      Array<{
+  *        quizId: number,
+  *        name: string
+  *      }>
+  * }} | errorMessage
+  */
+export const adminQuizList = ( token: number ): adminQuizListReturn | ErrorObject => {
   let data = getData();
   // Find user with the inputted Id
-  const user = data.users.find(user => user.userId === authUserId);
-  // Check whether authUsedId is valid
-  if (!user) {
-    return { error: `The user ID ${authUserId} is invalid!`, statusCode: 401 };
+  const validToken = data.tokens.find((item) => item.SessionId === token);
+  // Check whether token is valid
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   };
   const quizzes = [];
+  const user = validToken.user;
   // Iterate through users quizzes and add their information to an array
-  for (let quizId of user.ownedQuizzes) {
+  for (const quizId of user.ownedQuizzes) {
     const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
     // The "quiz" object that will go into the quizzes array
     const quizObject = {
@@ -62,12 +61,12 @@ export const adminQuizList = ( authUserId: number ): adminQuizListReturn | Error
   return { quizzes };
 }
 
-export const adminQuizCreate = ( authUserId: number, name: string, description: string ): adminQuizCreateReturn | ErrorObject => {
+export const adminQuizCreate = ( token: number, name: string, description: string ): adminQuizCreateReturn | ErrorObject => {
   let data = getData();
-  let user = data.users.find(user => user.userId === authUserId);
+  let user = data.users.find(user => user.userId === token);
   // Check whether authUsedId is valid
   if (!user) {
-    return { error: `The user ID ${authUserId} is invalid!`, statusCode: 401 };
+    return { error: `The user ID ${token} is invalid!`, statusCode: 401 };
   };
   // Checks for invalid characters
   if (!isAlphanumericWithSpaces(name)) {
