@@ -1,23 +1,18 @@
 import request from 'sync-request-curl';
-import { requestAdminAuthRegister } from './auth.test';
-import { requestAdminQuizList, requestAdminQuizCreate, requestAdminQuizInfo } from './quiz.test';
+import { 
+  requestAdminAuthRegister,
+  requestAdminQuizList,
+  requestAdminQuizCreate,
+  requestAdminQuizInfo,
+  clear
+} from './test-helpers';
 
 import { port, url } from './config.json';
 const SERVER_URL = `${url}:${port}`;
 
 // Clears any lingering data elements before each test group
 // eliminates any unexpected bugs.
-function clear() {
-  const res = request(
-    'DELETE',
-    SERVER_URL + '/v1/clear',
-    {
-      // Note that for PUT/POST requests, you should
-      // use the key 'json' instead of the query string 'qs'
-    }
-  );
-  return JSON.parse(res.body.toString());
-}
+
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
   PASSWORD = '1234UNSW',

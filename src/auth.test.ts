@@ -1,71 +1,9 @@
-import request from 'sync-request-curl';
-
-import { port, url } from './config.json';
-const SERVER_URL = `${url}:${port}`;
-
-export function requestAdminAuthRegister (email: string, password: string, nameFirst: string, nameLast: string) {
-  const res = request(
-    'POST',
-    SERVER_URL + '/v1/admin/auth/register',
-    {
-      json: {
-        email,
-        password,
-        nameFirst,
-        nameLast,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-    statusCode: res.statusCode
-  };
-}
-export function requestAdminAuthLogin (email: string, password: string) {
-  const res = request(
-    'POST',
-    SERVER_URL + '/v1/admin/auth/login',
-    {
-      json: {
-        email,
-        password,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-    statusCode: res.statusCode
-  };
-}
-export function requestAdminUserDetails (token: number) {
-  const res = request(
-    'GET',
-    SERVER_URL + '/v1/admin/user/details',
-    {
-      qs: {
-        token
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-    statusCode: res.statusCode
-  };
-}
-
-function clear() {
-  const res = request(
-    'DELETE',
-    SERVER_URL + '/v1/clear',
-    {
-      qs: {}
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-    statusCode: res.statusCode
-  };
-}
+import { 
+  requestAdminAuthRegister,
+  requestAdminAuthLogin,
+  requestAdminUserDetails,
+  clear,
+} from './test-helpers'
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',

@@ -1,119 +1,13 @@
-import request from 'sync-request-curl';
-import { requestAdminAuthRegister } from './auth.test';
-
-import { port, url } from './config.json';
-const SERVER_URL = `${url}:${port}`;
-
-// Clears any lingering data elements before each test group
-// eliminates any unexpected bugs.
-export function requestAdminQuizList (token: string) {
-  const res = request(
-    'GET',
-    SERVER_URL + '/v1/admin/quiz/list',
-    {
-      qs: {
-        token,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-    statusCode: res.statusCode
-  };
-}
-
-export function requestAdminQuizCreate (token: string, name: string, description: string) {
-  const res = request(
-    'POST',
-    SERVER_URL + '/v1/admin/quiz',
-    {
-      json: {
-        token,
-        name,
-        description,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-    statusCode: res.statusCode
-  };
-}
-export function requestAdminQuizInfo (token: string, quizId: number) {
-  const res = request(
-    'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}`,
-    {
-      qs: {
-        token,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-    statusCode: res.statusCode
-  };
-}
-function requestAdminQuizRemove (token: string, quizId: number) {
-  const res = request(
-    'DELETE',
-    SERVER_URL + `/v1/admin/quiz/${quizId}`,
-    {
-      qs: {
-        token,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-    statusCode: res.statusCode
-  };
-}
-function requestAdminQuizNameUpdate (token: string, quizId: number, name: string) {
-  const res = request(
-    'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/name`,
-    {
-      json: {
-        token,
-        name,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-    statusCode: res.statusCode
-  };
-}
-function requestAdminQuizDescriptionUpdate (token: string, quizId: number, description: string) {
-  const res = request(
-    'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/description`,
-    {
-      json: {
-        token,
-        description,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-    statusCode: res.statusCode
-  };
-}
-function clear() {
-  const res = request(
-    'DELETE',
-    SERVER_URL + '/v1/clear',
-    {
-      qs: {}
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-    statusCode: res.statusCode
-  };
-}
+import { 
+  requestAdminAuthRegister,
+  requestAdminQuizList,
+  requestAdminQuizCreate,
+  requestAdminQuizInfo,
+  requestAdminQuizRemove,
+  requestAdminQuizNameUpdate,
+  requestAdminQuizDescriptionUpdate,
+  clear,
+} from './test-helpers';
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
