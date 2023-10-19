@@ -56,10 +56,10 @@ export function generateToken (user: User) {
   const sessionId = generateTokenId(data.tokens);
   const token = {
     sessionId: sessionId,
-    user: user,
+    userId: user.userId,
   };
   user.tokens.push(token);
-  data.tokens.push(token);
+  
   setData(data);
   return token;
 }

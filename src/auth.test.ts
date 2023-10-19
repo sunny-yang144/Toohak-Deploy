@@ -67,21 +67,24 @@ function clear() {
   }
 }
 
-// Clears any lingering data elements before each test group
-// eliminates any unexpected bugs.
-beforeEach(() => {          
-  clear();
-});
+
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
   PASSWORD = '1234UNSW',
   NAMEFIRST = 'Jack',
   NAMELAST = 'Rizzella',
-  EMAIL2 = 'helloworld@gmail.com',
+  EMAIL2 = 'helloworld1@gmail.com',
   PASSWORD2 = '4321UNSW',
   NAMEFIRST2 = 'Jamie',
   NAMELAST2 = 'Oliver',
 }
+
+// Clears any lingering data elements before each test group
+// eliminates any unexpected bugs.
+beforeEach(() => {          
+  clear();
+});
+
 // You could also structure this to have error cases
 describe('Tests for adminAuthRegister', () => {
   /**
@@ -98,11 +101,6 @@ describe('Tests for adminAuthRegister', () => {
    * Return Object:
    * { authUserId }
    */
-
-  beforeEach(() => {          
-    clear();
-  }); 
-
   test('Successful User Created when given valid parameters', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     expect(user.body).toStrictEqual({ token: expect.any(String) }); 
@@ -112,7 +110,7 @@ describe('Tests for adminAuthRegister', () => {
   test('Error when given an email address is already used', () => {
     // Created a user successfully
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     // Another user with the same email
     expect(user2.body).toStrictEqual({ error: expect.any(String) }); // "This email is already in use"
     expect(user2.statusCode).toStrictEqual(400);

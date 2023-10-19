@@ -1,4 +1,6 @@
 // YOU SHOULD MODIFY THIS OBJECT BELOW
+import * as fs from 'fs';
+
 export interface User {
   userId: number;
   email: string;
@@ -7,7 +9,7 @@ export interface User {
   password: string;
   numSuccessfulLogins: number,
   numFailedPasswordsSinceLastLogin: number,
-  ownedQuizzes: Quiz[],
+  ownedQuizzes: number[],
   tokens: Token[],       // If we have a user, we can check what token they are assigned.
 }
 export interface Quiz {
@@ -17,6 +19,8 @@ export interface Quiz {
   timeLastEdited: number;
   description: string;
 }
+
+const dataStoreFile = process.cwd() + '/dataStorage.json';
 // We need to add array of questions and array of answers Iteration 2 functions
 // 
 /*
@@ -42,7 +46,7 @@ export interface Quiz {
 
 export interface Token {
   sessionId: number;
-  user: User;     // Associate a user from a inputted token.
+  userId: number;     // Associate a user from a inputted token.
 }
 
 export interface DataStore {
@@ -50,17 +54,27 @@ export interface DataStore {
   quizzes: Quiz[]     // Quizzes, allows server to generate unique quizId
   tokens: Token[]     // Valid tokens, allows server to search existing tokens.
 }
-let dataStore: DataStore = {
-  users: [],
-  quizzes: [],
-  tokens: [],
-}
-function setData(newData: DataStore) {
-  dataStore = newData;
+// let dataStore: DataStore = {
+//   users: [],
+//   quizzes: [],
+//   tokens: [],
+// }
+
+export function setData(data: DataStore) {
+  const serializedData = JSON.stringify(data);
+  fs.writeFileSync(dataStoreFile, serializedData);
 }
 
-export const getData = (): DataStore => dataStore;
-export {setData};
+export function getData(): DataStore {
+  const serializedData = fs.readFileSync(dataStoreFile, 'utf8');
+  return JSON.parse(serializedData);
+}
+// function setData(newData: DataStore) {
+//   dataStore = newData;
+// }
+
+// export const getData = (): DataStore => dataStore;
+// export {setData};
 
 
 // YOU SHOULDNT NEED TO MODIFY THE FUNCTIONS BELOW IN ITERATION 1

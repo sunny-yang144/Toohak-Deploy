@@ -73,6 +73,7 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
   data.users.push(user);
 
   const token = generateToken(user);
+  data.tokens.push(token);
   const tokenStr = token.sessionId.toString();
   
   console.log(1);
@@ -108,22 +109,24 @@ export const adminAuthLogin = (email: string, password: string ): adminAuthLogin
 
 export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorObject => {
   const data = getData();
+  
   const tokenNum = parseInt(token);
   const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
   if (!validToken) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
-  const { user } = validToken;
-  const { userId, nameFirst, nameLast, email, numSuccessfulLogins, numFailedPasswordsSinceLastLogin } = user;
+  const user = data.users.find((user) => {
+    return user.tokens.find((token) => token.userId === tokenNum)
+  });
 
   return {
     user: {
-      userId,
-      name: `${nameFirst} ${nameLast}`,
-      email,
-      numSuccessfulLogins,
-      numFailedPasswordsSinceLastLogin,
+      userId: user.userId,
+      name: `${user.nameFirst} ${user.nameLast}`,
+      email: user.email,
+      numSuccessfulLogins: user.numSuccessfulLogins,
+      numFailedPasswordsSinceLastLogin: user.numSuccessfulLogins,
     },
   };
 };
