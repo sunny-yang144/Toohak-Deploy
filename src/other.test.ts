@@ -1,4 +1,6 @@
 import request from 'sync-request-curl';
+import { requestAdminAuthRegister } from './auth.test'
+import { requestAdminQuizList, requestAdminQuizCreate, requestAdminQuizInfo } from './quiz.test'
 
 import { port, url } from './config.json';
 const SERVER_URL = `${url}:${port}`;
@@ -8,7 +10,7 @@ const SERVER_URL = `${url}:${port}`;
 function clear() {
   const res = request(
     'DELETE',
-    SERVER_URL + '/clear',
+    SERVER_URL + '/v1/clear',
     {
       // Note that for PUT/POST requests, you should
       // use the key 'json' instead of the query string 'qs'
@@ -16,9 +18,6 @@ function clear() {
   );
   return JSON.parse(res.body.toString());
 }
-beforeEach(() => {          
-  clear();
-});
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
   PASSWORD = '1234UNSW',
@@ -31,28 +30,33 @@ enum validDetails {
   QUIZNAME = 'I have atleast 5',
   QUIZDESCRIPTION = 'description',
 }
-
+beforeEach(() => {          
+  clear();
+});
 describe('Tests for clear', () => {
   test('Successfully returns empty object', () => {
     expect(clear()).toStrictEqual({});
   });
 
   test('Sucessfully removes user', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     clear();
     // Since an error occurs, user must have been removed
-    expect(adminQuizList(user.userId)).toStrictEqual({ error: expect.any(String)});
-    expect(result.statusCode).toStrictEqual(200);
+    const response = requestAdminQuizList(user.body.token);
+
+    expect(response.body).toStrictEqual({ error: expect.any(String)});
+    expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Sucessfully removes quiz', () => {
-    const user = adminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = adminQuizCreate(user.userId, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     clear();
-    const user2 = adminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     // Since an error occurs, quiz must have been removed
-    expect(adminQuizInfo(user2.userId, quiz.quizId)).toStrictEqual({ error: expect.any(String)});
-    expect(result.statusCode).toStrictEqual(200);
+    const response = requestAdminQuizInfo(user2.body.token, quiz.body.quizId);
+    expect(response.body).toStrictEqual({ error: expect.any(String)});
+    expect(response.statusCode).toStrictEqual(400);
   });
 });
 

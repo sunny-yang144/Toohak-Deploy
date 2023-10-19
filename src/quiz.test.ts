@@ -6,7 +6,7 @@ const SERVER_URL = `${url}:${port}`;
 
 // Clears any lingering data elements before each test group
 // eliminates any unexpected bugs.
-function requestAdminQuizList ( token: string ) {
+export function requestAdminQuizList ( token: string ) {
   const res = request(
     'GET',
     SERVER_URL + '/v1/admin/quiz/list',
@@ -22,7 +22,7 @@ function requestAdminQuizList ( token: string ) {
   }
 }
 
-function requestAdminQuizCreate (token: string, name: string, description: string) {
+export function requestAdminQuizCreate (token: string, name: string, description: string) {
   const res = request(
     'POST',
     SERVER_URL + '/v1/admin/quiz',
@@ -39,7 +39,7 @@ function requestAdminQuizCreate (token: string, name: string, description: strin
     statusCode: res.statusCode
   }
 }
-function requestAdminQuizInfo (token: string, quizId: number ) {
+export function requestAdminQuizInfo (token: string, quizId: number ) {
   const res = request(
     'GET',
     SERVER_URL + `/v1/admin/quiz/${quizId}`,
