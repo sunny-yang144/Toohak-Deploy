@@ -3,7 +3,7 @@ import request from 'sync-request-curl';
 import { port, url } from './config.json';
 const SERVER_URL = `${url}:${port}`;
 
-function requestAdminUserDetailsUpdate (token: number, email: string, nameFirst: string, nameLast: string) {
+function requestAdminUserDetailsUpdate(token: number, email: string, nameFirst: string, nameLast: string) {
   const res = request(
     'PUT',
     SERVER_URL + '/v1/admin/user/details',
@@ -22,7 +22,7 @@ function requestAdminUserDetailsUpdate (token: number, email: string, nameFirst:
   }
 }
 
-function requestAdminUserPasswordUpdate (token: number, oldPassword: string, newPassword: string) {
+function requestAdminUserPasswordUpdate(token: number, oldPassword: string, newPassword: string) {
   const res = request(
     'PUT',
     SERVER_URL + '/v1/admin/user/password',
@@ -31,6 +31,23 @@ function requestAdminUserPasswordUpdate (token: number, oldPassword: string, new
         token,
         oldPassword,
         newPassword,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  }
+}
+
+function requestAdminQuizTransfer(token: number, userEmail: string, quizId: number) {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
+    {
+      json: {
+        token,
+        userEmail,
       }
     }
   );
@@ -49,6 +66,10 @@ enum validDetails {
   PASSWORD2 = '4321UNSW',
   NAMEFIRST2 = 'Jamie',
   NAMELAST2 = 'Oliver',
+  QUIZNAME = 'World Quiz',
+  QUIZDESCRIPTION = 'About flags, countries and capitals!',
+  QUIZNAME2 = 'Soccer Quiz',
+  QUIZDESCRIPTION2 = 'GOOOAAAALLLL (Part 2)'
 }
 
 describe('Testing adminUserDetails', () => {
@@ -205,5 +226,116 @@ describe('Testing adminUserPasswordUpdate', () => {
     const result = requestAdminUserPasswordUpdate(parseInt('-666'), validDetails.PASSWORD, validDetails.PASSWORD);
     expect(result.body).toStrictEqual({ error: expect.any(String) });
     expect(result.statusCode).toStrictEqual(401);
+  });
+});
+
+describe('Testing adminQuizTransfer', () => {
+  test('Successful adminQuizTransfer', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
+    const userLogin2 = requestAdminAuthLogin(validDetails.EMAIL2, validDetails.PASSWORD2);
+    const quizId1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const result = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL2, quizId1);
+    // Check if function returns any errors
+    expect(result.body).toStrictEqual({});
+    expect(result.statusCode).toStrictEqual(200);
+    // Confirm user1 no longer has quiz while user2 does
+    expect(adminQuizList(user.body.token)).toStrictEqual
+    ({ quizzes: 
+      {}
+    });
+    expect(adminQuizList(user.body.token)).toStrictEqual
+    ({ quizzes: 
+      {
+        quizId: quizId1,
+        name: validDetails.QUIZNAME
+      }
+    });
+  });
+  test('Unsuccessful adminQuizTransfer, quizId does not refer to a valid quiz', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
+    const userLogin2 = requestAdminAuthLogin(validDetails.EMAIL2, validDetails.PASSWORD2);
+    const quizId1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const result = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL2, parseInt('-666'));
+    expect(result.body).toStrictEqual({ error: expect.any(String) });
+    expect(result.statusCode).toStrictEqual(400);
+  });
+  test('Unsuccessful adminQuizTransfer, quizId does not refer to a quiz that this user owns', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
+    const userLogin2 = requestAdminAuthLogin(validDetails.EMAIL2, validDetails.PASSWORD2);
+    const quizId1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const quizId2 = requestAdminQuizCreate(user2.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
+    const result = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL2, quizId2);
+    expect(result.body).toStrictEqual({ error: expect.any(String) });
+    expect(result.statusCode).toStrictEqual(400);
+  });
+  test('Unsuccessful adminQuizTransfer, userEmail is not a real user', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
+    const userLogin2 = requestAdminAuthLogin(validDetails.EMAIL2, validDetails.PASSWORD2);
+    const quizId1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const result = requestAdminQuizTransfer(user.body.token, 'notRealUser@gmail.com', quizId1);
+    expect(result.body).toStrictEqual({ error: expect.any(String) });
+    expect(result.statusCode).toStrictEqual(400);
+  });
+  test('Unsuccessful adminQuizTransfer, userEmail is the current logged in user', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
+    const userLogin2 = requestAdminAuthLogin(validDetails.EMAIL2, validDetails.PASSWORD2);
+    const quizId1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const result = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL, quizId1);
+    expect(result.body).toStrictEqual({ error: expect.any(String) });
+    expect(result.statusCode).toStrictEqual(400);
+  });
+  test('Unsuccessful adminQuizTransfer, quizId refers to a quiz that has a name that is already used by the target user', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
+    const userLogin2 = requestAdminAuthLogin(validDetails.EMAIL2, validDetails.PASSWORD2);
+    const quizId1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const quizId2 = requestAdminQuizCreate(user2.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION2);
+    const result = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL2, quizId1);
+    expect(result.body).toStrictEqual({ error: expect.any(String) });
+    expect(result.statusCode).toStrictEqual(400);
+  });
+  test('Unsuccessful adminQuizTransfer, all sessions for this quiz must be in END state', () => {
+  });
+  test('Unsuccessful adminQuizTransfer, token is empty', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
+    const userLogin2 = requestAdminAuthLogin(validDetails.EMAIL2, validDetails.PASSWORD2);
+    const quizId1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const result = requestAdminQuizTransfer(parseInt(''), validDetails.EMAIL2, quizId1);
+    expect(result.body).toStrictEqual({ error: expect.any(String) });
+    expect(result.statusCode).toStrictEqual(401);
+  });
+  test('Unsuccessful adminQuizTransfer, token is invalid', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
+    const userLogin2 = requestAdminAuthLogin(validDetails.EMAIL2, validDetails.PASSWORD2);
+    const quizId1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const result = requestAdminQuizTransfer(parseInt('-666'), validDetails.EMAIL2, quizId1);
+    expect(result.body).toStrictEqual({ error: expect.any(String) });
+    expect(result.statusCode).toStrictEqual(401);
+  });
+  test('Unsuccessful adminQuizTransfer, token is valid but user does not own this quiz', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
+    const userLogin2 = requestAdminAuthLogin(validDetails.EMAIL2, validDetails.PASSWORD2);
+    const quizId1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const quizId2 = requestAdminQuizCreate(user2.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
+    const result = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL2, quizId2);
+    expect(result.body).toStrictEqual({ error: expect.any(String) });
+    expect(result.statusCode).toStrictEqual(403);
   });
 });
