@@ -10,9 +10,8 @@ import path from 'path';
 import process from 'process';
 import { adminAuthRegister, adminUserDetails, adminAuthLogin } from './auth';
 import { adminQuizList, adminQuizCreate, adminQuizInfo, adminQuizRemove, adminQuizNameUpdate, adminQuizDescriptionUpdate } from './quiz';
-import { clear, generateToken } from './other'
+import { clear, generateToken } from './other';
 import { getData, DataStore } from './dataStore';
-
 
 // Set up web app
 const app = express();
@@ -29,25 +28,22 @@ app.use('/docs', sui.serve, sui.setup(YAML.parse(file), { swaggerOptions: { docE
 
 const PORT: number = parseInt(process.env.PORT || config.port);
 const HOST: string = process.env.IP || 'localhost';
-
-let dataStore: DataStore = getData();
+// Initialises the File Storage at dataStorage.json
+const dataStore: DataStore = getData();
 // ====================================================================
 //  ================= WORK IS DONE BELOW THIS LINE ===================
 // ====================================================================
 
 // Example get request
-/*
+
 app.get('/echo', (req: Request, res: Response) => {
-  const message = req.query.echo as string;
-  const response = echo(message);
-  if ('error' in response) {
-    return res.status(response.statusCode).json({
-      error: response.error
-    });    // when implementing functions add a status code along with the error
+  const data = req.query.echo as string;
+  const ret = echo(data);
+  if ('error' in ret) {
+    res.status(400);
   }
-  return res.json(response);
+  return res.json(ret);
 });
-*/
 
 // ========================================================================= //
 // SERVER ROUTES
@@ -93,7 +89,7 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
 });
 
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
-  const token  = req.query.token as string;
+  const token = req.query.token as string;
 
   const response = adminQuizList(token);
 
@@ -150,7 +146,7 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const { token, name } = req.body;
-  
+
   const response = adminQuizNameUpdate(token, quizId, name);
 
   if ('error' in response) {
@@ -164,7 +160,7 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
 app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const { token, description } = req.body;
-  
+
   const response = adminQuizDescriptionUpdate(token, quizId, description);
 
   if ('error' in response) {

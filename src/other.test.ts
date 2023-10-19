@@ -1,6 +1,6 @@
 import request from 'sync-request-curl';
-import { requestAdminAuthRegister } from './auth.test'
-import { requestAdminQuizList, requestAdminQuizCreate, requestAdminQuizInfo } from './quiz.test'
+import { requestAdminAuthRegister } from './auth.test';
+import { requestAdminQuizList, requestAdminQuizCreate, requestAdminQuizInfo } from './quiz.test';
 
 import { port, url } from './config.json';
 const SERVER_URL = `${url}:${port}`;
@@ -30,7 +30,7 @@ enum validDetails {
   QUIZNAME = 'I have atleast 5',
   QUIZDESCRIPTION = 'description',
 }
-beforeEach(() => {          
+beforeEach(() => {
   clear();
 });
 describe('Tests for clear', () => {
@@ -44,7 +44,7 @@ describe('Tests for clear', () => {
     // Since an error occurs, user must have been removed
     const response = requestAdminQuizList(user.body.token);
 
-    expect(response.body).toStrictEqual({ error: expect.any(String)});
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
@@ -55,8 +55,7 @@ describe('Tests for clear', () => {
     const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     // Since an error occurs, quiz must have been removed
     const response = requestAdminQuizInfo(user2.body.token, quiz.body.quizId);
-    expect(response.body).toStrictEqual({ error: expect.any(String)});
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 });
-

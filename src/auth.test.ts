@@ -19,7 +19,7 @@ export function requestAdminAuthRegister (email: string, password: string, nameF
   return {
     body: JSON.parse(res.body.toString()),
     statusCode: res.statusCode
-  }
+  };
 }
 export function requestAdminAuthLogin (email: string, password: string) {
   const res = request(
@@ -35,22 +35,22 @@ export function requestAdminAuthLogin (email: string, password: string) {
   return {
     body: JSON.parse(res.body.toString()),
     statusCode: res.statusCode
-  }
+  };
 }
 export function requestAdminUserDetails (token: number) {
   const res = request(
     'GET',
     SERVER_URL + '/v1/admin/user/details',
     {
-      qs: { 
-        token 
+      qs: {
+        token
       }
     }
   );
   return {
     body: JSON.parse(res.body.toString()),
     statusCode: res.statusCode
-  }
+  };
 }
 
 function clear() {
@@ -64,9 +64,8 @@ function clear() {
   return {
     body: JSON.parse(res.body.toString()),
     statusCode: res.statusCode
-  }
+  };
 }
-
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
@@ -81,7 +80,7 @@ enum validDetails {
 
 // Clears any lingering data elements before each test group
 // eliminates any unexpected bugs.
-beforeEach(() => {          
+beforeEach(() => {
   clear();
 });
 
@@ -97,19 +96,19 @@ describe('Tests for adminAuthRegister', () => {
    * NameLast is less than 2 characters or more than 20 characters
    * Password is less than 8 characters
    * Password does not contain at least one number and at least one letter
-   *      
+   *
    * Return Object:
    * { authUserId }
    */
   test('Successful User Created when given valid parameters', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    expect(user.body).toStrictEqual({ token: expect.any(String) }); 
+    expect(user.body).toStrictEqual({ token: expect.any(String) });
     expect(user.statusCode).toStrictEqual(200);
   });
 
   test('Error when given an email address is already used', () => {
     // Created a user successfully
-    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const user2 = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     // Another user with the same email
     expect(user2.body).toStrictEqual({ error: expect.any(String) }); // "This email is already in use"
@@ -119,12 +118,12 @@ describe('Tests for adminAuthRegister', () => {
   test('Error when a non-valid email is used', () => {
     // Does not satisfy the validator.isEmail function
     const user = requestAdminAuthRegister('helloworld@VeryLegitEmailscom', validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    expect(user.body).toStrictEqual({ error: expect.any(String) }); //"This is not a valid email"
+    expect(user.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid email"
     expect(user.statusCode).toStrictEqual(400);
   });
 
   test('Error when non-valid characters are used in Namefirst', () => {
-    // These non-valid characters are characters other than lowercase letters, 
+    // These non-valid characters are characters other than lowercase letters,
     // uppercase letters, spaces, hyphens, or apostrophes.
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, '0000', validDetails.NAMELAST);
     expect(user.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid first name"
@@ -134,7 +133,7 @@ describe('Tests for adminAuthRegister', () => {
   test('Error when Namefirst is too short', () => {
     // This occurs when NameFirst is shorter than 2 characters
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, 'X', validDetails.NAMELAST);
-    expect(user.body).toStrictEqual({ error: expect.any(String)} ); //"This is not a valid first name"
+    expect(user.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid first name"
     expect(user.statusCode).toStrictEqual(400);
   });
 
@@ -146,10 +145,10 @@ describe('Tests for adminAuthRegister', () => {
   });
 
   test('Error when non-valid characters are used in NameLast', () => {
-    // These non-valid characters are characters other than lowercase letters, 
+    // These non-valid characters are characters other than lowercase letters,
     // uppercase letters, spaces, hyphens, or apostrophes.
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, '0000');
-    expect(user.body).toStrictEqual({ error: expect.any(String) }); //"This is not a valid last name"
+    expect(user.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid last name"
     expect(user.statusCode).toStrictEqual(400);
   });
 
@@ -180,13 +179,12 @@ describe('Tests for adminAuthRegister', () => {
     expect(user.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid password"
     expect(user.statusCode).toStrictEqual(400);
   });
-  
 });
 
 describe('Tests for adminAuthLogin', () => {
-  beforeEach(() => {          
+  beforeEach(() => {
     requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-  }); 
+  });
 
   test('Email does not exist', () => {
     const user = requestAdminAuthLogin('nonexistant@email.com', validDetails.PASSWORD);
@@ -213,7 +211,8 @@ describe('Tests for adminUserDetails', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminUserDetails(user.body.token);
     expect(response.body).toStrictEqual(
-      { user:
+      {
+        user:
         {
           userId: expect.any(Number),
           name: 'Jack Rizzella',
@@ -222,16 +221,14 @@ describe('Tests for adminUserDetails', () => {
           numFailedPasswordsSinceLastLogin: expect.any(Number),
         }
       }
-    ); 
+    );
     expect(response.statusCode).toStrictEqual(200);
   });
 
   test('Error when an invalid token is passed', () => {
-
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminUserDetails(parseInt(user.body.token) + 1);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid UserId" 
+    expect(response.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid UserId"
     expect(response.statusCode).toStrictEqual(401);
   });
 });
-
