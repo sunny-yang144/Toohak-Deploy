@@ -1,5 +1,5 @@
 import request from 'sync-request-curl';
-import { requestAdminAuthRegister, requestAdminAuthLogin, requestAdminUserDetails } from './auth.test';
+import { requestAdminAuthRegister } from './auth.test';
 
 import { port, url } from './config.json';
 const SERVER_URL = `${url}:${port}`;
@@ -157,7 +157,7 @@ beforeEach(() => {
 describe('Tests for adminQuizList', () => {
   test('Invalid token', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const response = requestAdminQuizList(user.body.token + 1);
     expect(response.body).toStrictEqual({ error: expect.any(String) }); // 'Invalid token'
     expect(response.statusCode).toStrictEqual(401);
@@ -266,9 +266,9 @@ describe('Tests for AdminQuizCreate', () => {
     expect(response.statusCode).toStrictEqual(400);
   });
   test('Existing Quiz', () => {
-    //	Quiz with the same name has already been
-    //	created by the user which mean this assumes
-    //	a quiz already exists
+    // Quiz with the same name has already been
+    // created by the user which mean this assumes
+    // a quiz already exists
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const response = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
@@ -291,7 +291,7 @@ describe('Tests for AdminQuizCreate', () => {
     // using 2 for now since the return for authUserId is currently 1
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, 'This description is to be really long' +
-		"and even longer than 100 characters which I don't really know how to do");
+    "and even longer than 100 characters which I don't really know how to do");
     expect(response.body).toStrictEqual(
       { error: expect.any(String) }
     ); // Description Too Long
@@ -516,7 +516,7 @@ describe('Tests for adminQuizNameUpdate', () => {
   });
   test('Name is already used by current logged in user for another quiz', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz1 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const quiz2 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
     const response = requestAdminQuizNameUpdate(user.body.token, quiz2.body.quizId, validDetails.QUIZNAME2);
     expect(response.body).toStrictEqual({ error: expect.any(String) }); // User already owns a quiz with the provided name

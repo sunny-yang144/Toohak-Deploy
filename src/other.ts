@@ -1,4 +1,4 @@
-import { setData, getData, Token, User, Quiz, DataStore } from './dataStore';
+import { setData, getData, Token, User, Quiz } from './dataStore';
 
 export function clear (): Record<string, never> {
   setData({

@@ -10,8 +10,7 @@ import path from 'path';
 import process from 'process';
 import { adminAuthRegister, adminUserDetails, adminAuthLogin } from './auth';
 import { adminQuizList, adminQuizCreate, adminQuizInfo, adminQuizRemove, adminQuizNameUpdate, adminQuizDescriptionUpdate } from './quiz';
-import { clear, generateToken } from './other';
-import { getData, DataStore } from './dataStore';
+import { clear } from './other';
 
 // Set up web app
 const app = express();
@@ -28,8 +27,6 @@ app.use('/docs', sui.serve, sui.setup(YAML.parse(file), { swaggerOptions: { docE
 
 const PORT: number = parseInt(process.env.PORT || config.port);
 const HOST: string = process.env.IP || 'localhost';
-// Initialises the File Storage at dataStorage.json
-const dataStore: DataStore = getData();
 // ====================================================================
 //  ================= WORK IS DONE BELOW THIS LINE ===================
 // ====================================================================

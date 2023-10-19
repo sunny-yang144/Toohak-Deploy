@@ -1,4 +1,4 @@
-import { getData, setData, User, Quiz } from './dataStore';
+import { getData, setData } from './dataStore';
 import { generateQuizId } from './other';
 
 interface ErrorObject {
@@ -23,9 +23,6 @@ interface adminQuizInfoReturn {
   timeLastEdited: number,
   description: string,
 }
-interface adminQuizRemoveReturn {}
-interface adminQuizNameUpdateReturn {} // Record<string, never>
-interface adminQuizDescriptionUpdateReturn {}
 
 /**
  * Lists out all of the Quizzes a user owns
@@ -180,7 +177,7 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
     - QuizId does not refer to a valid quiz
     - QuizId does not refer to a quiz the user owns
 */
-export const adminQuizRemove = (token: string, quizId: number): adminQuizRemoveReturn | ErrorObject => {
+export const adminQuizRemove = (token: string, quizId: number): Record<string, never> | ErrorObject => {
   const data = getData();
   const tokenNum = parseInt(token);
   const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
@@ -227,7 +224,7 @@ export const adminQuizRemove = (token: string, quizId: number): adminQuizRemoveR
  * @returns {{}} | errorMessage
  */
 
-export const adminQuizNameUpdate = (token: string, quizId: number, name: string): adminQuizNameUpdateReturn | ErrorObject => {
+export const adminQuizNameUpdate = (token: string, quizId: number, name: string): Record<string, never> | ErrorObject => {
   const data = getData();
 
   const tokenNum = parseInt(token);
@@ -299,7 +296,7 @@ function isAlphanumericWithSpaces(str: string) {
  * @returns {{}} | errorMessage
  */
 
-export const adminQuizDescriptionUpdate = (token: string, quizId: number, description: string): adminQuizDescriptionUpdateReturn | ErrorObject => {
+export const adminQuizDescriptionUpdate = (token: string, quizId: number, description: string): Record<string, never> | ErrorObject => {
   const data = getData();
 
   const tokenNum = parseInt(token);
