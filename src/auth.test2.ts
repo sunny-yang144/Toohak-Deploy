@@ -36,12 +36,14 @@ describe('Tests for adminAuthLogout', () => {
         expect(userLogin.body).toStrictEqual({ token: expect.any(String) });
         
         // Logout user
-        expect(requestAdminAuthLogout(user.body.token)).toStrictEqual({});
+        const logoutReturn = requestAdminAuthLogout(user.body.token);
+        expect(logoutReturn.body).toStrictEqual({});
+        expect(logoutReturn.statusCode).toStrictEqual(200);
 
         // check if user can use functions
-        expect(requestAdminUserDetails(user.body.token)).toStrictEqual({ error: "User has been logged out."});
-
-        expect(user.statusCode).toStrictEqual(200);
+        const getUserDetails = requestAdminUserDetails(user.body.token);
+        expect(getUserDetails.body).toStrictEqual({ error: "User has been logged out."});
+        expect(getUserDetails.statusCode).toStrictEqual(401);
     });
 
     test('Token is empty or invalid', () => {
