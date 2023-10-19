@@ -3,7 +3,7 @@ import request from 'sync-request-curl';
 import { port, url } from './config.json';
 const SERVER_URL = `${url}:${port}`;
 
-function requestAdminAuthRegister (email: string, password: string, nameFirst: string, nameLast: string) {
+export function requestAdminAuthRegister (email: string, password: string, nameFirst: string, nameLast: string) {
   const res = request(
     'POST',
     SERVER_URL + '/v1/admin/auth/register',
@@ -21,7 +21,7 @@ function requestAdminAuthRegister (email: string, password: string, nameFirst: s
     statusCode: res.statusCode
   }
 }
-function requestAdminAuthLogin (email: string, password: string) {
+export function requestAdminAuthLogin (email: string, password: string) {
   const res = request(
     'POST',
     SERVER_URL + '/v1/admin/auth/login',
@@ -37,7 +37,7 @@ function requestAdminAuthLogin (email: string, password: string) {
     statusCode: res.statusCode
   }
 }
-function requestAdminUserDetails (authUserId: number) {
+export function requestAdminUserDetails (authUserId: number) {
   const res = request(
     'GET',
     SERVER_URL + '/v1/admin/auth/details',

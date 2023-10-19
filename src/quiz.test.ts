@@ -6,7 +6,7 @@ const SERVER_URL = `${url}:${port}`;
 
 // Clears any lingering data elements before each test group
 // eliminates any unexpected bugs.
-function requestAdminQuizList ( authUserId: number ) {
+export function requestAdminQuizList ( authUserId: number ) {
   const res = request(
     'GET',
     SERVER_URL + '/v1/admin/quiz/list',
@@ -20,7 +20,7 @@ function requestAdminQuizList ( authUserId: number ) {
   }
 }
 
-function requestAdminQuizCreate (authUserId: number, name: string, description: string) {
+export function requestAdminQuizCreate (authUserId: number, name: string, description: string) {
   const res = request(
     'POST',
     SERVER_URL + '/v1/admin/quiz',
