@@ -26,7 +26,7 @@ export interface Quiz {
 }
 
 // The name for the dataStoreFile
-const dataStoreFile = process.cwd() + '/dataStorage.json';
+export const dataStoreFile = process.cwd() + '/dataStorage.json';
 // We need to add array of questions and array of answers Iteration 2 functions
 //
 /*
@@ -56,16 +56,37 @@ export interface DataStore {
   tokens: Token[] // Valid tokens, allows server to search existing tokens.
 }
 
-// Converts data into JSON and writes it into the dataStorage file
-export function setData(data: DataStore) {
-  const serializedData = JSON.stringify(data, null, 2);
-  fs.writeFileSync(dataStoreFile, serializedData);
-}
+let data: DataStore = {
+  users: [
+    // {
+    //   userId: 0,
+    //   email: 'helloworld@gmail.com',
+    //   nameFirst: 'Jack',
+    //   nameLast: 'Rizzella',
+    //   password: '1234UNSW',
+    //   numSuccessfulLogins: 0,
+    //   numFailedPasswordsSinceLastLogin: 0,
+    //   ownedQuizzes: [],
+    //   tokens: [Array]
+    // }
+  ],
+  quizzes: [],
+  tokens: [ 
+  //{ sessionId: 0, userId: 0 } 
+  ]
+};
 
+// Converts data into JSON and writes it into the dataStorage file
+export function setData(newData: DataStore) {
+  const serializedData = JSON.stringify(newData, null, 2);
+  fs.writeFileSync(dataStoreFile, serializedData);
+  data = newData;
+}
 // Opens the dataStorage JSON file and translates it back into typescript
 export function getData(): DataStore {
-  const serializedData = fs.readFileSync(dataStoreFile, 'utf8');
-  return JSON.parse(serializedData);
+  // const serializedData = fs.readFileSync(dataStoreFile, 'utf8');
+  // return JSON.parse(serializedData);
+  return data;
 }
 
 // YOU SHOULDNT NEED TO MODIFY THE FUNCTIONS BELOW IN ITERATION 1
