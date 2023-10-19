@@ -114,9 +114,6 @@ function clear() {
     statusCode: res.statusCode
   }
 }
-beforeEach(() => {          
-  clear();
-});
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
@@ -132,6 +129,10 @@ enum validDetails {
   QUIZNAME2 = 'Soccer Quiz',
   QUIZDESCRIPTION2 = 'GOOOAAAALLLL (Part 2)'
 }
+
+beforeEach(() => {          
+  clear();
+});
   /**
    * 1. [x] 2. [x] 3. [x] 4. [x] 5. [x] 
    * 
@@ -154,9 +155,6 @@ enum validDetails {
    * 
    */
 describe('Tests for adminQuizList', () => {
-  beforeEach(() => {
-    clear();
-  });
   test('Invalid token', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
@@ -232,11 +230,6 @@ describe('Tests for adminQuizList', () => {
 describe('Tests for AdminQuizCreate', () => {
 
     // Clear the database, and then make an user so that we can generate quizzes.
-    
-    beforeEach(() => {
-      clear();  
-           
-    });
     test('Successful Quiz Created', () => {
       // user = {authUserId: number}
       const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST); 
@@ -306,10 +299,6 @@ describe('Tests for AdminQuizCreate', () => {
 });
 
 describe('Tests for adminQuizRemove', () => {
-  beforeEach(() => {
-    clear();
-  });
-  
   test('Invalid Token.', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
@@ -471,10 +460,6 @@ describe('Tests for adminQuizInfo', () => {
 
 describe('Tests for adminQuizNameUpdate', () => {
   // Clear and create a valid quiz and user for the test to apply requestAdminQuizNameUpdate
-  beforeEach(() => {
-    clear();
-  });
-
   test('Sucessfully updated quiz name', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
@@ -542,10 +527,6 @@ describe('Tests for adminQuizNameUpdate', () => {
 
 describe('Tests for adminQuizDescriptionUpdate', () => {
   // Clear and create a valid quiz and user for the test to apply adminQuizDescriptionUpdate
-  beforeEach(() => {
-    clear();
-  });
-
   test('Sucessfully updated quiz description', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);

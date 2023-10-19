@@ -32,11 +32,6 @@ enum validDetails {
   QUIZDESCRIPTION = 'description',
 }
 
-// Couple suggestions:
-// Add a test where once data is erased many other functions wouldn't
-// work since there is not Id reference
-// Can also check if data is empty where data is stored in
-// dataStore.js
 describe('Tests for clear', () => {
   test('Successfully returns empty object', () => {
     expect(clear()).toStrictEqual({});

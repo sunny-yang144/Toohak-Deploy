@@ -185,7 +185,6 @@ describe('Tests for adminAuthRegister', () => {
 
 describe('Tests for adminAuthLogin', () => {
   beforeEach(() => {          
-    clear();
     requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
   }); 
 
@@ -209,11 +208,6 @@ describe('Tests for adminAuthLogin', () => {
 });
 
 describe('Tests for adminUserDetails', () => {
-  
-  beforeEach(() => {          
-    clear();
-  }); 
-
   test('Succesful accessing of a users details', () => {
     // If there user id exists, then return user details.
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
