@@ -1,9 +1,9 @@
-import { 
+import {
   requestAdminAuthRegister,
   requestAdminAuthLogin,
   requestAdminUserDetails,
   clear,
-} from './test-helpers'
+} from './test-helpers';
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',

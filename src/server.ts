@@ -198,7 +198,7 @@ const server = app.listen(PORT, HOST, () => {
   if (fs.existsSync(dataStoreFile)) {
     const serializedData = fs.readFileSync(dataStoreFile, 'utf8');
     setData(JSON.parse(serializedData));
-  };
+  }
   // DO NOT CHANGE THIS LINE
   console.log(`⚡️ Server started on port ${PORT} at ${HOST}`);
 });

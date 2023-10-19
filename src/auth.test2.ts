@@ -2,15 +2,15 @@ import request from 'sync-request-curl';
 
 import { port, url } from './config.json';
 import { clear } from './other';
-import {  
-  requestAdminAuthRegister,         
-  requestAdminUserDetails, 
-  requestAdminAuthLogin, 
-  } from './auth.test';
-import {  
-    requestAdminQuizCreate, 
-    requestAdminQuizList 
-  } from './quiz.test';
+import {
+  requestAdminAuthRegister,
+  requestAdminUserDetails,
+  requestAdminAuthLogin,
+} from './auth.test';
+import {
+  requestAdminQuizCreate,
+  requestAdminQuizList
+} from './quiz.test';
 const SERVER_URL = `${url}:${port}`;
 
 function requestAdminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string) {
@@ -29,7 +29,7 @@ function requestAdminUserDetailsUpdate(token: string, email: string, nameFirst: 
   return {
     body: JSON.parse(res.body.toString()),
     statusCode: res.statusCode
-  }
+  };
 }
 
 function requestAdminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) {
@@ -47,7 +47,7 @@ function requestAdminUserPasswordUpdate(token: string, oldPassword: string, newP
   return {
     body: JSON.parse(res.body.toString()),
     statusCode: res.statusCode
-  }
+  };
 }
 
 function requestAdminQuizTransfer(token: string, userEmail: string, quizId: string) {
@@ -64,7 +64,7 @@ function requestAdminQuizTransfer(token: string, userEmail: string, quizId: stri
   return {
     body: JSON.parse(res.body.toString()),
     statusCode: res.statusCode
-  }
+  };
 }
 
 enum validDetails {
@@ -82,7 +82,7 @@ enum validDetails {
   QUIZDESCRIPTION2 = 'GOOOAAAALLLL (Part 2)'
 }
 
-beforeEach(() => {          
+beforeEach(() => {
   clear();
 });
 
@@ -95,7 +95,8 @@ describe('Testing adminUserDetails', () => {
     expect(response.statusCode).toStrictEqual(200);
     // Check if parameters were updated
     expect(requestAdminUserDetails(user.body.token)).toStrictEqual
-    ({ user:
+    ({
+      user:
       {
         userId: expect.any(Number),
         name: `${validDetails.NAMEFIRST2} ${validDetails.NAMELAST2}`,
@@ -165,7 +166,7 @@ describe('Testing adminUserDetails', () => {
 describe('Testing adminUserPasswordUpdate', () => {
   test('Successful adminUserPasswordUpdate', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const response = requestAdminUserPasswordUpdate(user.body.token, validDetails.PASSWORD, validDetails.PASSWORD2)
+    const response = requestAdminUserPasswordUpdate(user.body.token, validDetails.PASSWORD, validDetails.PASSWORD2);
     // Check if function returns any errors
     expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
@@ -234,14 +235,15 @@ describe('Testing adminQuizTransfer', () => {
     expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
     // Confirm user1 no longer has quiz and that user2 does
-    expect(requestAdminQuizList(user.body.token)).toStrictEqual({ quizzes: []});
+    expect(requestAdminQuizList(user.body.token)).toStrictEqual({ quizzes: [] });
     expect(requestAdminQuizList(user.body.token)).toStrictEqual(
-      { quizzes: 
+      {
+        quizzes:
         [{
           quizId: quizId1,
           name: validDetails.QUIZNAME
         }]
-    });
+      });
   });
   test('Unsuccessful adminQuizTransfer, quizId does not refer to a valid quiz', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);

@@ -71,8 +71,8 @@ let data: DataStore = {
     // }
   ],
   quizzes: [],
-  tokens: [ 
-  //{ sessionId: 0, userId: 0 } 
+  tokens: [
+  // { sessionId: 0, userId: 0 }
   ]
 };
 

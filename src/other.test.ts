@@ -1,17 +1,10 @@
-import request from 'sync-request-curl';
-import { 
+import {
   requestAdminAuthRegister,
   requestAdminQuizList,
   requestAdminQuizCreate,
   requestAdminQuizInfo,
   clear
 } from './test-helpers';
-
-import { port, url } from './config.json';
-const SERVER_URL = `${url}:${port}`;
-
-// Clears any lingering data elements before each test group
-// eliminates any unexpected bugs.
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
