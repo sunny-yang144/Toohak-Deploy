@@ -17,13 +17,11 @@ interface adminQuizCreateReturn {
   quizId: number
 }
 interface adminQuizInfoReturn {
-  quizInfo: {
-    quizId: number,
-    name: string,
-    timeCreated: number,
-    timeLastEdited: number,
-    description: string,
-  }
+  quizId: number,
+  name: string,
+  timeCreated: number,
+  timeLastEdited: number,
+  description: string,
 }
 interface adminQuizRemoveReturn {}
 interface adminQuizNameUpdateReturn {} // Record<string, never>
@@ -46,8 +44,6 @@ interface adminQuizDescriptionUpdateReturn {}
 export const adminQuizList = ( token: string ): adminQuizListReturn | ErrorObject => {
   let data = getData();
   // Find user with the inputted Id
-  console.log(token);
-  console.log(data);
   const tokenNum = parseInt(token);
   const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
   // Check whether token is valid
@@ -89,9 +85,9 @@ export const adminQuizCreate = ( token: string, name: string, description: strin
   // another quiz
   const user = validToken.user;
   
-  if (data.quizzes.find((quiz) => quiz.ownerId === user.userId && quiz.name === name)) {
-    return { error: `User ID ${user.userId} already has quiz with name: ${name}`, statusCode: 400 };
-  }
+  if (user.ownedQuizzes.find(quiz => quiz.name === name)) {
+    return { error: `The name ${name} is already used by another quiz!`, statusCode: 400 };
+  };
   // Check if description length is more than 100 characters
   if (description.length > 100) {
     return { error: `Description is more than 100 characters.`, statusCode: 400 };
@@ -137,17 +133,19 @@ export const adminQuizCreate = ( token: string, name: string, description: strin
 *   description: string
 * }} | errorMessage
 */
-export const adminQuizInfo = ( authUserId: number, quizId: number ): adminQuizInfoReturn | ErrorObject => {
+export const adminQuizInfo = ( token: string, quizId: number ): adminQuizInfoReturn | ErrorObject => {
   let data = getData();
-  let user = data.users.find(user => user.userId === authUserId);
-  // Check whether authUsedId is valid
-  if (!user) {
-    return { error: `The user ID ${authUserId} is invalid!`, statusCode: 401};
+  const tokenNum = parseInt(token);
+  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
+  // Check whether token is valid
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   };
   // Check whether quiz with quizId exists
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400};
   };
+  const user = validToken.user;
   // Check whether quiz with quizId is owned by user with authUserId
   if (!user.ownedQuizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403};
@@ -161,7 +159,7 @@ export const adminQuizInfo = ( authUserId: number, quizId: number ): adminQuizIn
     timeLastEdited: quiz.timeLastEdited,
     description: quiz.description,
   }
-  return quizInfo;
+  return quizInfo
 }
 /*
   Permanently remove quiz given a quizId, removes from
@@ -173,24 +171,25 @@ export const adminQuizInfo = ( authUserId: number, quizId: number ): adminQuizIn
     - QuizId does not refer to a valid quiz
     - QuizId does not refer to a quiz the user owns
 */
-export const adminQuizRemove = ( authUserId: number, quizId: number ): adminQuizRemoveReturn | ErrorObject => {
+export const adminQuizRemove = ( token: string, quizId: number ): adminQuizRemoveReturn | ErrorObject => {
   let data = getData();
-
-  // Find given user
-  const user = data.users.find(userFind => userFind.userId === authUserId);
-  // Error, no authUserId found in users
-  if (!user) {
-    return { error: `Given authUserId ${authUserId} is not valid`, statusCode: 401 }
+  const tokenNum = parseInt(token);
+  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
+  // Check whether token is valid
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   };
   // Error, no quizId found in quizzes
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
   if (quizIndex === -1) {
     return { error: `Given quizId ${quizId} is not valid`, statusCode: 400}   
   };
+  const userToken = validToken.user;
   // Error, userId does not own quizId
-  const ownQuizIndex = user.ownedQuizzes.findIndex(ownQuiz => ownQuiz === quizId);
+  let user = data.users.find(user => user.userId === userToken.userId);
+  const ownQuizIndex = user.ownedQuizzes.findIndex(ownQuiz => ownQuiz.quizId === quizId);
   if (ownQuizIndex === -1) {
-    return { error: `Given authUserId ${authUserId} does not own quiz ${quizId}`, statusCode: 403 }
+    return { error: `Given authUserId ${user.userId} does not own quiz ${quizId}`, statusCode: 403 }
   };
   // Success, remove quiz then return empty
   data.quizzes.splice(quizIndex, 1);
@@ -220,14 +219,19 @@ export const adminQuizRemove = ( authUserId: number, quizId: number ): adminQuiz
  * @returns {{}} | errorMessage
  */
 
-export const adminQuizNameUpdate = ( authUserId: number, quizId: number, name: string ): adminQuizNameUpdateReturn | ErrorObject => {
+export const adminQuizNameUpdate = ( token: string, quizId: number, name: string ): adminQuizNameUpdateReturn | ErrorObject => {
   let data = getData();
 
-  let user = data.users.find(user => user.userId === authUserId);
-
-  if (!user) {
-    return { error: `The user ID ${authUserId} is invalid!`, statusCode: 401 };
+  const tokenNum = parseInt(token);
+  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
+  // Check whether token is valid
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   };
+
+  const userToken = validToken.user;
+  let user = data.users.find(user => user.userId === userToken.userId);
+
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   };
@@ -244,17 +248,22 @@ export const adminQuizNameUpdate = ( authUserId: number, quizId: number, name: s
     return { error: `The name ${name} is too long (<30).`, statusCode: 400 };
   };
 
-  if (data.quizzes.find(quiz => quiz.ownerId === authUserId && quiz.name === name)) {
+  if (user.ownedQuizzes.find(quiz => quiz.name === name)) {
     return { error: `The name ${name} is already used by another quiz!`, statusCode: 400 };
   };
 
   // goto the quiz object with matching id, and change name.
   let editedQuiz = data.quizzes.find(quiz => quiz.quizId === quizId);
-  editedQuiz.quizName = name;
+  editedQuiz.name = name;
   // Get and update the time edited
   const currentTime = new Date();
   const unixtimeSeconds = Math.floor(currentTime.getTime()/1000);
   editedQuiz.timeLastEdited = unixtimeSeconds;
+
+  // update this change in the users ownedQuizzes
+  let editedQuizUser = user.ownedQuizzes.find(quiz => quiz.quizId === quizId);
+  editedQuizUser = editedQuiz;
+
   setData(data);
   return {};
 }
@@ -266,7 +275,7 @@ export const adminQuizNameUpdate = ( authUserId: number, quizId: number, name: s
  * @param {string} str 
  * @returns {boolean}
  */
-function isAlphanumericWithSpaces(str) {
+function isAlphanumericWithSpaces(str: string) {
   return /^[A-Za-z0-9\s]+$/.test(str);
 }
 
@@ -285,14 +294,19 @@ function isAlphanumericWithSpaces(str) {
  * @returns {{}} | errorMessage
  */
 
-export const adminQuizDescriptionUpdate = ( authUserId: number, quizId: number, description: string ): adminQuizDescriptionUpdateReturn | ErrorObject => {
+export const adminQuizDescriptionUpdate = ( token: string, quizId: number, description: string ): adminQuizDescriptionUpdateReturn | ErrorObject => {
   let data = getData();
 
-  let user = data.users.find(user => user.userId === authUserId);
+  const tokenNum = parseInt(token);
+  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
+  // Check whether token is valid
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
+  };
 
-  if (!user) {
-    return { error: `The user ID ${authUserId} is invalid!`, statusCode: 401 };
-  };  
+  const userToken = validToken.user;
+  let user = data.users.find(user => user.userId === userToken.userId);
+
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   };
@@ -310,6 +324,10 @@ export const adminQuizDescriptionUpdate = ( authUserId: number, quizId: number, 
   const currentTime = new Date();
   const unixtimeSeconds = Math.floor(currentTime.getTime()/1000);
   editedQuiz.timeLastEdited = unixtimeSeconds;
+
+  // update this change in the users ownedQuizzes
+  let editedQuizUser = user.ownedQuizzes.find(quiz => quiz.quizId === quizId);
+  editedQuizUser = editedQuiz;
   setData(data);
   return {};
 }
