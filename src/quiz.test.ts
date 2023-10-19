@@ -2,7 +2,6 @@ import request from 'sync-request-curl';
 import { requestAdminAuthRegister } from './auth.test';
 
 import { port, url } from './config.json';
-import { adminQuizInfo } from './quiz';
 const SERVER_URL = `${url}:${port}`;
 
 // Clears any lingering data elements before each test group
