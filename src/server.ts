@@ -8,8 +8,9 @@ import sui from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
-import {adminAuthRegister, adminUserDetails, adminAuthLogin} from './auth';
-import {adminQuizList, adminQuizCreate, adminQuizInfo, adminQuizRemove, adminQuizNameUpdate, adminQuizDescriptionUpdate} from './quiz';
+import { adminAuthRegister, adminUserDetails, adminAuthLogin } from './auth';
+import { adminQuizList, adminQuizCreate, adminQuizInfo, adminQuizRemove, adminQuizNameUpdate, adminQuizDescriptionUpdate } from './quiz';
+import { clear } from './other';
 
 // Set up web app
 const app = express();
@@ -26,24 +27,20 @@ app.use('/docs', sui.serve, sui.setup(YAML.parse(file), { swaggerOptions: { docE
 
 const PORT: number = parseInt(process.env.PORT || config.port);
 const HOST: string = process.env.IP || 'localhost';
-
 // ====================================================================
 //  ================= WORK IS DONE BELOW THIS LINE ===================
 // ====================================================================
 
 // Example get request
-/*
+
 app.get('/echo', (req: Request, res: Response) => {
-  const message = req.query.echo as string;
-  const response = echo(message);
-  if ('error' in response) {
-    return res.status(response.statusCode).json({
-      error: response.error
-    });    // when implementing functions add a status code along with the error
+  const data = req.query.echo as string;
+  const ret = echo(data);
+  if ('error' in ret) {
+    res.status(400);
   }
-  return res.json(response);
+  return res.json(ret);
 });
-*/
 
 // ========================================================================= //
 // SERVER ROUTES
@@ -55,7 +52,9 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const response = adminAuthRegister(email, password, nameFirst, nameLast);
 
   if ('error' in response) {
-    return res.status(response.statusCode).json(response);
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
   res.json(response);
 });
@@ -66,29 +65,35 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   const response = adminAuthLogin(email, password);
 
   if ('error' in response) {
-    return res.status(response.statusCode).json(response);
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
   res.json(response);
 });
 
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
-  const { token } = req.body;
+  const token = req.query.token as string;
 
   const response = adminUserDetails(token);
 
   if ('error' in response) {
-    return res.status(response.statusCode).json(response);
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
   res.json(response);
 });
 
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
-  const { token } = req.body;
+  const token = req.query.token as string;
 
   const response = adminQuizList(token);
 
-  if ('error in response') {
-    return res.status(response.statusCode).json(response);
+  if ('error' in response) {
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
   res.json(response);
 });
@@ -99,31 +104,38 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const response = adminQuizCreate(token, name, description);
 
   if ('error' in response) {
-    return res.status(response.statusCode).json(response);
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
   res.json(response);
 });
 
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
-  const { token } = req.body;
+
+  const token = req.query.token as string;
 
   const response = adminQuizRemove(token, quizId);
 
   if ('error' in response) {
-    return res.status(response.statusCode).json(response);
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
   res.json(response);
 });
 
 app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
-  const { token } = req.body;
+  const token = req.query.token as string;
 
   const response = adminQuizInfo(token, quizId);
 
   if ('error' in response) {
-    return res.status(response.status).json(response);
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
   res.json(response);
 });
@@ -131,11 +143,13 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const { token, name } = req.body;
-  
+
   const response = adminQuizNameUpdate(token, quizId, name);
 
   if ('error' in response) {
-    return res.status(response.status).json(response);
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
   res.json(response);
 });
@@ -143,11 +157,13 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
 app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const { token, description } = req.body;
-  
+
   const response = adminQuizDescriptionUpdate(token, quizId, description);
 
   if ('error' in response) {
-    return res.status(response.status).json(response);
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
   res.json(response);
 });
