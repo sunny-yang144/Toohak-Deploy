@@ -49,9 +49,7 @@ interface adminQuizQuestionDuplicateReturn{
   */
 export const adminQuizList = (token: string): adminQuizListReturn | ErrorObject => {
   const data = getData();
-  // Find user with the inputted Id
-  const tokenNum = parseInt(token);
-  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
+  const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
     return { error: `The token ${token} is invalid!`, statusCode: 401 };
@@ -78,8 +76,7 @@ export const adminQuizList = (token: string): adminQuizListReturn | ErrorObject 
 
 export const adminQuizCreate = (token: string, name: string, description: string): adminQuizCreateReturn | ErrorObject => {
   const data = getData();
-  const tokenNum = parseInt(token);
-  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
+  const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
     return { error: `The token ${token} is invalid!`, statusCode: 401 };
@@ -150,8 +147,7 @@ export const adminQuizCreate = (token: string, name: string, description: string
 */
 export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoReturn | ErrorObject => {
   const data = getData();
-  const tokenNum = parseInt(token);
-  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
+  const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
     return { error: `The token ${token} is invalid!`, statusCode: 401 };
@@ -188,8 +184,7 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
 */
 export const adminQuizRemove = (token: string, quizId: number): Record<string, never> | ErrorObject => {
   const data = getData();
-  const tokenNum = parseInt(token);
-  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
+  const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
     return { error: `The token ${token} is invalid!`, statusCode: 401 };
@@ -236,8 +231,7 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
 export const adminQuizNameUpdate = (token: string, quizId: number, name: string): Record<string, never> | ErrorObject => {
   const data = getData();
 
-  const tokenNum = parseInt(token);
-  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
+  const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
     return { error: `The token ${token} is invalid!`, statusCode: 401 };
@@ -307,9 +301,7 @@ function isAlphanumericWithSpaces(str: string) {
 
 export const adminQuizDescriptionUpdate = (token: string, quizId: number, description: string): Record<string, never> | ErrorObject => {
   const data = getData();
-
-  const tokenNum = parseInt(token);
-  const validToken = data.tokens.find((item) => item.sessionId === tokenNum);
+  const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
     return { error: `The token ${token} is invalid!`, statusCode: 401 };
