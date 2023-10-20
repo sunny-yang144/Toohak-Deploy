@@ -462,3 +462,7 @@ describe('Tests for adminQuizDescriptionUpdate', () => {
     expect(response.statusCode).toStrictEqual(400);
   });
 });
+
+// When all tests are run clear the data
+clear();
+

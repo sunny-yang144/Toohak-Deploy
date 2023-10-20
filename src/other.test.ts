@@ -47,3 +47,6 @@ describe('Tests for clear', () => {
     expect(response.statusCode).toStrictEqual(400);
   });
 });
+
+// When all tests are run clear the data
+clear();

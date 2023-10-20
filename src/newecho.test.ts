@@ -1,6 +1,7 @@
 // Do not delete this file
 import request from 'sync-request-curl';
 import config from './config.json';
+import { clear } from './test-helpers'
 
 const OK = 200;
 const INPUT_ERROR = 400;
@@ -40,3 +41,6 @@ describe('HTTP tests using Jest', () => {
     expect(bodyObj.error).toStrictEqual(expect.any(String));
   });
 });
+
+// When all tests are run clear the data
+clear();

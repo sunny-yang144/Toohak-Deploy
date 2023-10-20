@@ -170,3 +170,6 @@ describe('Tests for adminUserDetails', () => {
     expect(response.statusCode).toStrictEqual(401);
   });
 });
+
+// When all tests are run clear the data
+clear();
