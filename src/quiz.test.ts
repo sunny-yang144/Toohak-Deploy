@@ -465,4 +465,3 @@ describe('Tests for adminQuizDescriptionUpdate', () => {
 
 // When all tests are run clear the data
 clear();
-

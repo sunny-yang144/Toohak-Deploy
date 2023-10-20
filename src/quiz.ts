@@ -338,49 +338,49 @@ export const adminQuizDescriptionUpdate = (token: string, quizId: number, descri
   return {};
 };
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////// ITERATION 2 //////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////////////////////
+/// //////////////////////////////////// ITERATION 2 //////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////////////////////
 
 export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObject => {
-  return { 
+  return {
     quizzes: [
       {
         quizId: 1,
         name: 'My Quiz',
       }
     ]
-  }
-}
+  };
+};
 
 export const adminQuizRestore = (quizId: number, token: string): Record<string, never> | ErrorObject => {
   return {};
-}
+};
 
 export const adminQuizTrashRemove = (token: string, quizIds: number[]): Record<string, never> | ErrorObject => {
   return {};
-}
+};
 
 export const adminQuizTransfer = (quizId: number, token: string, userEmail: string): Record<string, never> | ErrorObject => {
   return {};
-}
+};
 
 export const adminQuizQuestionCreate = (quizId: number, token: string, questionBody: QuestionBody): adminQuizQuestionCreateReturn | ErrorObject => {
   return { questionId: 5546 };
-}
+};
 
 export const adminQuizQuestionUpdate = (quizId: number, questionId: number, token: string, questionBody: QuestionBody): Record<string, never> | ErrorObject => {
   return {};
-}
+};
 
 export const adminQuizQuestionRemove = (quizId: number, questionId: number, token: string): Record<string, never> | ErrorObject => {
   return {};
-}
+};
 
 export const adminQuizQuestionMove = (quizId: number, questionId: number, token: string, newPosition: number): Record<string, never> | ErrorObject => {
   return {};
-}
+};
 
 export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, token: string): adminQuizQuestionDuplicateReturn | ErrorObject => {
   return { newQuestionId: 5546 };
-}
+};
