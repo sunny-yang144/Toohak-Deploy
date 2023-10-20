@@ -30,6 +30,14 @@ export function generateTokenId (idArray: Token[]) {
   return max + 1;
 }
 
+/**
+ * @param { Quiz[] } idArray
+ *
+ * Takes in an array, finds the highest quizId then returns a number higher
+ * than all current quizIds in the dataStore
+ *
+ * @returns { Number } Max + 1
+ */
 export function generateQuizId (idArray: Quiz[]) {
   if (idArray.length === 0) {
     return 0;
