@@ -129,3 +129,19 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
     },
   };
 };
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////// ITERATION 2 //////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const adminAuthLogout = (token: string): Record<string, never> | ErrorObject => {
+  return {};
+}
+
+export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: string, nameLast: string): Record<string, never> | ErrorObject => {
+  return {};
+}
+
+export const adminUserPasswordUpdate = (token: string, oldPassword: string, newPassword: string) : Record<string, never> | ErrorObject => {
+  return {};
+}
