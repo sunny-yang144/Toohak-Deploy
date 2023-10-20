@@ -36,7 +36,7 @@ export function requestAdminAuthLogin (email: string, password: string) {
     statusCode: res.statusCode
   };
 }
-export function requestAdminUserDetails (token: number) {
+export function requestAdminUserDetails (token: string) {
   const res = request(
     'GET',
     SERVER_URL + '/v1/admin/user/details',

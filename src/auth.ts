@@ -73,11 +73,10 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
 
   const token = generateToken(user);
   data.tokens.push(token);
-  const tokenStr = token.sessionId.toString();
 
   setData(data);
 
-  return { token: tokenStr };
+  return { token: token.sessionId };
 };
 /*
 Returns authUserId given a valid registered user email and password
@@ -99,10 +98,9 @@ export const adminAuthLogin = (email: string, password: string): adminAuthLoginR
   user.numSuccessfulLogins += 1;
 
   const token = generateToken(user);
-  const tokenStr = token.sessionId.toString();
 
   setData(data);
-  return { token: tokenStr };
+  return { token: token.sessionId };
 };
 
 export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorObject => {
@@ -112,7 +110,7 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
   if (!validToken) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
-  
+
   const user = data.users.find((user) => user.userId === validToken.userId);
 
   return {

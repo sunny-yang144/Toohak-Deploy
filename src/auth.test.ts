@@ -5,6 +5,8 @@ import {
   clear,
 } from './test-helpers';
 
+import { v4 as uuidv4 } from 'uuid';
+
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
   PASSWORD = '1234UNSW',
@@ -164,8 +166,9 @@ describe('Tests for adminUserDetails', () => {
   });
 
   test('Error when an invalid token is passed', () => {
-    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const response = requestAdminUserDetails(parseInt(user.body.token) + 1);
+    requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const invalidId = uuidv4();
+    const response = requestAdminUserDetails(invalidId);
     expect(response.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid UserId"
     expect(response.statusCode).toStrictEqual(401);
   });
