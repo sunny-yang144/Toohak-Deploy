@@ -381,6 +381,6 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
   return {};
 }
 
-export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, token: string): adminQuizQuestionDuplicateReturn | ErrorObject {
+export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, token: string): adminQuizQuestionDuplicateReturn | ErrorObject => {
   return { newQuestionId: 5546 };
 }
