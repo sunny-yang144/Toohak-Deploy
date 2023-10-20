@@ -17,14 +17,14 @@ function requestAdminQuizTrash (token: number) {
     statusCode: res.statusCode
   };
 }
-function requestAdminTrashRemove (token: number, quizId: number) {
+function requestAdminTrashRemove (token: number, quizIds: number[]) {
   const res = request(
     'DELETE',
     SERVER_URL + '/v1/admin/quiz/trash/empty}',
     {
       qs: {
         token,
-        quizId,
+        quizIds,
       }
     }
   );

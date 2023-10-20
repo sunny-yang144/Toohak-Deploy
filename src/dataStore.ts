@@ -24,7 +24,16 @@ export interface Quiz {
   timeLastEdited: number;
   description: string;
 }
-
+interface Answer {
+  answer: string;
+  correct: boolean;
+}
+export interface QuestionBody {
+  question: string;
+  duration: number;
+  points: number;
+  answers: Answer[];
+}
 // The name for the dataStoreFile
 export const dataStoreFile = process.cwd() + '/dataStorage.json';
 // We need to add array of questions and array of answers Iteration 2 functions
