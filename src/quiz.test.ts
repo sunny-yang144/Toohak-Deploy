@@ -607,7 +607,7 @@ describe('Testing adminQuizTransfer', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const response = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL2, '-666');
+    const response = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL2, -666);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });

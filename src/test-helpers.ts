@@ -214,7 +214,7 @@ export function requestAdminUserPasswordUpdate(token: string, oldPassword: strin
   };
 }
 
-export function requestAdminQuizTransfer(token: string, userEmail: string, quizId: string) {
+export function requestAdminQuizTransfer(token: string, userEmail: string, quizId: number) {
   const res = request(
     'POST',
     SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
@@ -231,7 +231,7 @@ export function requestAdminQuizTransfer(token: string, userEmail: string, quizI
   };
 }
 
-export function requestAdminQuizTrash (token: number) {
+export function requestAdminQuizTrash (token: string) {
   const res = request(
     'GET',
     SERVER_URL + '/v1/admin/quiz/trash}',
@@ -247,14 +247,16 @@ export function requestAdminQuizTrash (token: number) {
   };
 }
 
-export function requestAdminTrashRemove (token: number, quizIds: number[]) {
+export function requestAdminTrashRemove (token: string, quizIds: number[]) {
+  // Package the array so it can be sent through HTTP;
+  const encodedQuizIds = encodeURIComponent(JSON.stringify(quizIds));
   const res = request(
     'DELETE',
     SERVER_URL + '/v1/admin/quiz/trash/empty}',
     {
       qs: {
         token,
-        quizIds,
+        encodedQuizIds,
       }
     }
   );
