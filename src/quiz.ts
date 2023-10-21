@@ -1,4 +1,4 @@
-import { getData, setData, QuestionBody } from './dataStore';
+import { getData, setData, Question, QuestionBody, colours } from './dataStore';
 import { generateQuizId } from './other';
 
 interface ErrorObject {
@@ -123,7 +123,9 @@ export const adminQuizCreate = (token: string, name: string, description: string
     name: name,
     description: description,
     timeCreated: unixtimeSeconds,
-    timeLastEdited: unixtimeSeconds
+    timeLastEdited: unixtimeSeconds,
+    numQuestions: 0,
+    questions: [] as Question[],
   };
 
   user.ownedQuizzes.push(newQuiz.quizId);

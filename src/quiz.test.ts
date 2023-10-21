@@ -12,6 +12,8 @@ import {
   clear,
 } from './test-helpers';
 
+import { colours } from './dataStore';
+
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
   PASSWORD = '1234UNSW',
