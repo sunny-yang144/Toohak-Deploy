@@ -157,3 +157,111 @@ export function clear() {
   );
   return JSON.parse(res.body.toString());
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////     ITERATION 2      //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+export function requestAdminAuthLogout (token: string) {
+  const res = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/logout',
+      {
+          json: { token }
+      }
+  );
+  return {
+      body: JSON.parse(res.body.toString()),
+      statusCode: res.statusCode
+  }
+}
+
+export function requestAdminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string) {
+  const res = request(
+    'PUT',
+    SERVER_URL + '/v1/admin/user/details',
+    {
+      json: {
+        token,
+        email,
+        nameFirst,
+        nameLast,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
+}
+
+export function requestAdminUserPasswordUpdate(token: string, oldPassword: string, newPassword: string) {
+  const res = request(
+    'PUT',
+    SERVER_URL + '/v1/admin/user/password',
+    {
+      json: {
+        token,
+        oldPassword,
+        newPassword,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
+}
+
+export function requestAdminQuizTransfer(token: string, userEmail: string, quizId: number) {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
+    {
+      json: {
+        token,
+        userEmail,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
+}
+
+export function requestAdminQuizTrash (token: string) {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v1/admin/quiz/trash}',
+    {
+      qs: {
+        token,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
+}
+
+export function requestAdminTrashRemove (token: string, quizIds: number[]) {
+  // Package the array so it can be sent through HTTP;
+  const encodedQuizIds = encodeURIComponent(JSON.stringify(quizIds));
+  const res = request(
+    'DELETE',
+    SERVER_URL + '/v1/admin/quiz/trash/empty}',
+    {
+      qs: {
+        token,
+        encodedQuizIds,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
+}

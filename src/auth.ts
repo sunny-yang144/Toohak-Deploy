@@ -112,6 +112,9 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
   }
 
   const user = data.users.find((user) => user.userId === validToken.userId);
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
 
   return {
     user: {
