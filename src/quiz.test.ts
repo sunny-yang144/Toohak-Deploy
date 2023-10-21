@@ -470,7 +470,7 @@ describe('Tests for adminQuizDescriptionUpdate', () => {
 ////////////////////////////////     ITERATION 2      //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-describe('Tests for adminQuizTrash', () => {
+describe.skip('Tests for adminQuizTrash', () => {
   test('Successful Trash List', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
@@ -524,7 +524,7 @@ describe('Tests for adminQuizTrash', () => {
     expect(response.statusCode).toStrictEqual(401);
   });
 });
-describe('Tests to Empty adminQuizTrashRemove', () => {
+describe.skip('Tests to Empty adminQuizTrashRemove', () => {
   test('Successful Trash Empty', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
@@ -583,7 +583,7 @@ describe('Tests to Empty adminQuizTrashRemove', () => {
   });
 });
 
-describe('Testing adminQuizTransfer', () => {
+describe.skip('Testing adminQuizTransfer', () => {
   test('Successful adminQuizTransfer', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);

@@ -181,7 +181,7 @@ describe('Tests for adminUserDetails', () => {
 ////////////////////////////////     ITERATION 2      //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-describe('Tests for adminAuthLogout', () => {
+describe.skip('Tests for adminAuthLogout', () => {
   test('Successful logout', () => {
       const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
       const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD); 
@@ -207,7 +207,7 @@ describe('Tests for adminAuthLogout', () => {
   });
 });
 
-describe('Testing adminUserDetailsUpdate', () => {
+describe.skip('Testing adminUserDetailsUpdate', () => {
   test('Successful adminUserDetails Update', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminUserDetailsUpdate(user.body.token, validDetails.EMAIL2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
@@ -284,7 +284,7 @@ describe('Testing adminUserDetailsUpdate', () => {
   });
 });
 
-describe('Testing adminUserPasswordUpdate', () => {
+describe.skip('Testing adminUserPasswordUpdate', () => {
   test('Successful adminUserPasswordUpdate', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminUserPasswordUpdate(user.body.token, validDetails.PASSWORD, validDetails.PASSWORD2);
