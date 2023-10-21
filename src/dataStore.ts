@@ -48,12 +48,21 @@ export interface Quiz {
   description: string;
   numQuestions: number;
   questions: Question[];
+  duration: number;
 }
 export interface QuestionBody {
   question: string;
   duration: number;
   points: number;
   answers: Answer[];
+}
+export interface QuestionToken {
+  questionId: number;
+  quizId: number;
+}
+export interface AnswerToken {
+  answerId: number;
+  questionId: number;
 }
 // The name for the dataStoreFile
 export const dataStoreFile = process.cwd() + '/dataStorage.json';
@@ -62,8 +71,8 @@ export interface DataStore {
   users: User[];
   quizzes: Quiz[]; // Quizzes, allows server to generate unique quizId
   tokens: Token[]; // Valid tokens, allows server to search existing tokens.
-  questions: Question[];
-  answers: Answer[];
+  questions: QuestionToken[]; // Easy identifiers of question, not to be confused
+  answers: AnswerToken[]; // with token.
 }
 
 // 

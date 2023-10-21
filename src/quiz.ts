@@ -22,6 +22,8 @@ interface adminQuizInfoReturn {
   timeCreated: number,
   timeLastEdited: number,
   description: string,
+  numQuestions: number,
+  questions: Question[],
 }
 interface adminQuizTrashReturn {
   quizzes: quizObject[];
@@ -126,6 +128,7 @@ export const adminQuizCreate = (token: string, name: string, description: string
     timeLastEdited: unixtimeSeconds,
     numQuestions: 0,
     questions: [] as Question[],
+    duration: 0,
   };
 
   user.ownedQuizzes.push(newQuiz.quizId);
@@ -184,6 +187,8 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
     timeCreated: quiz.timeCreated,
     timeLastEdited: quiz.timeLastEdited,
     description: quiz.description,
+    numQuestions: quiz.numQuestions,
+    questions: quiz.questions,
   };
   return quizInfo;
 };
