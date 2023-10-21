@@ -50,11 +50,15 @@ export interface Quiz {
   questions: Question[];
   duration: number;
 }
+export interface AnswerBody {
+  answer: string;
+  correct: boolean;
+}
 export interface QuestionBody {
   question: string;
   duration: number;
   points: number;
-  answers: Answer[];
+  answers: AnswerBody[];
 }
 export interface QuestionToken {
   questionId: number;
