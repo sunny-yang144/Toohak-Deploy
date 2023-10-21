@@ -1,4 +1,5 @@
-import { setData, getData, Token, User, Quiz } from './dataStore';
+import { setData, getData, User, Quiz } from './dataStore';
+import { v4 as uuidv4 } from 'uuid';
 
 export function clear (): Record<string, never> {
   setData({
@@ -10,26 +11,13 @@ export function clear (): Record<string, never> {
 }
 
 /**
- * @param { Token[] } idArray
+ * @param { Quiz[] } idArray
  *
- * Takes in an array, finds the highest SessionId then returns a number higher
- * than all current sessionId in the dataStore
+ * Takes in an array, finds the highest quizId then returns a number higher
+ * than all current quizIds in the dataStore
  *
  * @returns { Number } Max + 1
  */
-export function generateTokenId (idArray: Token[]) {
-  if (idArray.length === 0) {
-    return 0;
-  }
-  let max = idArray[0].sessionId;
-  for (const token of idArray) {
-    if (token.sessionId > max) {
-      max = token.sessionId;
-    }
-  }
-  return max + 1;
-}
-
 export function generateQuizId (idArray: Quiz[]) {
   if (idArray.length === 0) {
     return 0;
@@ -53,7 +41,7 @@ export function generateQuizId (idArray: Quiz[]) {
  */
 export function generateToken (user: User) {
   const data = getData();
-  const sessionId = generateTokenId(data.tokens);
+  const sessionId = uuidv4();
   const token = {
     sessionId: sessionId,
     userId: user.userId,

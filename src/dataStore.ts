@@ -2,7 +2,7 @@
 import * as fs from 'fs';
 
 export interface Token {
-  sessionId: number;
+  sessionId: string;
   userId: number; // Associate a user from a inputted token.
 }
 
