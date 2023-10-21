@@ -24,6 +24,7 @@ interface adminQuizInfoReturn {
   description: string,
   numQuestions: number,
   questions: Question[],
+  duration: number,
 }
 interface adminQuizTrashReturn {
   quizzes: quizObject[];
@@ -140,13 +141,7 @@ export const adminQuizCreate = (token: string, name: string, description: string
 };
 
 /**
- * Shows information relating to a specific quiz
- *
- * Gives an error when:
- * 1. AuthUserId is not a valid user
- * 2. Quiz ID does not refer to a valid quiz
- * 3. Quiz ID does not refer to a quiz that this user owns
- *
+ 
  * @param {number} authUserId
  * @param {number} quizId
  * @returns {{
@@ -189,6 +184,7 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
     description: quiz.description,
     numQuestions: quiz.numQuestions,
     questions: quiz.questions,
+    duration: quiz.duration,
   };
   return quizInfo;
 };

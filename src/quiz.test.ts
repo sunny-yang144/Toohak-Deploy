@@ -310,7 +310,7 @@ describe('Tests for adminQuizInfo', () => {
     expect(response.statusCode).toStrictEqual(403);
   });
 
-  test('Successful retrival of quiz info', () => {
+  test.only('Successful retrival of quiz info', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const response = requestAdminQuizInfo(user.body.token, quiz.body.quizId);
@@ -321,6 +321,24 @@ describe('Tests for adminQuizInfo', () => {
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
         description: expect.any(String),
+        numQuestions: expect.any(Number),
+        questions: [ 
+          {
+            questionId: expect.any(Number),
+            question: expect.any(String),
+            duration: expect.any(Number),
+            points: expect.any(Number),
+            answers: [
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(colours),
+                correct: expect.any(Boolean),
+              }
+            ],
+          }
+        ],
+        duration: expect.any(Number),
       }
     );
     expect(response.statusCode).toStrictEqual(200);
@@ -338,6 +356,24 @@ describe('Tests for adminQuizInfo', () => {
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
         description: expect.any(String),
+        numQuestions: expect.any(Number),
+        questions: [ 
+          {
+            questionId: expect.any(Number),
+            question: expect.any(String),
+            duration: expect.any(Number),
+            points: expect.any(Number),
+            answers: [
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(colours),
+                correct: expect.any(Boolean),
+              }
+            ],
+          }
+        ],
+        duration: expect.any(Number),
       }
     );
     expect(response1.statusCode).toStrictEqual(200);
@@ -350,6 +386,24 @@ describe('Tests for adminQuizInfo', () => {
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
         description: expect.any(String),
+        numQuestions: expect.any(Number),
+        questions: [ 
+          {
+            questionId: expect.any(Number),
+            question: expect.any(String),
+            duration: expect.any(Number),
+            points: expect.any(Number),
+            answers: [
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(colours),
+                correct: expect.any(Boolean),
+              }
+            ],
+          }
+        ],
+        duration: expect.any(Number),
       }
     );
     expect(response2.statusCode).toStrictEqual(200);
