@@ -65,24 +65,17 @@ export interface DataStore {
   tokens: Token[] // Valid tokens, allows server to search existing tokens.
 }
 
+// 
+// UserId - Number
+// Token - String
+// QuizId - Number
+// QuestionId - Number
+// 
+
 let data: DataStore = {
-  users: [
-    // {
-    //   userId: 0,
-    //   email: 'helloworld@gmail.com',
-    //   nameFirst: 'Jack',
-    //   nameLast: 'Rizzella',
-    //   password: '1234UNSW',
-    //   numSuccessfulLogins: 0,
-    //   numFailedPasswordsSinceLastLogin: 0,
-    //   ownedQuizzes: [],
-    //   tokens: [Array]
-    // }
-  ],
+  users: [],
   quizzes: [],
-  tokens: [
-  // { sessionId: 0, userId: 0 }
-  ]
+  tokens: [],
 };
 
 // Converts data into JSON and writes it into the dataStorage file

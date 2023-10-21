@@ -394,7 +394,7 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
   return {};
 };
 
-export const adminQuizQuestionRemove = (quizId: number, questionId: number, token: string): Record<string, never> | ErrorObject => {
+export const adminQuizQuestionDelete = (quizId: number, questionId: number, token: string): Record<string, never> | ErrorObject => {
   return {};
 };
 
