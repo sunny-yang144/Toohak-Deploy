@@ -177,33 +177,33 @@ describe('Tests for adminUserDetails', () => {
   });
 });
 
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////     ITERATION 2      //////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////     ITERATION 2      //////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
 
 describe.skip('Tests for adminAuthLogout', () => {
   test('Successful logout', () => {
-      const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-      const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD); 
-      // check if user is logged in
-      expect(userLogin.body).toStrictEqual({ token: expect.any(String) });
-      
-      // Logout user
-      const logoutReturn = requestAdminAuthLogout(user.body.token);
-      expect(logoutReturn.body).toStrictEqual({});
-      expect(logoutReturn.statusCode).toStrictEqual(200);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
+    // check if user is logged in
+    expect(userLogin.body).toStrictEqual({ token: expect.any(String) });
 
-      // check if user can use functions
-      const getUserDetails = requestAdminUserDetails(user.body.token);
-      expect(getUserDetails.body).toStrictEqual({ error: "User has been logged out."});
-      expect(getUserDetails.statusCode).toStrictEqual(401);
+    // Logout user
+    const logoutReturn = requestAdminAuthLogout(user.body.token);
+    expect(logoutReturn.body).toStrictEqual({});
+    expect(logoutReturn.statusCode).toStrictEqual(200);
+
+    // check if user can use functions
+    const getUserDetails = requestAdminUserDetails(user.body.token);
+    expect(getUserDetails.body).toStrictEqual({ error: 'User has been logged out.' });
+    expect(getUserDetails.statusCode).toStrictEqual(401);
   });
 
   test('Token is empty or invalid', () => {
-      const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-      expect(requestAdminAuthLogout("")).toStrictEqual({ error: "Token is empty"});
-      expect(requestAdminAuthLogout("123")).toStrictEqual({ error: "Token is invalid"});
-      expect(user.statusCode).toStrictEqual(401);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    expect(requestAdminAuthLogout('')).toStrictEqual({ error: 'Token is empty' });
+    expect(requestAdminAuthLogout('123')).toStrictEqual({ error: 'Token is invalid' });
+    expect(user.statusCode).toStrictEqual(401);
   });
 });
 
@@ -215,17 +215,18 @@ describe.skip('Testing adminUserDetailsUpdate', () => {
     expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
     // Check if parameters were updated
-    expect(requestAdminUserDetails(user.body.token)).toStrictEqual
-    ({
-      user:
+    expect(requestAdminUserDetails(user.body.token)).toStrictEqual(
       {
-        userId: expect.any(Number),
-        name: `${validDetails.NAMEFIRST2} ${validDetails.NAMELAST2}`,
-        email: validDetails.EMAIL2,
-        numSuccessfulLogins: expect.any(Number),
-        numFailedPasswordsSinceLastLogin: expect.any(Number),
+        user:
+        {
+          userId: expect.any(Number),
+          name: `${validDetails.NAMEFIRST2} ${validDetails.NAMELAST2}`,
+          email: validDetails.EMAIL2,
+          numSuccessfulLogins: expect.any(Number),
+          numFailedPasswordsSinceLastLogin: expect.any(Number),
+        }
       }
-    });
+    );
   });
 
   test('Unsuccessful call, email2 is not valid', () => {

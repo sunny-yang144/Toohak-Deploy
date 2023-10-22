@@ -65,12 +65,12 @@ export interface DataStore {
   tokens: Token[] // Valid tokens, allows server to search existing tokens.
 }
 
-// 
+//
 // UserId - Number
 // Token - String
 // QuizId - Number
 // QuestionId - Number
-// 
+//
 
 let data: DataStore = {
   users: [],

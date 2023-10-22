@@ -1,6 +1,6 @@
 import request from 'sync-request-curl';
 import { port, url } from './config.json';
-import { Answer } from './dataStore'
+import { Answer } from './dataStore';
 const SERVER_URL = `${url}:${port}`;
 
 export function requestAdminAuthRegister (email: string, password: string, nameFirst: string, nameLast: string) {
@@ -159,23 +159,22 @@ export function clear() {
   return JSON.parse(res.body.toString());
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////     ITERATION 2      //////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////     ITERATION 2      //////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
 
 export function requestAdminAuthLogout (token: string) {
   const res = request(
-      'POST',
-      SERVER_URL + '/v1/admin/auth/logout',
-      {
-          json: { token }
-      }
+    'POST',
+    SERVER_URL + '/v1/admin/auth/logout',
+    {
+      json: { token }
+    }
   );
   return {
-      body: JSON.parse(res.body.toString()),
-      statusCode: res.statusCode
-  }
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
 }
 
 export function requestAdminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string) {
@@ -267,11 +266,11 @@ export function requestAdminTrashRemove (token: string, quizIds: number[]) {
   };
 }
 
-export function requestAdminQuizQuestionCreate ( quizId: number, token: number, question: string, duration: number, points: number, answers: Answer[]) {
+export function requestAdminQuizQuestionCreate (quizId: number, token: number, question: string, duration: number, points: number, answers: Answer[]) {
   const encodedAnswers = encodeURIComponent(JSON.stringify(answers));
   const res = request(
     'POST',
-    SERVER_URL +  `/v1/admin/quiz/${quizId}/question`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/question`,
     {
       json: {
         token,
@@ -287,5 +286,5 @@ export function requestAdminQuizQuestionCreate ( quizId: number, token: number, 
   return {
     body: JSON.parse(res.body.toString()),
     statusCode: res.statusCode
-  }
+  };
 }

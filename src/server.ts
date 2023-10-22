@@ -8,21 +8,21 @@ import sui from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
 import process, { allowedNodeEnvironmentFlags } from 'process';
-import { 
-  adminAuthRegister, 
-  adminUserDetails, 
+import {
+  adminAuthRegister,
+  adminUserDetails,
   adminAuthLogin,
   adminAuthLogout,
   adminUserDetailsUpdate,
-  adminUserPasswordUpdate, 
+  adminUserPasswordUpdate,
 } from './auth';
 
-import { 
-  adminQuizList, 
-  adminQuizCreate, 
-  adminQuizInfo, 
-  adminQuizRemove, 
-  adminQuizNameUpdate, 
+import {
+  adminQuizList,
+  adminQuizCreate,
+  adminQuizInfo,
+  adminQuizRemove,
+  adminQuizNameUpdate,
   adminQuizDescriptionUpdate,
   adminQuizTrash,
   adminQuizRestore,
@@ -200,9 +200,9 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
   res.json(response);
 });
 
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////     ITERATION 2      //////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////     ITERATION 2      //////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
 
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   const { token } = req.body;
@@ -218,7 +218,6 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
 });
 
 app.put('/v1/admin/user/details', (req: Request, res: Response) => {
-
   const { token, email, nameFirst, nameLast } = req.body;
 
   const response = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
