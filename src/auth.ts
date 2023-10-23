@@ -166,6 +166,48 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
 };
 
 export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: string, nameLast: string): Record<string, never> | ErrorObject => {
+  const data = getData();
+
+  // Derive user from the token by that logic this error should trigger first.
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  if (!validToken) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const user = data.users.find((user) => user.userId === validToken.userId);
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const searchEmail = data.users.find(item => item.email === email && item.userId !== user.userId);
+
+  if (searchEmail) {
+    return { error: 'This email is already in use', statusCode: 400 };
+  }
+  if (!validator.isEmail(email)) {
+    return { error: 'This is not a valid email', statusCode: 400 };
+  }
+  const pattern = /^[a-zA-Z\s\-']+$/;
+  if (!pattern.test(nameFirst)) {
+    return { error: 'This is not a valid first name', statusCode: 400 };
+  }
+  const firstNameLength = nameFirst.length;
+  if ((firstNameLength < 2) || (firstNameLength > 20)) {
+    return { error: 'This is not a valid first name', statusCode: 400 };
+  }
+  if (!pattern.test(nameLast)) {
+    return { error: 'This is not a valid last name', statusCode: 400 };
+  }
+  const lastNameLength = nameLast.length;
+  if ((lastNameLength < 2) || (lastNameLength > 20)) {
+    return { error: 'This is not a valid last name', statusCode: 400 };
+  }
+
+  user.email = email;
+  user.nameFirst = nameFirst;
+  user.nameLast = nameLast;
+
+  setData(data);
   return {};
 };
 
