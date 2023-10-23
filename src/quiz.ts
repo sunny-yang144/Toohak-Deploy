@@ -54,16 +54,14 @@ export const adminQuizList = (token: string): adminQuizListReturn | ErrorObject 
   if (!validToken) {
     return { error: `The token ${token} is invalid!`, statusCode: 401 };
   }
-  const quizzes: quizObject[] = [];
   const user = data.users.find((user) => user.userId === validToken.userId);
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
+  const quizzes: quizObject[] = [];
   // Iterate through users quizzes and add their information to an array
   user.ownedQuizzes.forEach((quizId) => {
-    console.log(data.quizzes);
-    console.log(quizId);
     const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
     if (quiz) {
@@ -364,14 +362,32 @@ export const adminQuizDescriptionUpdate = (token: string, quizId: number, descri
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
 export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObject => {
-  return {
-    quizzes: [
-      {
-        quizId: 1,
-        name: 'My Quiz',
-      }
-    ]
-  };
+  let data = getData();
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  if (!validToken) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const user = data.users.find((user) => user.userId === validToken.userId);
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const quizzes: quizObject[] = [];
+  // Iterate through users quizzes and add their information to an array
+  user.trash.forEach((quizId) => {
+    const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+
+    if (quiz) {
+      const quizObject = {
+        quizId: quiz.quizId,
+        name: quiz.name,
+      };
+
+      quizzes.push(quizObject);
+    }
+  });
+  return { quizzes };
 };
 
 export const adminQuizRestore = (quizId: number, token: string): Record<string, never> | ErrorObject => {

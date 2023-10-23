@@ -15,6 +15,7 @@ export interface User {
   numSuccessfulLogins: number,
   numFailedPasswordsSinceLastLogin: number,
   ownedQuizzes: number[],
+  trash: number[], // Similar to ownedQuizzes, the user has the Ids of all the quizzes in their trash
   tokens: Token[], // If we have a user, we can check what token they are assigned.
 }
 export interface Quiz {
