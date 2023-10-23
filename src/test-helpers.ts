@@ -1,5 +1,6 @@
 import request from 'sync-request-curl';
 import { port, url } from './config.json';
+import { QuestionBody } from './dataStore';
 const SERVER_URL = `${url}:${port}`;
 
 export function requestAdminAuthRegister (email: string, password: string, nameFirst: string, nameLast: string) {
@@ -257,6 +258,24 @@ export function requestAdminTrashRemove (token: string, quizIds: number[]) {
       qs: {
         token,
         encodedQuizIds,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
+}
+
+export function requestQuizQuestionCreate (quizId: number, token: string, questionBody: QuestionBody) {
+  const encodedQuestionBody = encodeURIComponent(JSON.stringify(questionBody));
+  const res = request(
+    'POST',
+    SERVER_URL + '/v1/admin/quiz/${quizid}/question',
+    {
+      json: {
+        token,
+        encodedQuestionBody,
       }
     }
   );

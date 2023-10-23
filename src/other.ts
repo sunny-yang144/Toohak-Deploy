@@ -1,4 +1,4 @@
-import { setData, getData, User, Quiz } from './dataStore';
+import { setData, getData, User, Quiz, Question, Answer } from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
 
 export function clear (): Record<string, never> {
@@ -6,6 +6,8 @@ export function clear (): Record<string, never> {
     users: [],
     quizzes: [],
     tokens: [],
+    questions: [],
+    answers: [],
   });
   return {};
 }
@@ -26,6 +28,48 @@ export function generateQuizId (idArray: Quiz[]) {
   for (const quiz of idArray) {
     if (quiz.quizId > max) {
       max = quiz.quizId;
+    }
+  }
+  return max + 1;
+}
+
+/**
+ * @param { Quiz[] } idArray
+ *
+ * Takes in an array, finds the highest Id then returns a number higher
+ * than all current Ids in the array.
+ *
+ * @returns { Number } Max + 1
+ */
+export function generateQuestionId (idArray: Question[]) {
+  if (idArray.length === 0) {
+    return 0;
+  }
+  let max = idArray[0].questionId;
+  for (const question of idArray) {
+    if (question.questionId > max) {
+      max = question.questionId;
+    }
+  }
+  return max + 1;
+}
+
+/**
+ * @param { Quiz[] } idArray
+ *
+ * Takes in an array, finds the highest Id then returns a number higher
+ * than all current Ids in the array.
+ *
+ * @returns { Number } Max + 1
+ */
+export function generateAnswerId (idArray: Answer[]) {
+  if (idArray.length === 0) {
+    return 0;
+  }
+  let max = idArray[0].answerId;
+  for (const answer of idArray) {
+    if (answer.answerId > max) {
+      max = answer.answerId;
     }
   }
   return max + 1;
