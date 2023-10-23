@@ -15,6 +15,7 @@ export interface User {
   numSuccessfulLogins: number,
   numFailedPasswordsSinceLastLogin: number,
   ownedQuizzes: number[],
+  oldPasswords: string[], // Added a list of old passwords, so we can check the previous passwords of the user
   tokens: Token[], // If we have a user, we can check what token they are assigned.
 }
 export interface Quiz {
@@ -36,28 +37,6 @@ export interface QuestionBody {
 }
 // The name for the dataStoreFile
 export const dataStoreFile = process.cwd() + '/dataStorage.json';
-// We need to add array of questions and array of answers Iteration 2 functions
-//
-/*
-"numQuestions": 1,
-  "questions": [
-    {
-      "questionId": 5546,
-      "question": "Who is the Monarch of England?",
-      "duration": 4,
-      "points": 5,
-      "answers": [
-        {
-          "answerId": 2384,
-          "answer": "Prince Charles",
-          "colour": "red",
-          "correct": true
-        }
-      ]
-    }
-  ],
-  "duration": 44
-*/
 
 export interface DataStore {
   users: User[],

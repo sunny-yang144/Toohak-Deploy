@@ -1,3 +1,4 @@
+import { updateLanguageServiceSourceFile } from 'typescript';
 import validator from 'validator';
 import { getData, setData, User } from './dataStore';
 import { generateToken } from './other';
@@ -67,6 +68,7 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
     numSuccessfulLogins: 0,
     numFailedPasswordsSinceLastLogin: 0,
     ownedQuizzes: [],
+    oldPasswords: [],
     tokens: [],
   };
   data.users.push(user);
@@ -111,7 +113,7 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
-  const user = data.users.find((user) => user.userId === validToken.userId);
+  const user = data.users.find((item) => item.userId === validToken.userId);
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
@@ -140,5 +142,39 @@ export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: 
 };
 
 export const adminUserPasswordUpdate = (token: string, oldPassword: string, newPassword: string) : Record<string, never> | ErrorObject => {
+  let data = getData();
+
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  if (!validToken) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const user = data.users.find((item) => item.userId === validToken.userId);
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  if (user.password === oldPassword) {
+    return { error: 'Incorrect old password', statusCode: 400 };
+  }
+  if (oldPassword === newPassword) {
+    return { error: 'New password must be different from current password', statusCode: 400 };
+  }
+  if (user.oldPasswords.some((item) => item === newPassword)) {
+    return { error: 'New password must be different from a password used before', statusCode: 400 };
+  }
+  const passwordLength = newPassword.length;
+  if (passwordLength < 8) {
+    return { error: 'This is not a valid password', statusCode: 400 };
+  }
+  const letterCheck = /[a-zA-Z]/;
+  const numberCheck = /\d/;
+  if (!(letterCheck.test(newPassword) && numberCheck.test(newPassword))) {
+    return { error: 'This is not a valid password', statusCode: 400 };
+  }
+
+  user.password = newPassword;
+  user.oldPasswords.push(oldPassword);
+  setData(data);
   return {};
 };
