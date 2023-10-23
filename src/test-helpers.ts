@@ -159,23 +159,22 @@ export function clear() {
   return JSON.parse(res.body.toString());
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////     ITERATION 2      //////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////     ITERATION 2      //////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
 
 export function requestAdminAuthLogout (token: string) {
   const res = request(
-      'POST',
-      SERVER_URL + '/v1/admin/auth/logout',
-      {
-          json: { token }
-      }
+    'POST',
+    SERVER_URL + '/v1/admin/auth/logout',
+    {
+      json: { token }
+    }
   );
   return {
-      body: JSON.parse(res.body.toString()),
-      statusCode: res.statusCode
-  }
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
 }
 
 export function requestAdminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string) {
