@@ -139,11 +139,19 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
   else {
+    // We need to remove the tokens from the users and the data's tracking of tokens
+    // Therefore we find the index of the item in the respective arrays.
+
     const user = data.users.find((item) => item.userId === validToken.userId);
     const validUserToken = user.tokens.find((item) => item.sessionId === token);
+    if (!validUserToken) {
+      return { error: 'This is not a valid user token', statusCode: 401 };
+    }
+
     const tokenIndex = data.tokens.indexOf(validToken);
     const userTokenIndex = user.tokens.indexOf(validUserToken);
 
+    // If an index exists which we assume does if the token is valid, then we splice to remove the item
     if ( tokenIndex !== -1 ) {
       data.tokens.splice(tokenIndex, 1);
     }
