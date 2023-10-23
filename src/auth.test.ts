@@ -181,7 +181,7 @@ describe('Tests for adminUserDetails', () => {
 ////////////////////////////////     ITERATION 2      //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-describe.skip('Tests for adminAuthLogout', () => {
+describe('Tests for adminAuthLogout', () => {
   test('Successful logout', () => {
       const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
       const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD); 
@@ -195,15 +195,20 @@ describe.skip('Tests for adminAuthLogout', () => {
 
       // check if user can use functions
       const getUserDetails = requestAdminUserDetails(user.body.token);
-      expect(getUserDetails.body).toStrictEqual({ error: "User has been logged out."});
+      expect(getUserDetails.body).toStrictEqual({ error: expect.any(String) });
       expect(getUserDetails.statusCode).toStrictEqual(401);
   });
 
   test('Token is empty or invalid', () => {
       const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-      expect(requestAdminAuthLogout("")).toStrictEqual({ error: "Token is empty"});
-      expect(requestAdminAuthLogout("123")).toStrictEqual({ error: "Token is invalid"});
-      expect(user.statusCode).toStrictEqual(401);
+      const response1 = requestAdminAuthLogout('');
+      expect(response1.body).toStrictEqual({ error: expect.any(String) });
+      expect(response1.statusCode).toStrictEqual(401);
+
+      const invalidId = uuidv4();
+      const response2 = requestAdminAuthLogout(invalidId);
+      expect(response2.body).toStrictEqual({ error: expect.any(String) });
+      expect(response1.statusCode).toStrictEqual(401);
   });
 });
 
