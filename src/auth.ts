@@ -1,3 +1,4 @@
+import { isTemplateExpression } from 'typescript';
 import validator from 'validator';
 import { getData, setData, User } from './dataStore';
 import { generateToken } from './other';
@@ -75,7 +76,6 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
   data.tokens.push(token);
 
   setData(data);
-
   return { token: token.sessionId };
 };
 /*
@@ -132,6 +132,36 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
 export const adminAuthLogout = (token: string): Record<string, never> | ErrorObject => {
+  let data = getData();
+  
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  if (!validToken) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+  else {
+    // We need to remove the tokens from the users and the data's tracking of tokens
+    // Therefore we find the index of the item in the respective arrays.
+
+    const user = data.users.find((item) => item.userId === validToken.userId);
+    const validUserToken = user.tokens.find((item) => item.sessionId === token);
+    if (!validUserToken) {
+      return { error: 'This is not a valid user token', statusCode: 401 };
+    }
+
+    const tokenIndex = data.tokens.indexOf(validToken);
+    const userTokenIndex = user.tokens.indexOf(validUserToken);
+
+    // If an index exists which we assume does if the token is valid, then we splice to remove the item
+    if ( tokenIndex !== -1 ) {
+      data.tokens.splice(tokenIndex, 1);
+    }
+
+    if ( userTokenIndex !== -1 ) {
+      user.tokens.splice(userTokenIndex, 1);
+    }
+  }
+
+  setData(data);
   return {};
 };
 
