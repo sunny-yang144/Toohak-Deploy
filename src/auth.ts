@@ -69,6 +69,7 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
     numFailedPasswordsSinceLastLogin: 0,
     ownedQuizzes: [],
     oldPasswords: [],
+    trash:[],
     tokens: [],
   };
   data.users.push(user);
