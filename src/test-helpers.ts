@@ -266,7 +266,7 @@ export function requestAdminTrashRemove (token: string, quizIds: number[]) {
   };
 }
 
-export function requestQuizQuestionCreate (quizId: number, token: string, questionBody: QuestionBody) {
+export function requestAdminQuizQuestionCreate (quizId: number, token: string, questionBody: QuestionBody) {
   const encodedQuestionBody = encodeURIComponent(JSON.stringify(questionBody));
   const res = request(
     'POST',
