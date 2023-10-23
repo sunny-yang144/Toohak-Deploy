@@ -1,4 +1,4 @@
-import { getData, setData, QuestionBody } from './dataStore';
+import { getData, setData, Question, QuestionBody, colours } from './dataStore';
 import { generateQuizId } from './other';
 
 interface ErrorObject {
@@ -22,6 +22,9 @@ interface adminQuizInfoReturn {
   timeCreated: number,
   timeLastEdited: number,
   description: string,
+  numQuestions: number,
+  questions: Question[],
+  duration: number,
 }
 interface adminQuizTrashReturn {
   quizzes: quizObject[];
@@ -123,7 +126,10 @@ export const adminQuizCreate = (token: string, name: string, description: string
     name: name,
     description: description,
     timeCreated: unixtimeSeconds,
-    timeLastEdited: unixtimeSeconds
+    timeLastEdited: unixtimeSeconds,
+    numQuestions: 0,
+    questions: [] as Question[],
+    duration: 0,
   };
 
   user.ownedQuizzes.push(newQuiz.quizId);
@@ -135,13 +141,7 @@ export const adminQuizCreate = (token: string, name: string, description: string
 };
 
 /**
- * Shows information relating to a specific quiz
- *
- * Gives an error when:
- * 1. AuthUserId is not a valid user
- * 2. Quiz ID does not refer to a valid quiz
- * 3. Quiz ID does not refer to a quiz that this user owns
- *
+ 
  * @param {number} authUserId
  * @param {number} quizId
  * @returns {{
@@ -182,6 +182,9 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
     timeCreated: quiz.timeCreated,
     timeLastEdited: quiz.timeLastEdited,
     description: quiz.description,
+    numQuestions: quiz.numQuestions,
+    questions: quiz.questions,
+    duration: quiz.duration,
   };
   return quizInfo;
 };

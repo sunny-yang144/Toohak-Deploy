@@ -9,9 +9,13 @@ import {
   requestAdminQuizTrash,
   requestAdminTrashRemove,
   requestAdminQuizTransfer,
-  requestAdminQuizQuestionCreate,
+  requestQuizQuestionCreate,
   clear,
 } from './test-helpers';
+
+import { colours } from './dataStore';
+
+import { QuestionBody } from './dataStore';
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
@@ -27,6 +31,31 @@ enum validDetails {
   QUIZNAME2 = 'Soccer Quiz',
   QUIZDESCRIPTION2 = 'GOOOAAAALLLL (Part 2)'
 }
+
+const sampleQuestion1: QuestionBody = {
+  question: "Who is the Monarch of England?",
+  duration: 4,
+  points: 5,
+  answers: [
+    {
+      answer: "Prince Charles",
+      correct: true
+    }
+  ]
+} 
+
+const sampleQuestion2: QuestionBody = {
+  question: "What is 2 + 2?", 
+  duration: 1,
+  points: 1,
+  answers: [
+    {
+      answer: "2",
+      correct: true
+    }
+  ]
+}
+
 
 beforeEach(() => {
   clear();
@@ -320,6 +349,9 @@ describe('Tests for adminQuizInfo', () => {
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
         description: expect.any(String),
+        numQuestions: expect.any(Number),
+        questions: [], // Since we havent added any questions this should be empty
+        duration: expect.any(Number),
       }
     );
     expect(response.statusCode).toStrictEqual(200);
@@ -337,6 +369,9 @@ describe('Tests for adminQuizInfo', () => {
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
         description: expect.any(String),
+        numQuestions: expect.any(Number),
+        questions: [], // Since we havent added any questions this should be empty
+        duration: expect.any(Number),
       }
     );
     expect(response1.statusCode).toStrictEqual(200);
@@ -349,10 +384,47 @@ describe('Tests for adminQuizInfo', () => {
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
         description: expect.any(String),
+        numQuestions: expect.any(Number),
+        questions: [],
+        duration: expect.any(Number),
       }
     );
     expect(response2.statusCode).toStrictEqual(200);
   });
+  test.todo('Quizzes made with some questions added to it.'), () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const addedQuestion = requestQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    const response = requestAdminQuizInfo(user.body.token, quiz.body.quizId);
+    expect(response.body).toStrictEqual(
+      {
+        quizId: quiz.body.quizId,
+        name: expect.any(String),
+        timeCreated: expect.any(Number),
+        timeLastEdited: expect.any(Number),
+        description: expect.any(String),
+        numQuestions: expect.any(Number),
+        questions: [ 
+          {
+            questionId: addedQuestion.body.questionId,
+            question: expect.any(String),
+            duration: expect.any(Number),
+            points: expect.any(Number),
+            answers: [
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(colours),
+                correct: expect.any(Boolean),
+              }
+            ],
+          }
+        ],
+        duration: expect.any(Number),
+      }
+    );
+    expect(response.statusCode).toStrictEqual(200);
+  }
 });
 
 describe('Tests for adminQuizNameUpdate', () => {
