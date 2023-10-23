@@ -1,3 +1,4 @@
+import { isTemplateExpression } from 'typescript';
 import validator from 'validator';
 import { getData, setData, User } from './dataStore';
 import { generateToken } from './other';
@@ -75,7 +76,6 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
   data.tokens.push(token);
 
   setData(data);
-
   return { token: token.sessionId };
 };
 /*
@@ -132,6 +132,28 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
 export const adminAuthLogout = (token: string): Record<string, never> | ErrorObject => {
+  let data = getData();
+  
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  if (!validToken) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+  else {
+    const user = data.users.find((item) => item.userId === validToken.userId);
+    const validUserToken = user.tokens.find((item) => item.sessionId === token);
+    const tokenIndex = data.tokens.indexOf(validToken);
+    const userTokenIndex = user.tokens.indexOf(validUserToken);
+
+    if ( tokenIndex !== -1 ) {
+      data.tokens.splice(tokenIndex, 1);
+    }
+
+    if ( userTokenIndex !== -1 ) {
+      user.tokens.splice(userTokenIndex, 1);
+    }
+  }
+
+  setData(data);
   return {};
 };
 
