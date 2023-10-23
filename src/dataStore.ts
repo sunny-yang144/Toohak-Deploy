@@ -25,6 +25,7 @@ export interface User {
   numSuccessfulLogins: number,
   numFailedPasswordsSinceLastLogin: number,
   ownedQuizzes: number[],
+  oldPasswords: string[], // Added a list of old passwords, so we can check the previous passwords of the user
   tokens: Token[], // If we have a user, we can check what token they are assigned.
 }
 export interface Answer {
