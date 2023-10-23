@@ -174,7 +174,7 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
   // Find quiz with the inputted Id
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
-    return { error: 'This is not a valid quizId', statusCode: 400 };
+    return { error: 'This is not a valid quizId', statusCode: 400};
   }
   const quizInfo = {
     quizId: quiz.quizId,
