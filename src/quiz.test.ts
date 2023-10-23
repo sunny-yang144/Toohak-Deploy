@@ -9,9 +9,11 @@ import {
   requestAdminQuizTrash,
   requestAdminTrashRemove,
   requestAdminQuizTransfer,
-  requestQuizQuestionCreate,
+  requestAdminQuizQuestionCreate,
   clear,
 } from './test-helpers';
+
+import { v4 as uuidv4 } from 'uuid';
 
 import { colours } from './dataStore';
 
@@ -394,7 +396,7 @@ describe('Tests for adminQuizInfo', () => {
   test.todo('Quizzes made with some questions added to it.'), () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const addedQuestion = requestQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    const addedQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
     const response = requestAdminQuizInfo(user.body.token, quiz.body.quizId);
     expect(response.body).toStrictEqual(
       {
@@ -738,6 +740,266 @@ describe.skip('Testing adminQuizTransfer', () => {
   });
 });
 
+describe.skip('Tests for adminQuizQuestionCreate', () => {
+  // Create user and quiz
+  const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+  const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+  const token = user.body.token;
+  // Create question details
+  const question = {
+    question: 'What does KFC sell?',
+    duration: 4,
+    points: 5,
+  };
+  const answers = [
+    { answer: 'Chicken', correct: true },
+    { answer: 'Nuggets', correct: true },
+  ];
+
+  test('Successful quiz question creation', () => {
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    }
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
+    expect(quizQuestion.body).toStrictEqual({ questionId: expect.any(Number) });
+    expect(quizQuestion.statusCode).toStrictEqual(200);
+  });
+
+  test('Quiz ID does not refer to a valid quiz', () => {
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    }
+    const quizQuestion = requestAdminQuizQuestionCreate(-1, token, questionBody);
+    expect(quizQuestion.body).toStrictEqual({ error: 'Quiz ID does not refer to a valid quiz.' });
+    expect(quizQuestion.statusCode).toStrictEqual(400);
+  });
+
+  test('Question string is less than 5 characters in length or greater than 50 characters in length', () => {
+    const questionBody = {
+      question: 'abcd',
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    }
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
+    expect(quizQuestion.body).toStrictEqual({ error: 'Question is less than 5 characters long' });
+    expect(quizQuestion.statusCode).toStrictEqual(400);
+
+    const questionBody2 = {
+      question: 'a'.repeat(51),
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    }
+    const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody2);
+    expect(quizQuestion2.body).toStrictEqual({ error: 'Question is greater than 50 characters long' });
+    expect(quizQuestion2.statusCode).toStrictEqual(400);
+  });
+
+  test('The question has more than 6 answers or less than 2 answers', () => {
+    const quiz2 = requestAdminQuizCreate(user.body.token, 'Gross Chiggen', validDetails.QUIZDESCRIPTION);
+
+    const answers2 = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Lettuce', correct: true },
+      { answer: 'Concrete', correct: false },
+      { answer: 'Bricks', correct: false },
+      { answer: 'Beef', correct: true },
+      { answer: 'Mice', correct: false },
+      { answer: 'Nutes', correct: true },
+    ];
+
+    const answers3 = [{ answer: 'Concrete', correct: false }];
+
+    const questionBody1 = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers2,
+    }
+    const quizQuestion1 = requestAdminQuizQuestionCreate(quiz2.body.quizId, token, questionBody1);
+    expect(quizQuestion1.body).toStrictEqual({ error: 'More than 6 answers' });
+    expect(quizQuestion1.statusCode).toStrictEqual(400);
+
+    const questionBody2 = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers3,
+    }
+    const quizQuestion2 = requestAdminQuizQuestionCreate(quiz2.body.quizId, token, questionBody2);
+    expect(quizQuestion2.body).toStrictEqual({ error: 'Less than 2 answers' });
+    expect(quizQuestion2.statusCode).toStrictEqual(400);
+  });
+
+  test('The question duration is not a positive number', () => {
+    const questionBody = {
+      question: question.question,
+      duration: -1,
+      points: question.points,
+      answers: answers,
+    }
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
+    expect(quizQuestion.body).toStrictEqual({ error: 'Question duration is not a positive number' });
+    expect(quizQuestion.statusCode).toStrictEqual(400);
+  });
+
+  test('The sum of the question durations in quiz exceeds 3 minutes', () => {
+    
+    const quiz1 = requestAdminQuizCreate(user.body.token, 'Chiggen', validDetails.QUIZDESCRIPTION);
+    const question1 = {
+      question: 'What does KFC sell?',
+      duration: 160,
+      points: 5,
+    };
+
+    const question2 = {
+      question: 'What does KFC sell?',
+      duration: 40,
+      points: 5,
+    };
+
+    const questionBody1 = {
+      question: question1.question,
+      duration: question1.duration,
+      points: question1.points,
+      answers: answers,
+    }
+
+    const questionBody2 = {
+      question: question2.question,
+      duration: question2.duration,
+      points: question2.points,
+      answers: answers,
+    }
+
+    requestAdminQuizQuestionCreate(quiz1.body.quizId, token, questionBody1);
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz1.body.quizId, token, questionBody2);
+    expect(quizQuestion.body).toStrictEqual({ error: 'Sum of the question durations in quiz exceeds 3 minutes' });
+    expect(quizQuestion.statusCode).toStrictEqual(400);
+  });
+
+  test('The points awarded for the question are less than 1 or greater than 10', () => {
+    const questionBody1 = {
+      question: question.question,
+      duration: question.duration,
+      points: 0,
+      answers: answers,
+    }
+    const questionBody2 = {
+      question: question.question,
+      duration: question.duration,
+      points: 11,
+      answers: answers,
+    }
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody1);
+    expect(quizQuestion.body).toStrictEqual({ error: 'Points awarded for the question are less than 1' });
+    expect(quizQuestion.statusCode).toStrictEqual(400);
+
+    const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody2);
+    expect(quizQuestion2.body).toStrictEqual({ error: 'Points awarded for the question are greater than 10' });
+    expect(quizQuestion2.statusCode).toStrictEqual(400);
+  });
+
+  test('The length of any answer is shorter than 1 character long or longer than 30 characters long', () => {
+    const noCharacterAnswer = [
+      { answer: '', correct: false },
+      { answer: 'something', correct: true },
+    ];
+    const questionBody1 = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: noCharacterAnswer,
+    }
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody1);
+    expect(quizQuestion.body).toStrictEqual({ error: 'length of answer shorter than 1 character' });
+    expect(quizQuestion.statusCode).toStrictEqual(400);
+
+    const manyCharacterAnswer = [
+      { answer: 'a'.repeat(31), correct: false },
+      { answer: 'cheese', correct: true }
+    ];
+    const questionBody2 = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: manyCharacterAnswer,
+    }
+    const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody2);
+    expect(quizQuestion2.body).toStrictEqual({ error: 'Length of answer longer than 30 characters' });
+    expect(quizQuestion2.statusCode).toStrictEqual(400);
+  });
+
+  test('Any answer strings are duplicates of one another (within the same question)', () => {
+    const sameAnswers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Chicken', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: sameAnswers,
+    }
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
+    expect(quizQuestion.body).toStrictEqual({ error: 'Answer strings are duplicates' });
+    expect(quizQuestion.statusCode).toStrictEqual(400);
+  });
+
+  test('There are no correct answers', () => {
+    const incorrectAnswersOnly = [
+      { answer: 'Chicken', correct: false },
+      { answer: 'Nuggets', correct: false }
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: incorrectAnswersOnly,
+    }
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
+    expect(quizQuestion.body).toStrictEqual({ error: 'No correct answers' });
+    expect(quizQuestion.statusCode).toStrictEqual(400);
+  });
+
+  test('Token is empty or invalid (does not refer to valid logged in user session', () => {
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    }
+    const incorrectToken = uuidv4();
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, incorrectToken, questionBody);
+    expect(quizQuestion.body).toStrictEqual({ error: 'Token invalid (does not refer to valid logged in user session' });
+    expect(quizQuestion.statusCode).toStrictEqual(401);
+
+    const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, '', questionBody);
+    expect(quizQuestion2.body).toStrictEqual({ error: 'Token empty' });
+    expect(quizQuestion2.statusCode).toStrictEqual(401);
+  });
+
+  test('Valid token is provided, but user is not an owner of this quiz', () => {
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    }
+    const user1 = requestAdminAuthRegister('drizman123@gmail.com', validDetails.PASSWORD, 'Driz', 'Haj');
+
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user1.body.token, questionBody);
+    expect(quizQuestion.body).toStrictEqual({ error: 'User is not owner of this quiz' });
+    expect(quizQuestion.statusCode).toStrictEqual(403);
+  });
+});
 
 // When all tests are run clear the data
 clear();
