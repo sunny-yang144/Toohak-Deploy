@@ -1,3 +1,4 @@
+import { isTemplateExpression, updateLanguageServiceSourceFile } from 'typescript';
 import validator from 'validator';
 import { getData, setData, User } from './dataStore';
 import { generateToken } from './other';
@@ -67,7 +68,8 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
     numSuccessfulLogins: 0,
     numFailedPasswordsSinceLastLogin: 0,
     ownedQuizzes: [],
-    trash: [], // The users trash
+    oldPasswords: [],
+    trash:[],
     tokens: [],
   };
   data.users.push(user);
@@ -76,7 +78,6 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
   data.tokens.push(token);
 
   setData(data);
-
   return { token: token.sessionId };
 };
 /*
@@ -112,7 +113,7 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
-  const user = data.users.find((user) => user.userId === validToken.userId);
+  const user = data.users.find((item) => item.userId === validToken.userId);
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
@@ -133,13 +134,119 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
 export const adminAuthLogout = (token: string): Record<string, never> | ErrorObject => {
+  let data = getData();
+  
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  if (!validToken) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+  else {
+    // We need to remove the tokens from the users and the data's tracking of tokens
+    // Therefore we find the index of the item in the respective arrays.
+
+    const user = data.users.find((item) => item.userId === validToken.userId);
+    const validUserToken = user.tokens.find((item) => item.sessionId === token);
+    if (!validUserToken) {
+      return { error: 'This is not a valid user token', statusCode: 401 };
+    }
+
+    const tokenIndex = data.tokens.indexOf(validToken);
+    const userTokenIndex = user.tokens.indexOf(validUserToken);
+
+    // If an index exists which we assume does if the token is valid, then we splice to remove the item
+    if ( tokenIndex !== -1 ) {
+      data.tokens.splice(tokenIndex, 1);
+    }
+
+    if ( userTokenIndex !== -1 ) {
+      user.tokens.splice(userTokenIndex, 1);
+    }
+  }
+
+  setData(data);
   return {};
 };
 
 export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: string, nameLast: string): Record<string, never> | ErrorObject => {
+  const data = getData();
+
+  // Derive user from the token by that logic this error should trigger first.
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  if (!validToken) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const user = data.users.find((user) => user.userId === validToken.userId);
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const searchEmail = data.users.find(item => item.email === email && item.userId !== user.userId);
+
+  if (searchEmail) {
+    return { error: 'This email is already in use', statusCode: 400 };
+  }
+  if (!validator.isEmail(email)) {
+    return { error: 'This is not a valid email', statusCode: 400 };
+  }
+  const pattern = /^[a-zA-Z\s\-']+$/;
+  if (!pattern.test(nameFirst)) {
+    return { error: 'This is not a valid first name', statusCode: 400 };
+  }
+  const firstNameLength = nameFirst.length;
+  if ((firstNameLength < 2) || (firstNameLength > 20)) {
+    return { error: 'This is not a valid first name', statusCode: 400 };
+  }
+  if (!pattern.test(nameLast)) {
+    return { error: 'This is not a valid last name', statusCode: 400 };
+  }
+  const lastNameLength = nameLast.length;
+  if ((lastNameLength < 2) || (lastNameLength > 20)) {
+    return { error: 'This is not a valid last name', statusCode: 400 };
+  }
+
+  user.email = email;
+  user.nameFirst = nameFirst;
+  user.nameLast = nameLast;
+
+  setData(data);
   return {};
 };
 
 export const adminUserPasswordUpdate = (token: string, oldPassword: string, newPassword: string) : Record<string, never> | ErrorObject => {
+  let data = getData();
+
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  if (!validToken) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const user = data.users.find((item) => item.userId === validToken.userId);
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  if (user.password === oldPassword) {
+    return { error: 'Incorrect old password', statusCode: 400 };
+  }
+  if (oldPassword === newPassword) {
+    return { error: 'New password must be different from current password', statusCode: 400 };
+  }
+  if (user.oldPasswords.some((item) => item === newPassword)) {
+    return { error: 'New password must be different from a password used before', statusCode: 400 };
+  }
+  const passwordLength = newPassword.length;
+  if (passwordLength < 8) {
+    return { error: 'This is not a valid password', statusCode: 400 };
+  }
+  const letterCheck = /[a-zA-Z]/;
+  const numberCheck = /\d/;
+  if (!(letterCheck.test(newPassword) && numberCheck.test(newPassword))) {
+    return { error: 'This is not a valid password', statusCode: 400 };
+  }
+
+  user.password = newPassword;
+  user.oldPasswords.push(oldPassword);
+  setData(data);
   return {};
 };
