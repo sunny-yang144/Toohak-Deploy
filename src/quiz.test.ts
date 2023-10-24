@@ -506,6 +506,7 @@ describe('Tests for adminQuizDescriptionUpdate', () => {
   test('Sucessfully updated quiz description', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    console.log(user.body.token);
     const response = requestAdminQuizDescriptionUpdate(user.body.token, quiz.body.quizId, 'Valid Description');
     expect(response.body).toStrictEqual({}); // Returns {} on success
     expect(response.statusCode).toStrictEqual(200);
@@ -1563,14 +1564,17 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
   });
 });
 
-describe.skip('Tests for adminQuizTrashRestore', () => {
+describe('Tests for adminQuizTrashRestore', () => {
   const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
   const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
   const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
   const token = user.body.token;
 
   test('Successful adminQuizTrashRestore', () => {
+    console.log(token);
+    console.log(user.body.token);
     const response = requestAdminQuizTrashRestore(quiz.body.quizId, token);
+    console.log(response);
     // Check for error codes
     expect(response.body).toStrictEqual({}); 
     expect(response.statusCode).toStrictEqual(200);

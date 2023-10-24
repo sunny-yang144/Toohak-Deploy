@@ -393,7 +393,46 @@ export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObjec
   return { quizzes };
 };
 
-export const adminQuizRestore = (quizId: number, token: string): Record<string, never> | ErrorObject => {
+export const adminQuizRestore = (token: string, quizId: number): Record<string, never> | ErrorObject => {
+  const data = getData();
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+
+  // Check whether token is valid
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
+  }
+
+  const user = data.users.find((user) => user.userId === validToken.userId);
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
+  }
+  // Find the quiz in the trash
+  const quizIndex = user.trash.findIndex((trashQuizId) => trashQuizId === quizId);
+  if (quizIndex === -1) {
+    return { error: `The quiz ID ${quizId} is not in the trash.`, statusCode: 400 };
+  }
+  // Restore the quiz
+  const restoredQuizId = user.trash.splice(quizIndex, 1)[0];
+
+  // Check if the restored quiz name is already used by another active quiz
+  if (data.quizzes.some(quiz => quiz.quizId !== restoredQuizId && quiz.name === data.quizzes[restoredQuizId].name)) {
+    // Revert the changes and return an error
+    user.trash.push(restoredQuizId);
+    return { error: `The quiz name ${data.quizzes[restoredQuizId].name} is already used by another active quiz.`, statusCode: 400 };
+  }
+  // Update the quiz status to not being in the trash
+  // I'm not too sure how to do this, should we add another thing
+  //in dataStore that checks whether a quiz is in trash or not
+  // or should it just go back into quizzes
+  user.ownedQuizzes.push(restoredQuizId);
+  setData(data);
   return {};
 };
 
