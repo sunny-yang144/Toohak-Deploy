@@ -125,6 +125,20 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   res.json(response);
 });
 
+// Defining trash before '/v1/admin/quiz/:quizid'
+app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+
+  const response = adminQuizTrash(token);
+
+  if ('error' in response) {
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
+  }
+  res.json(response);
+});
+
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
 
@@ -235,19 +249,6 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
 
   const response = adminUserPasswordUpdate(token, oldPassword, newPassword);
-
-  if ('error' in response) {
-    return res.status(response.statusCode).json({
-      error: response.error
-    });
-  }
-  res.json(response);
-});
-
-app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
-  const token = req.query.token as string;
-
-  const response = adminQuizTrash(token);
 
   if ('error' in response) {
     return res.status(response.statusCode).json({
