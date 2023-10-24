@@ -212,7 +212,7 @@ describe('Tests for adminAuthLogout', () => {
   });
 });
 
-describe.only('Testing adminUserDetailsUpdate', () => {
+describe('Testing adminUserDetailsUpdate', () => {
   test('Successful adminUserDetails Update', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminUserDetailsUpdate(user.body.token, validDetails.EMAIL2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
