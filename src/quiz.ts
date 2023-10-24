@@ -1,4 +1,4 @@
-import { getData, setData, Question, QuestionBody, colours } from './dataStore';
+import { getData, setData, Question, QuestionBody, colours, Answer } from './dataStore';
 import { generateQuizId } from './other';
 
 interface ErrorObject {
@@ -451,7 +451,112 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
 };
 
 export const adminQuizQuestionUpdate = (quizId: number, questionId: number, token: string, questionBody: QuestionBody): Record<string, never> | ErrorObject => {
-  return {};
+  let data = getData();
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  if (!validToken) {
+    return { error: 'This is not a valid user token.', statusCode: 401 };
+  }
+
+  const user = data.users.find((user) => user.userId === validToken.userId);
+  if (!user) {
+    return { error: 'This is not a valid user token.', statusCode: 401 };
+  }
+
+  const validQuestionId = data.questions.find((question) => question.questionId === questionId);
+  if (!validQuestionId) {
+    return { error: 'The question Id refers to an invalid question within this quiz.', statusCode: 400 };
+  }
+
+  if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
+  }
+
+  if (questionBody.question.length < 5) {
+    return { error: 'The question is too short (>5).', statusCode: 400 };
+  }
+
+  if (questionBody.question.length > 50) {
+    return { error: 'The question is too long (<50).', statusCode: 400 };
+  }
+
+  if (questionBody.answers.length > 6) {
+    return { error: 'The question has too many answers (<6).', statusCode: 400 };
+  }
+
+  if (questionBody.answers.length < 2) {
+    return { error: 'The question does not have enough answers (>2).', statusCode: 400 };
+  }
+  
+  if (questionBody.duration <= 0) {
+    return { error: 'The question duration is not a positive number.', statusCode: 400 };
+  }
+  
+  // Calculating quiz duration with new question duration
+  const quiz = data.quizzes[quizId]; 
+  const otherQuestionsDuration = quiz.duration - quiz.questions[questionId].duration;
+  const newQuizDuration = otherQuestionsDuration + questionBody.duration;
+  
+  if (newQuizDuration > 3) {
+    return { error: 'Quiz duration exceeds 3 minutes.', statusCode: 400 };
+  }
+
+  if (questionBody.points < 1) {
+    return { error: 'The points are less than 1 (>1).', statusCode: 400 };
+  }
+
+  if (questionBody.points > 30) {
+    return { error: 'The points are greater than 30 (<30).', statusCode: 400 };
+  }
+
+  let flag = false;
+  for (let index in questionBody.answers) {
+    if (questionBody.answers[index].answer.length < 1) {
+      return { error: 'Answer length is less than 1 (>1).', statusCode: 400 };
+    }
+
+    if (questionBody.answers[index].answer.length > 30) {
+      return { error: 'Answer length is greater than 3 (<30).', statusCode: 400 };
+    }
+    // Check for correct answer
+    if (questionBody.answers[index].correct) {
+      flag = true;
+    }
+  }
+
+  if (!flag) {
+    return { error: 'No correct answers.', statusCode: 401 };
+  }
+
+  // Check for duplicates
+  for (let i = 0; i < questionBody.answers.length; i++) {
+    for (let j = i + 1; j < questionBody.answers.length; j++) {
+      if (questionBody.answers[i].answer == questionBody.answers[j].answer) {
+        return { error: 'Duplicate answers.', statusCode: 400 };
+      }
+    }
+  }
+
+  const currentData = data.quizzes[quizId].questions[questionId];
+  
+  let tempAnswer: Answer; 
+  const newAnswers: Answer[] = [];
+  for (let index = 0; index < questionBody.answers.length; index++) {
+    tempAnswer = { answerId: index, 
+                   answer: questionBody.answers[index].answer, 
+                   colour: colours.RED, 
+                   correct: questionBody.answers[index].correct }
+    newAnswers.push(tempAnswer);
+  }
+  currentData.answers = newAnswers;
+  currentData.duration = questionBody.duration;
+  currentData.points = questionBody.points;
+  currentData.question = questionBody.question;
+  
+  data.quizzes[quizId].questions[questionId] = currentData;
+  data.quizzes[quizId].duration = newQuizDuration;
+  
+  setData(data);
+  return{};
 };
 
 export const adminQuizQuestionDelete = (quizId: number, questionId: number, token: string): Record<string, never> | ErrorObject => {
