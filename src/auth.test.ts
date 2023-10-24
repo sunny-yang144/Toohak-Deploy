@@ -291,7 +291,7 @@ describe('Testing adminUserDetailsUpdate', () => {
   });
 });
 
-describe.skip('Testing adminUserPasswordUpdate', () => {
+describe.only('Testing adminUserPasswordUpdate', () => {
   test('Successful adminUserPasswordUpdate', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminUserPasswordUpdate(user.body.token, validDetails.PASSWORD, validDetails.PASSWORD2);
@@ -299,8 +299,8 @@ describe.skip('Testing adminUserPasswordUpdate', () => {
     expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
     // Check if parameters were actually updated
-    expect(requestAdminAuthLogout(user.body.token)).toStrictEqual({});
-    expect(requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD2)).toStrictEqual({ token: expect.any(Number) });
+    expect(requestAdminAuthLogout(user.body.token).body).toStrictEqual({});
+    expect(requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD2).body).toStrictEqual({ token: expect.any(String) });
   });
   test('Unsuccessful call, oldPassword is not the correct oldPassword', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);

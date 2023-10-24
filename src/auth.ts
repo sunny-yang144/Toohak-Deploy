@@ -225,7 +225,7 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
-  if (user.password === oldPassword) {
+  if (user.password !== oldPassword) {
     return { error: 'Incorrect old password', statusCode: 400 };
   }
   if (oldPassword === newPassword) {
