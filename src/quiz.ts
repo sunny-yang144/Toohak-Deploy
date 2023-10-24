@@ -403,35 +403,37 @@ export const adminQuizRestore = (token: string, quizId: number): Record<string, 
   }
 
   const user = data.users.find((user) => user.userId === validToken.userId);
+
+  // Check whether user exists and is valid
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
-  if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
-    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
-  }
-  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
-  }
-  // Find the quiz in the trash
-  const quizIndex = user.trash.findIndex((trashQuizId) => trashQuizId === quizId);
-  if (quizIndex === -1) {
-    return { error: `The quiz ID ${quizId} is not in the trash.`, statusCode: 400 };
-  }
-  // Restore the quiz
-  const restoredQuizId = user.trash.splice(quizIndex, 1)[0];
+  // Check whether quiz with quizId exists in the trash
+  const quizInTrash = user.trash.find((trashQuizId) => trashQuizId === quizId);
 
-  // Check if the restored quiz name is already used by another active quiz
-  if (data.quizzes.some(quiz => quiz.quizId !== restoredQuizId && quiz.name === data.quizzes[restoredQuizId].name)) {
-    // Revert the changes and return an error
-    user.trash.push(restoredQuizId);
-    return { error: `The quiz name ${data.quizzes[restoredQuizId].name} is already used by another active quiz.`, statusCode: 400 };
+  if (!quizInTrash) {
+    return { error: `The quiz Id ${quizId} is not in the trash!`, statusCode: 400 };
   }
-  // Update the quiz status to not being in the trash
-  // I'm not too sure how to do this, should we add another thing
-  //in dataStore that checks whether a quiz is in trash or not
-  // or should it just go back into quizzes
-  user.ownedQuizzes.push(restoredQuizId);
+
+  // Find the quiz object with the inputted Id
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+
+  if (!quiz) {
+    return { error: 'This is not a valid quizId', statusCode: 400 };
+  }
+
+  // Check if the name of the restored quiz is already used by another active quiz
+  for (const existingQuiz of data.quizzes) {
+    if (existingQuiz.name === quiz.name) {
+      return { error: `The name ${quiz.name} is already used by another quiz!`, statusCode: 400 };
+    }
+  }
+
+  // Restore the quiz by removing it from the trash and updating ownership
+  user.trash = user.trash.filter((trashQuizId) => trashQuizId !== quizId);
+  user.ownedQuizzes.push(quizId);
+
   setData(data);
   return {};
 };
