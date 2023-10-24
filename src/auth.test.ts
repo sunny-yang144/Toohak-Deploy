@@ -177,38 +177,38 @@ describe('Tests for adminUserDetails', () => {
   });
 });
 
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////     ITERATION 2      //////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////     ITERATION 2      //////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
 
 describe('Tests for adminAuthLogout', () => {
   test('Successful logout', () => {
-      const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-      const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD); 
-      // check if user is logged in
-      expect(userLogin.body).toStrictEqual({ token: expect.any(String) });
-      
-      // Logout user
-      const logoutReturn = requestAdminAuthLogout(user.body.token);
-      expect(logoutReturn.body).toStrictEqual({});
-      expect(logoutReturn.statusCode).toStrictEqual(200);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
+    // check if user is logged in
+    expect(userLogin.body).toStrictEqual({ token: expect.any(String) });
 
-      // check if user can use functions
-      const getUserDetails = requestAdminUserDetails(user.body.token);
-      expect(getUserDetails.body).toStrictEqual({ error: expect.any(String) });
-      expect(getUserDetails.statusCode).toStrictEqual(401);
+    // Logout user
+    const logoutReturn = requestAdminAuthLogout(user.body.token);
+    expect(logoutReturn.body).toStrictEqual({});
+    expect(logoutReturn.statusCode).toStrictEqual(200);
+
+    // check if user can use functions
+    const getUserDetails = requestAdminUserDetails(user.body.token);
+    expect(getUserDetails.body).toStrictEqual({ error: expect.any(String) });
+    expect(getUserDetails.statusCode).toStrictEqual(401);
   });
 
   test('Token is empty or invalid', () => {
-      const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-      const response1 = requestAdminAuthLogout('');
-      expect(response1.body).toStrictEqual({ error: expect.any(String) });
-      expect(response1.statusCode).toStrictEqual(401);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response1 = requestAdminAuthLogout('');
+    expect(response1.body).toStrictEqual({ error: expect.any(String) });
+    expect(response1.statusCode).toStrictEqual(401);
 
-      const invalidId = uuidv4();
-      const response2 = requestAdminAuthLogout(invalidId);
-      expect(response2.body).toStrictEqual({ error: expect.any(String) });
-      expect(response1.statusCode).toStrictEqual(401);
+    const invalidId = uuidv4();
+    const response2 = requestAdminAuthLogout(invalidId);
+    expect(response2.body).toStrictEqual({ error: expect.any(String) });
+    expect(response1.statusCode).toStrictEqual(401);
   });
 });
 

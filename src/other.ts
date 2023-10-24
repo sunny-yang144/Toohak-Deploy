@@ -1,4 +1,4 @@
-import { setData, getData, User, Quiz, Question, Answer } from './dataStore';
+import { setData, getData, User, Quiz, Question, Answer, colours, AnswerToken, QuestionToken } from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
 
 export function clear (): Record<string, never> {
@@ -41,7 +41,7 @@ export function generateQuizId (idArray: Quiz[]) {
  *
  * @returns { Number } Max + 1
  */
-export function generateQuestionId (idArray: Question[]) {
+export function generateQuestionId (idArray: QuestionToken[]) {
   if (idArray.length === 0) {
     return 0;
   }
@@ -62,7 +62,7 @@ export function generateQuestionId (idArray: Question[]) {
  *
  * @returns { Number } Max + 1
  */
-export function generateAnswerId (idArray: Answer[]) {
+export function generateAnswerId (idArray: AnswerToken[]) {
   if (idArray.length === 0) {
     return 0;
   }
@@ -94,4 +94,10 @@ export function generateToken (user: User) {
 
   setData(data);
   return token;
+}
+
+export function getRandomColour(): colours {
+  const coloursObject = Object.values(colours);
+  const randomIndex: number = Math.floor(Math.random() * coloursObject.length);
+  return coloursObject[randomIndex];
 }

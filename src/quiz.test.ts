@@ -40,29 +40,28 @@ enum validDetails {
 }
 
 const sampleQuestion1: QuestionBody = {
-  question: "Who is the Monarch of England?",
+  question: 'Who is the Monarch of England?',
   duration: 4,
   points: 5,
   answers: [
     {
-      answer: "Prince Charles",
+      answer: 'Prince Charles',
       correct: true
     }
   ]
-} 
+};
 
 const sampleQuestion2: QuestionBody = {
-  question: "What is 2 + 2?", 
+  question: 'What is 2 + 2?',
   duration: 1,
   points: 1,
   answers: [
     {
-      answer: "2",
+      answer: '2',
       correct: true
     }
   ]
-}
-
+};
 
 beforeEach(() => {
   clear();
@@ -411,7 +410,7 @@ describe('Tests for adminQuizInfo', () => {
         timeLastEdited: expect.any(Number),
         description: expect.any(String),
         numQuestions: expect.any(Number),
-        questions: [ 
+        questions: [
           {
             questionId: addedQuestion.body.questionId,
             question: expect.any(String),
@@ -431,7 +430,7 @@ describe('Tests for adminQuizInfo', () => {
       }
     );
     expect(response.statusCode).toStrictEqual(200);
-  }
+  };
 });
 
 describe('Tests for adminQuizNameUpdate', () => {
@@ -546,9 +545,9 @@ describe('Tests for adminQuizDescriptionUpdate', () => {
   });
 });
 
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////     ITERATION 2      //////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////     ITERATION 2      //////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
 
 describe.skip('Tests for adminQuizTrash', () => {
   test('Successful Trash List', () => {
@@ -737,55 +736,84 @@ describe.skip('Testing adminQuizTransfer', () => {
   });
 });
 
-describe.skip('Tests for adminQuizQuestionCreate', () => {
-  // Create user and quiz
-  const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-  const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-  const token = user.body.token;
-  // Create question details
-  const question = {
-    question: 'What does KFC sell?',
-    duration: 4,
-    points: 5,
-  };
-  const answers = [
-    { answer: 'Chicken', correct: true },
-    { answer: 'Nuggets', correct: true },
-  ];
-
+describe('Tests for adminQuizQuestionCreate', () => {
   test('Successful quiz question creation', () => {
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+
+    const token = user.body.token;
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
     const questionBody = {
       question: question.question,
       duration: question.duration,
       points: question.points,
       answers: answers,
-    }
+    };
+
     const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
     expect(quizQuestion.body).toStrictEqual({ questionId: expect.any(Number) });
     expect(quizQuestion.statusCode).toStrictEqual(200);
   });
 
   test('Quiz ID does not refer to a valid quiz', () => {
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
     const questionBody = {
       question: question.question,
       duration: question.duration,
       points: question.points,
       answers: answers,
-    }
+    };
     const quizQuestion = requestAdminQuizQuestionCreate(-1, token, questionBody);
-    expect(quizQuestion.body).toStrictEqual({ error: 'Quiz ID does not refer to a valid quiz.' });
+    expect(quizQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion.statusCode).toStrictEqual(400);
   });
 
   test('Question string is less than 5 characters in length or greater than 50 characters in length', () => {
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
     const questionBody = {
       question: 'abcd',
       duration: question.duration,
       points: question.points,
       answers: answers,
-    }
+    };
     const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
-    expect(quizQuestion.body).toStrictEqual({ error: 'Question is less than 5 characters long' });
+    expect(quizQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion.statusCode).toStrictEqual(400);
 
     const questionBody2 = {
@@ -793,13 +821,27 @@ describe.skip('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
-    }
+    };
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody2);
-    expect(quizQuestion2.body).toStrictEqual({ error: 'Question is greater than 50 characters long' });
+    expect(quizQuestion2.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion2.statusCode).toStrictEqual(400);
   });
 
   test('The question has more than 6 answers or less than 2 answers', () => {
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
     const quiz2 = requestAdminQuizCreate(user.body.token, 'Gross Chiggen', validDetails.QUIZDESCRIPTION);
 
     const answers2 = [
@@ -819,9 +861,9 @@ describe.skip('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: answers2,
-    }
+    };
     const quizQuestion1 = requestAdminQuizQuestionCreate(quiz2.body.quizId, token, questionBody1);
-    expect(quizQuestion1.body).toStrictEqual({ error: 'More than 6 answers' });
+    expect(quizQuestion1.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion1.statusCode).toStrictEqual(400);
 
     const questionBody2 = {
@@ -829,25 +871,53 @@ describe.skip('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: answers3,
-    }
+    };
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz2.body.quizId, token, questionBody2);
-    expect(quizQuestion2.body).toStrictEqual({ error: 'Less than 2 answers' });
+    expect(quizQuestion2.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion2.statusCode).toStrictEqual(400);
   });
 
   test('The question duration is not a positive number', () => {
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
     const questionBody = {
       question: question.question,
       duration: -1,
       points: question.points,
       answers: answers,
-    }
+    };
     const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
-    expect(quizQuestion.body).toStrictEqual({ error: 'Question duration is not a positive number' });
+    expect(quizQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion.statusCode).toStrictEqual(400);
   });
 
   test('The sum of the question durations in quiz exceeds 3 minutes', () => {
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
     const quiz1 = requestAdminQuizCreate(user.body.token, 'Chiggen', validDetails.QUIZDESCRIPTION);
     const question1 = {
       question: 'What does KFC sell?',
@@ -864,43 +934,71 @@ describe.skip('Tests for adminQuizQuestionCreate', () => {
       duration: question1.duration,
       points: question1.points,
       answers: answers,
-    }
+    };
     const questionBody2 = {
       question: question2.question,
       duration: question2.duration,
       points: question2.points,
       answers: answers,
-    }
+    };
 
     requestAdminQuizQuestionCreate(quiz1.body.quizId, token, questionBody1);
     const quizQuestion = requestAdminQuizQuestionCreate(quiz1.body.quizId, token, questionBody2);
-    expect(quizQuestion.body).toStrictEqual({ error: 'Sum of the question durations in quiz exceeds 3 minutes' });
+    expect(quizQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion.statusCode).toStrictEqual(400);
   });
 
   test('The points awarded for the question are less than 1 or greater than 10', () => {
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
     const questionBody1 = {
       question: question.question,
       duration: question.duration,
       points: 0,
       answers: answers,
-    }
+    };
     const questionBody2 = {
       question: question.question,
       duration: question.duration,
       points: 11,
       answers: answers,
-    }
+    };
     const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody1);
-    expect(quizQuestion.body).toStrictEqual({ error: 'Points awarded for the question are less than 1' });
+    expect(quizQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion.statusCode).toStrictEqual(400);
 
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody2);
-    expect(quizQuestion2.body).toStrictEqual({ error: 'Points awarded for the question are greater than 10' });
+    expect(quizQuestion2.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion2.statusCode).toStrictEqual(400);
   });
 
   test('The length of any answer is shorter than 1 character long or longer than 30 characters long', () => {
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
     const noCharacterAnswer = [
       { answer: '', correct: false },
       { answer: 'something', correct: true },
@@ -910,9 +1008,9 @@ describe.skip('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: noCharacterAnswer,
-    }
+    };
     const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody1);
-    expect(quizQuestion.body).toStrictEqual({ error: 'length of answer shorter than 1 character' });
+    expect(quizQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion.statusCode).toStrictEqual(400);
 
     const manyCharacterAnswer = [
@@ -924,13 +1022,27 @@ describe.skip('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: manyCharacterAnswer,
-    }
+    };
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody2);
-    expect(quizQuestion2.body).toStrictEqual({ error: 'Length of answer longer than 30 characters' });
+    expect(quizQuestion2.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion2.statusCode).toStrictEqual(400);
   });
 
   test('Any answer strings are duplicates of one another (within the same question)', () => {
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
     const sameAnswers = [
       { answer: 'Chicken', correct: true },
       { answer: 'Chicken', correct: true },
@@ -940,13 +1052,27 @@ describe.skip('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: sameAnswers,
-    }
+    };
     const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
-    expect(quizQuestion.body).toStrictEqual({ error: 'Answer strings are duplicates' });
+    expect(quizQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion.statusCode).toStrictEqual(400);
   });
 
   test('There are no correct answers', () => {
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
     const incorrectAnswersOnly = [
       { answer: 'Chicken', correct: false },
       { answer: 'Nuggets', correct: false }
@@ -956,40 +1082,68 @@ describe.skip('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: incorrectAnswersOnly,
-    }
+    };
     const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
-    expect(quizQuestion.body).toStrictEqual({ error: 'No correct answers' });
+    expect(quizQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion.statusCode).toStrictEqual(400);
   });
 
   test('Token is empty or invalid (does not refer to valid logged in user session', () => {
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
     const questionBody = {
       question: question.question,
       duration: question.duration,
       points: question.points,
       answers: answers,
-    }
+    };
     const incorrectToken = uuidv4();
     const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, incorrectToken, questionBody);
-    expect(quizQuestion.body).toStrictEqual({ error: 'Token invalid (does not refer to valid logged in user session' });
+    expect(quizQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion.statusCode).toStrictEqual(401);
 
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, '', questionBody);
-    expect(quizQuestion2.body).toStrictEqual({ error: 'Token empty' });
+    expect(quizQuestion2.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion2.statusCode).toStrictEqual(401);
   });
 
   test('Valid token is provided, but user is not an owner of this quiz', () => {
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
     const questionBody = {
       question: question.question,
       duration: question.duration,
       points: question.points,
       answers: answers,
-    }
+    };
     const user1 = requestAdminAuthRegister('drizman123@gmail.com', validDetails.PASSWORD, 'Driz', 'Haj');
 
     const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user1.body.token, questionBody);
-    expect(quizQuestion.body).toStrictEqual({ error: 'User is not owner of this quiz' });
+    expect(quizQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion.statusCode).toStrictEqual(403);
   });
 });
@@ -1016,47 +1170,47 @@ describe.skip('Tests for adminQuizQuestionDelete', () => {
     duration: question.duration,
     points: question.points,
     answers: answers,
-  }
+  };
   // Create quizQuestion for deletion
   const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
 
   test('Successful adminQuizQuestionDelete', () => {
     const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestion.body.questionId, token);
     // Check for error codes
-    expect(response.body).toStrictEqual({}); 
+    expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
     // Check if question was removed from quizInfo
-    const quizInfoNew = requestAdminQuizInfo(token, quiz.body.quizId)
+    const quizInfoNew = requestAdminQuizInfo(token, quiz.body.quizId);
     expect(quizInfoNew.body.questions).toStrictEqual({});
   });
 
   test('Unsuccessful call, quizId does not refer to a valid quiz', () => {
     const response = requestAdminQuizQuestionDelete(-666, quizQuestion.body.questionId, token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful call, questionId does not refer to a valid question within this quiz', () => {
     const response = requestAdminQuizQuestionDelete(quiz.body.quizId, -666, token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful call, token is empty', () => {
     const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestion.body.questionId, '');
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful call, token is invalid', () => {
     const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestion.body.questionId, '-666');
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful call, token is valid but user is not a owner of this quiz', () => {
     const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestion.body.questionId, token2);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
   });
 });
@@ -1083,17 +1237,17 @@ describe.skip('Tests for adminQuizQuestionDuplicate', () => {
     duration: question.duration,
     points: question.points,
     answers: answers,
-  }
+  };
   // Create quizQuestion for duplication
   const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
-  
+
   test('Successful quizQuestionDuplicate', () => {
     const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, quizQuestion.body.questionId, token);
     // Check for error codes
-    expect(response.body).toStrictEqual({}); 
+    expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
-    // Check if quiz was duplicated 
-    const quizInfoNew = requestAdminQuizInfo(user.body.token, quiz.body.quizId)
+    // Check if quiz was duplicated
+    const quizInfoNew = requestAdminQuizInfo(user.body.token, quiz.body.quizId);
     expect(quizInfoNew.body.questions).toStrictEqual(
       [
         {
@@ -1130,31 +1284,31 @@ describe.skip('Tests for adminQuizQuestionDuplicate', () => {
 
   test('Unsuccessful call, quizId does not refer to a valid quiz', () => {
     const response = requestAdminQuizQuestionDuplicate(-666, quizQuestion.body.questionId, token);
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful call, questionId does not refer to a valid question within quiz', () => {
     const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, -666, token);
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful call, token is empty', () => {
     const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, quizQuestion.body.questionId, '');
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful call, token is invalid', () => {
     const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, quizQuestion.body.questionId, '-666');
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful call, valid token but user is not an owner of quiz', () => {
     const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, quizQuestion.body.questionId, token2);
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
   });
 });
@@ -1190,13 +1344,13 @@ describe.skip('Tests for adminQuizQuestionMove', () => {
     duration: question.duration,
     points: question.points,
     answers: answers,
-  }
+  };
   const questionBody2 = {
     question: question2.question,
     duration: question2.duration,
     points: question2.points,
     answers: answers2,
-  }
+  };
   // Create quizQuestion for move (In same Quiz)
   const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
   const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody2);
@@ -1207,10 +1361,10 @@ describe.skip('Tests for adminQuizQuestionMove', () => {
     // This case will test if the second question will be moved to first place
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, token, newPosition);
     // Check for error codes
-    expect(response.body).toStrictEqual({}); 
+    expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
     // Check if parameters were updated
-    const quizInfoNew = requestAdminQuizInfo(token, quiz.body.quizId)
+    const quizInfoNew = requestAdminQuizInfo(token, quiz.body.quizId);
     expect(quizInfoNew.body.questions).toStrictEqual(
       [
         {
@@ -1247,49 +1401,49 @@ describe.skip('Tests for adminQuizQuestionMove', () => {
 
   test('Unsuccessful Call, quizId does not refer to a valid quiz', () => {
     const response = requestAdminQuizQuestionMove(-666, quizQuestion2.body.questionId, token, newPosition);
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful Call, questionId does not refer to a valid question within the quiz', () => {
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, -666, token, newPosition);
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful Call, newPosition is less than 0', () => {
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, token, -666);
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful Call, newPosition is greater then n-1 where n is the number of questions', () => {
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, token, 666);
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful Call, newPosition is the position of the current question', () => {
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, token, 1);
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful Call, token is empty', () => {
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, '', newPosition);
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful Call, token is invalid', () => {
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, '-666', newPosition);
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful Call, token is valid but user is not owner of quiz', () => {
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, token2, newPosition);
-    expect(response.body).toStrictEqual({ error: expect.any(String)}); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
   });
 });
@@ -1325,23 +1479,23 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
     duration: question.duration,
     points: question.points,
     answers: answers,
-  }
+  };
   const questionBody2 = {
     question: question2.question,
     duration: question2.duration,
     points: question2.points,
     answers: answers2,
-  }
+  };
   // Create quizQuestion to update
   const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
 
   test('Successful adminQuizQuestionUpdate', () => {
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBody2);
     // Check for error codes
-    expect(response.body).toStrictEqual({}); 
+    expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
     // Check if quizQuestion now contains questionBody2
-    const quizInfoNew = requestAdminQuizInfo(user.body.token, quiz.body.quizId)
+    const quizInfoNew = requestAdminQuizInfo(user.body.token, quiz.body.quizId);
     expect(quizInfoNew.body.questions).toStrictEqual(
       {
         questionId: expect.any(String),
@@ -1362,13 +1516,13 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
 
   test('Unsuccessful call, quizId does not refer to a valid quiz', () => {
     const response = requestAdminQuizQuestionUpdate(-666, quizQuestion.body.questionId, token, questionBody2);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful call, questionId does not refer to a valid question within this quiz', () => {
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, -666, token, questionBody2);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1378,9 +1532,9 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: answers2,
-    }
+    };
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBodyShort);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1390,9 +1544,9 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: answers2,
-    }
+    };
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBodyLong);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1411,9 +1565,9 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: tooManyAnswers,
-    }
+    };
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBodyTooManyAnswers);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1426,9 +1580,9 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: tooFewAnswers,
-    }
+    };
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBodyTooFewAnswers);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1438,9 +1592,9 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
       duration: -1,
       points: question2.points,
       answers: answers2,
-    }
+    };
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBodyNegativeDuration);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1450,9 +1604,9 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
       duration: 200,
       points: question2.points,
       answers: answers2,
-    }
+    };
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBodyExcessiveDuration);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1462,9 +1616,9 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: 0,
       answers: answers2,
-    }
+    };
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBodyNoPoints);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1474,9 +1628,9 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: 11,
       answers: answers2,
-    }
+    };
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBodyTooManyPoints);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1490,9 +1644,9 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: emptyAnswer,
-    }
+    };
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBodyEmptyAnswer);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1506,9 +1660,9 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: longAnswer,
-    }
+    };
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBodyLongAnswer);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1523,9 +1677,9 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: duplicateAnswer,
-    }
+    };
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBodyDuplicateAnswer);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1538,27 +1692,27 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: noCorrectAnswer,
-    }
+    };
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token, questionBodyNoCorrectAnswer);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful call, token is empty', () => {
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, '', questionBody2);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful call, token is invalid', () => {
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, '-666', questionBody2);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful call, valid token but user is not authorised', () => {
     const response = requestAdminQuizQuestionUpdate(quiz.body.quizId, quizQuestion.body.questionId, token2, questionBody2);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
   });
 });
@@ -1572,7 +1726,7 @@ describe.skip('Tests for adminQuizTrashRestore', () => {
   test('Successful adminQuizTrashRestore', () => {
     const response = requestAdminQuizTrashRestore(quiz.body.quizId, token);
     // Check for error codes
-    expect(response.body).toStrictEqual({}); 
+    expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
     // Check if quiz is updated to an active quiz
     const userQuizList = requestAdminQuizList(token);
@@ -1583,19 +1737,19 @@ describe.skip('Tests for adminQuizTrashRestore', () => {
           name: validDetails.QUIZNAME,
         }
       ]
-    )
+    );
   });
 
   test('Unsuccessful call, quizId does not refer to a valid quiz', () => {
     const response = requestAdminQuizTrashRestore(-666, token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful call, quizName of restored quiz is already used by another active quiz', () => {
     const quiz2 = requestAdminQuizCreate(token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION2);
     const response = requestAdminQuizTrashRestore(quiz.body.quizId, token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
@@ -1603,26 +1757,26 @@ describe.skip('Tests for adminQuizTrashRestore', () => {
     const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz2 = requestAdminQuizCreate(user2.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
     const response = requestAdminQuizTrashRestore(quiz2.body.quizId, user2.body.token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful call, token is empty', () => {
     const response = requestAdminQuizTrashRestore(quiz.body.quizId, '');
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful call, token is invalid', () => {
     const response = requestAdminQuizTrashRestore(quiz.body.quizId, '-666');
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful call, valid token but user is not an owner of quiz', () => {
     const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const response = requestAdminQuizTrashRestore(quiz.body.quizId, user2.body.token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
   });
 });

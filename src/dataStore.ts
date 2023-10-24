@@ -2,7 +2,7 @@
 import * as fs from 'fs';
 
 export enum colours {
-  RED = 'red', 
+  RED = 'red',
   BLUE = 'blue',
   GREEN = 'green',
   YELLOW = 'yellow',
@@ -81,13 +81,13 @@ export interface DataStore {
   answers: AnswerToken[]; // with token.
 }
 
-// 
+//
 // UserId - Number
 // Token - String
 // QuizId - Number
 // QuestionId - Number
 // AnswerId - Number
-// 
+//
 
 let data: DataStore = {
   users: [],

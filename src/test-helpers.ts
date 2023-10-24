@@ -159,23 +159,22 @@ export function clear() {
   return JSON.parse(res.body.toString());
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////     ITERATION 2      //////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////     ITERATION 2      //////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////
 
 export function requestAdminAuthLogout (token: string) {
   const res = request(
-      'POST',
-      SERVER_URL + '/v1/admin/auth/logout',
-      {
-          json: { token }
-      }
+    'POST',
+    SERVER_URL + '/v1/admin/auth/logout',
+    {
+      json: { token }
+    }
   );
   return {
-      body: JSON.parse(res.body.toString()),
-      statusCode: res.statusCode
-  }
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
 }
 
 export function requestAdminUserDetailsUpdate(token: string, email: string, nameFirst: string, nameLast: string) {
@@ -268,10 +267,10 @@ export function requestAdminTrashRemove (token: string, quizIds: number[]) {
 }
 
 export function requestAdminQuizQuestionCreate (quizId: number, token: string, questionBody: QuestionBody) {
-  const encodedQuestionBody = encodeURIComponent(JSON.stringify(questionBody));
+  const encodedQuestionBody = encodeURI(JSON.stringify(questionBody));
   const res = request(
     'POST',
-    SERVER_URL + '/v1/admin/quiz/${quizid}/question',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/question`,
     {
       json: {
         token,
@@ -333,7 +332,6 @@ export function requestAdminQuizQuestionDuplicate (quizId: number, questionId: n
     statusCode: res.statusCode
   };
 }
-
 
 export function requestAdminQuizTrashRestore (quizId: number, token: string) {
   const res = request(
