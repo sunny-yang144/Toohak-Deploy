@@ -52,7 +52,7 @@ export function requestAdminUserDetails (token: string) {
     statusCode: res.statusCode
   };
 }
-export function requestAdminQuizList (token: number) {
+export function requestAdminQuizList (token: string) {
   const res = request(
     'GET',
     SERVER_URL + '/v1/admin/quiz/list',
