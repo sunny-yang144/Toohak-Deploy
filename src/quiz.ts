@@ -218,8 +218,10 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
     return { error: `Given authUserId ${user.userId} does not own quiz ${quizId}`, statusCode: 403 };
   }
   // Success, remove quiz then return empty
-  data.quizzes.splice(quizIndex, 1);
   user.ownedQuizzes.splice(ownQuizIndex, 1);
+
+  // Since the trash hasnt been remove, the quiz still exists, instead we just move it to the user's trash.
+  user.trash.push(quizId);
   setData(data);
   return {};
 };
@@ -370,26 +372,23 @@ export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObjec
   if (!validToken) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
-
   const user = data.users.find((user) => user.userId === validToken.userId);
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
-
   const quizzes: quizObject[] = [];
   // Iterate through users quizzes and add their information to an array
-  user.trash.forEach((quizId) => {
+  
+  for (const quizId of user.trash) {
     const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-
     if (quiz) {
       const quizObject = {
         quizId: quiz.quizId,
         name: quiz.name,
       };
-
       quizzes.push(quizObject);
     }
-  });
+  }
   return { quizzes };
 };
 

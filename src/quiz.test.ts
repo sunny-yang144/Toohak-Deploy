@@ -550,13 +550,21 @@ describe('Tests for adminQuizDescriptionUpdate', () => {
 ////////////////////////////////     ITERATION 2      //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-describe.skip('Tests for adminQuizTrash', () => {
-  test('Successful Trash List', () => {
+describe('Tests for adminQuizTrash', () => {
+  test.only('Successful Trash List', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
-    const response = requestAdminQuizTrash(user.body.token);
-    expect(response.body).toStrictEqual({
+    expect(remove.body).toStrictEqual({});
+
+    // We expect the quizList to be empty
+    const ownedQuizzesList = requestAdminQuizList(user.body.token);
+    expect(ownedQuizzesList.body).toStrictEqual({
+      quizzes: [],
+    });
+
+    const trashList = requestAdminQuizTrash(user.body.token);
+    expect(trashList.body).toStrictEqual({
       quizzes: [
         {
           quizId: quiz.body.quizId,
@@ -564,7 +572,7 @@ describe.skip('Tests for adminQuizTrash', () => {
         }
       ]
     });
-    expect(response.statusCode).toStrictEqual(200);
+    expect(trashList.statusCode).toStrictEqual(200);
   });
 
   test('Empty Trash List', () => {
