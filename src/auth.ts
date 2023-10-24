@@ -69,7 +69,7 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
     numFailedPasswordsSinceLastLogin: 0,
     ownedQuizzes: [],
     oldPasswords: [],
-    trash:[],
+    trash: [],
     tokens: [],
   };
   data.users.push(user);
@@ -134,13 +134,12 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
 export const adminAuthLogout = (token: string): Record<string, never> | ErrorObject => {
-  let data = getData();
-  
+  const data = getData();
+
   const validToken = data.tokens.find((item) => item.sessionId === token);
   if (!validToken) {
     return { error: 'This is not a valid user token', statusCode: 401 };
-  }
-  else {
+  } else {
     // We need to remove the tokens from the users and the data's tracking of tokens
     // Therefore we find the index of the item in the respective arrays.
 
@@ -154,11 +153,11 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
     const userTokenIndex = user.tokens.indexOf(validUserToken);
 
     // If an index exists which we assume does if the token is valid, then we splice to remove the item
-    if ( tokenIndex !== -1 ) {
+    if (tokenIndex !== -1) {
       data.tokens.splice(tokenIndex, 1);
     }
 
-    if ( userTokenIndex !== -1 ) {
+    if (userTokenIndex !== -1) {
       user.tokens.splice(userTokenIndex, 1);
     }
   }
@@ -213,7 +212,7 @@ export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: 
 };
 
 export const adminUserPasswordUpdate = (token: string, oldPassword: string, newPassword: string) : Record<string, never> | ErrorObject => {
-  let data = getData();
+  const data = getData();
 
   const validToken = data.tokens.find((item) => item.sessionId === token);
   if (!validToken) {

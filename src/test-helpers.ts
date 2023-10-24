@@ -268,10 +268,10 @@ export function requestAdminTrashRemove (token: string, quizIds: number[]) {
 }
 
 export function requestAdminQuizQuestionCreate (quizId: number, token: string, questionBody: QuestionBody) {
-  const encodedQuestionBody = encodeURIComponent(JSON.stringify(questionBody));
+  const encodedQuestionBody = encodeURI(JSON.stringify(questionBody));
   const res = request(
     'POST',
-    SERVER_URL + '/v1/admin/quiz/${quizid}/question',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/question`,
     {
       json: {
         token,

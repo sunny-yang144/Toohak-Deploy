@@ -1,5 +1,5 @@
-import { getData, setData, Question, QuestionBody, colours, Answer } from './dataStore';
-import { generateQuizId } from './other';
+import { getData, setData, Question, QuestionBody, Answer, colours } from './dataStore';
+import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour } from './other';
 
 interface ErrorObject {
   error: string;
@@ -139,7 +139,7 @@ export const adminQuizCreate = (token: string, name: string, description: string
 };
 
 /**
- 
+
  * @param {number} authUserId
  * @param {number} quizId
  * @returns {{
@@ -172,7 +172,7 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
   // Find quiz with the inputted Id
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
-    return { error: 'This is not a valid quizId', statusCode: 400};
+    return { error: 'This is not a valid quizId', statusCode: 400 };
   }
   const quizInfo = {
     quizId: quiz.quizId,
@@ -367,7 +367,7 @@ export const adminQuizDescriptionUpdate = (token: string, quizId: number, descri
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
 export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObject => {
-  let data = getData();
+  const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
   if (!validToken) {
     return { error: 'This is not a valid user token', statusCode: 401 };
@@ -446,7 +446,119 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
 };
 
 export const adminQuizQuestionCreate = (quizId: number, token: string, questionBody: QuestionBody): adminQuizQuestionCreateReturn | ErrorObject => {
-  return { questionId: 5546 };
+  const data = getData();
+  // console.log(questionBody);
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  // Check whether token is valid
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
+  }
+
+  const user = data.users.find((user) => user.userId === validToken.userId);
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
+  }
+
+  if (questionBody.question.length < 5) {
+    return { error: `The question ${questionBody.question} is too short (>5).`, statusCode: 400 };
+  }
+  if (questionBody.question.length > 50) {
+    return { error: `The question ${questionBody.question} is too long (<50).`, statusCode: 400 };
+  }
+
+  if (questionBody.answers.length < 2) {
+    return { error: `The number of answers ${questionBody.answers.length} is too small (>2).`, statusCode: 400 };
+  }
+
+  if (questionBody.answers.length > 6) {
+    return { error: `The number of answers ${questionBody.answers.length} is too large (<6).`, statusCode: 400 };
+  }
+
+  if (questionBody.duration < 0) {
+    return { error: `The duration ${questionBody.duration} is not valid.`, statusCode: 400 };
+  }
+
+  let totalQuizDuration = quiz.duration;
+  totalQuizDuration += questionBody.duration;
+  if (totalQuizDuration > 180) {
+    return { error: `The quiz duration ${totalQuizDuration}s is too long (<180) when adding this question.`, statusCode: 400 };
+  }
+
+  if (questionBody.points > 10) {
+    return { error: `The points ${questionBody.points} awarded are too high (<10).`, statusCode: 400 };
+  }
+
+  if (questionBody.points < 1) {
+    return { error: `The points ${questionBody.points} awarded are too low (>1).`, statusCode: 400 };
+  }
+
+  // Checks if answer is too long or short, if it has duplicates or if there are no correct answers
+  let numCorrectAnswers = 0;
+  for (const answer of questionBody.answers) {
+    if (answer.answer.length > 30) {
+      return { error: `The answer "${answer.answer}" is too long (<30).`, statusCode: 400 };
+    }
+
+    if (answer.answer.length < 1) {
+      return { error: `The answer "${answer.answer}" is too short (>1).`, statusCode: 400 };
+    }
+    // Find if any answers are duplicates
+    const numberOfDuplicates = questionBody.answers.reduce((accumulator: number, currentValue) => {
+      if (currentValue.answer === answer.answer) {
+        return accumulator + 1;
+      }
+      return accumulator;
+    }, 0);
+
+    if (numberOfDuplicates > 1) {
+      return { error: `The answer "${answer.answer}" has duplicates.`, statusCode: 400 };
+    }
+    if (answer.correct) {
+      numCorrectAnswers++;
+    }
+  }
+
+  if (numCorrectAnswers < 1) {
+    return { error: 'No answers are correct.', statusCode: 400 };
+  }
+
+  const questionId = generateQuestionId(data.questions);
+  const questionObject: Question = {
+    questionId: questionId,
+    question: questionBody.question,
+    duration: questionBody.duration,
+    points: questionBody.points,
+    answers: [],
+  };
+  for (const answer of questionBody.answers) {
+    const answerObject: Answer = {
+      answerId: generateAnswerId(data.answers),
+      answer: answer.answer,
+      colour: getRandomColour(),
+      correct: answer.correct,
+    };
+    questionObject.answers.push(answerObject);
+  }
+  quiz.questions.push(questionObject);
+  // Must change timeLastEditied due to adding a question
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
+  quiz.timeLastEdited = unixtimeSeconds;
+
+  quiz.duration += questionBody.duration;
+
+  quiz.numQuestions++;
+
+  console.log(questionObject);
+  return { questionId: questionId };
 };
 
 export const adminQuizQuestionUpdate = (quizId: number, questionId: number, token: string, questionBody: QuestionBody): Record<string, never> | ErrorObject => {
