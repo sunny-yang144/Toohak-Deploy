@@ -291,7 +291,7 @@ describe('Testing adminUserDetailsUpdate', () => {
   });
 });
 
-describe.only('Testing adminUserPasswordUpdate', () => {
+describe('Testing adminUserPasswordUpdate', () => {
   test('Successful adminUserPasswordUpdate', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminUserPasswordUpdate(user.body.token, validDetails.PASSWORD, validDetails.PASSWORD2);
