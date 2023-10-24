@@ -671,6 +671,37 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
 };
 
 export const adminQuizQuestionDelete = (quizId: number, questionId: number, token: string): Record<string, never> | ErrorObject => {
+  let data = getData();
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  if (!validToken) {
+    return { error: 'This is not a valid user token.', statusCode: 401 };
+  }
+
+  const user = data.users.find((user) => user.userId === validToken.userId);
+  if (!user) {
+    return { error: 'This is not a valid user token.', statusCode: 401 };
+  }
+
+  const validQuestionId = data.questions.find((id) => id.questionId === questionId && id.quizId === quizId);
+  if (!validQuestionId) {
+    return { error: 'This is not a valid question within this quiz.', statusCode: 400 };
+  }
+
+  const currentData = data.quizzes[quizId].questions[questionId];
+  const newQuizDuration = data.quizzes[quizId].duration - currentData.duration;
+
+  // Find and return object matching questionId
+  const question: Question = data.quizzes[quizId].questions.find((q) => q.questionId === questionId);
+  // Find index of the object in the array
+  const questionIndex = data.quizzes[quizId].questions.indexOf(question);
+  // Remove object at index
+  data.quizzes[quizId].questions.splice(questionIndex, 1);
+  // Find question token and delete
+  const quizQuestionIndex = data.questions.indexOf(validQuestionId);
+  data.questions.splice(quizQuestionIndex, 1);
+  data.quizzes[quizId].duration = newQuizDuration;
+
+  setData(data);
   return {};
 };
 
