@@ -212,7 +212,7 @@ describe('Tests for adminAuthLogout', () => {
   });
 });
 
-describe.skip('Testing adminUserDetailsUpdate', () => {
+describe.only('Testing adminUserDetailsUpdate', () => {
   test('Successful adminUserDetails Update', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminUserDetailsUpdate(user.body.token, validDetails.EMAIL2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
@@ -220,7 +220,9 @@ describe.skip('Testing adminUserDetailsUpdate', () => {
     expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
     // Check if parameters were updated
-    expect(requestAdminUserDetails(user.body.token)).toStrictEqual
+
+    const detailsCheck = requestAdminUserDetails(user.body.token);
+    expect(detailsCheck.body).toStrictEqual
     ({
       user:
       {
@@ -235,7 +237,7 @@ describe.skip('Testing adminUserDetailsUpdate', () => {
 
   test('Unsuccessful call, email2 is not valid', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const response = requestAdminUserDetailsUpdate(user.body.token, 'invalidEmail@fake.com', validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const response = requestAdminUserDetailsUpdate(user.body.token, 'helloworld@VeryLegitEmailscom', validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
