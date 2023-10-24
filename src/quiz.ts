@@ -476,17 +476,16 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
     if (questionBody.answers[index].answer.length > 30) {
       return { error: 'Answer length is greater than 3 (<30).', statusCode: 400 };
     }
-    // Check for correct answer
+    // Flag to check correct answers whilst in the loop
     if (questionBody.answers[index].correct) {
       flag = true;
     }
   }
 
   if (!flag) {
-    return { error: 'No correct answers.', statusCode: 401 };
+    return { error: 'No correct answers.', statusCode: 400 };
   }
 
-  // Check for duplicates
   for (let i = 0; i < questionBody.answers.length; i++) {
     for (let j = i + 1; j < questionBody.answers.length; j++) {
       if (questionBody.answers[i].answer == questionBody.answers[j].answer) {
@@ -494,16 +493,22 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
       }
     }
   }
-
+  
+  // Updating current data
   const currentData = data.quizzes[quizId].questions[questionId];
-  
-  
-  for (let j = 0; j < currentData.answers.length; j++) {
-    for (let k = 0; k < questionBody.answers.length; k++) {
-      currentData.answers[j].answer = questionBody.answers[k].answer;
-    }
+
+  let newAnswers = [];
+  for (let i = 0; i < questionBody.answers.length; i++) {
+    currentData.answers[i].correct = questionBody.answers[i].correct;
+    newAnswers.push(questionBody.answers[i]);
   }
 
+  currentData.answers = newAnswers;
+  
+
+  currentData.duration = questionBody.duration;
+  currentData.points = questionBody.points;
+  currentData.question = questionBody.question;
   
   setData(data);
   return{};
