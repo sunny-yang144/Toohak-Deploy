@@ -23,7 +23,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { colours } from './dataStore';
 
 import { QuestionBody } from './dataStore';
-import { getDefaultCompilerOptions } from 'typescript';
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
