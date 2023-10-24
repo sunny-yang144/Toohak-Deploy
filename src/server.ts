@@ -261,7 +261,7 @@ app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const { token } = req.body;
 
-  const response = adminQuizRestore(quizId, token);
+  const response = adminQuizRestore(token, quizId);
 
   if ('error' in response) {
     return res.status(response.statusCode).json({
