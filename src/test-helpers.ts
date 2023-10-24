@@ -235,7 +235,7 @@ export function requestAdminQuizTransfer(token: string, userEmail: string, quizI
 export function requestAdminQuizTrash (token: string) {
   const res = request(
     'GET',
-    SERVER_URL + '/v1/admin/quiz/trash}',
+    SERVER_URL + '/v1/admin/quiz/trash',
     {
       qs: {
         token,
@@ -253,7 +253,7 @@ export function requestAdminTrashRemove (token: string, quizIds: number[]) {
   const encodedQuizIds = encodeURIComponent(JSON.stringify(quizIds));
   const res = request(
     'DELETE',
-    SERVER_URL + '/v1/admin/quiz/trash/empty}',
+    SERVER_URL + '/v1/admin/quiz/trash/empty',
     {
       qs: {
         token,
@@ -272,6 +272,90 @@ export function requestAdminQuizQuestionCreate (quizId: number, token: string, q
   const res = request(
     'POST',
     SERVER_URL + '/v1/admin/quiz/${quizid}/question',
+    {
+      json: {
+        token,
+        encodedQuestionBody,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
+}
+
+export function requestAdminQuizQuestionDelete (quizId: number, questionId: number, token: string) {
+  const res = request(
+    'DELETE',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}`,
+    {
+      qs: {
+        token,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
+}
+
+export function requestAdminQuizQuestionMove (quizId: number, questionId: number, token: string, newPosition: number) {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}/move`,
+    {
+      json: {
+        token,
+        newPosition,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
+}
+
+export function requestAdminQuizQuestionDuplicate (quizId: number, questionId: number, token: string) {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`,
+    {
+      json: {
+        token,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
+}
+
+
+export function requestAdminQuizTrashRestore (quizId: number, token: string) {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/restore`,
+    {
+      json: {
+        token,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode
+  };
+}
+
+export function requestAdminQuizQuestionUpdate (quizId: number, questionId: number, token: string, questionBody: QuestionBody) {
+  const encodedQuestionBody = encodeURIComponent(JSON.stringify(questionBody));
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}`,
     {
       json: {
         token,
