@@ -1,4 +1,4 @@
-import { getData, setData, Question, QuestionBody, colours } from './dataStore';
+import { getData, setData, Question, QuestionBody, colours, Answer } from './dataStore';
 import { generateQuizId } from './other';
 
 interface ErrorObject {
@@ -476,16 +476,17 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
     if (questionBody.answers[index].answer.length > 30) {
       return { error: 'Answer length is greater than 3 (<30).', statusCode: 400 };
     }
-    // Flag to check correct answers whilst in the loop
+    // Check for correct answer
     if (questionBody.answers[index].correct) {
       flag = true;
     }
   }
 
   if (!flag) {
-    return { error: 'No correct answers.', statusCode: 400 };
+    return { error: 'No correct answers.', statusCode: 401 };
   }
 
+  // Check for duplicates
   for (let i = 0; i < questionBody.answers.length; i++) {
     for (let j = i + 1; j < questionBody.answers.length; j++) {
       if (questionBody.answers[i].answer == questionBody.answers[j].answer) {
@@ -493,22 +494,25 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
       }
     }
   }
-  
-  // Updating current data
+
   const currentData = data.quizzes[quizId].questions[questionId];
-
-  let newAnswers = [];
-  for (let i = 0; i < questionBody.answers.length; i++) {
-    currentData.answers[i].correct = questionBody.answers[i].correct;
-    newAnswers.push(questionBody.answers[i]);
-  }
-
-  currentData.answers = newAnswers;
   
-
+  let tempAnswer: Answer; 
+  const newAnswers: Answer[] = [];
+  for (let index = 0; index < questionBody.answers.length; index++) {
+    tempAnswer = { answerId: index, 
+                   answer: questionBody.answers[index].answer, 
+                   colour: colours.RED, 
+                   correct: questionBody.answers[index].correct }
+    newAnswers.push(tempAnswer);
+  }
+  currentData.answers = newAnswers;
   currentData.duration = questionBody.duration;
   currentData.points = questionBody.points;
   currentData.question = questionBody.question;
+  
+  data.quizzes[quizId].questions[questionId] = currentData;
+  data.quizzes[quizId].duration = newQuizDuration;
   
   setData(data);
   return{};
