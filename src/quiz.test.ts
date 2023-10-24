@@ -1593,6 +1593,7 @@ describe('Tests for adminQuizTrashRestore', () => {
   test('Unsuccessful call, quizId does not refer to a valid quiz', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
     const token = user.body.token;
     const response = requestAdminQuizTrashRestore(token, quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) }); 
