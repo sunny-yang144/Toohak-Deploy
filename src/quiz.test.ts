@@ -550,7 +550,7 @@ describe('Tests for adminQuizDescriptionUpdate', () => {
 ////////////////////////////////     ITERATION 2      //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-describe.only('Tests for adminQuizTrash', () => {
+describe('Tests for adminQuizTrash', () => {
   test('Successful Trash List', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
