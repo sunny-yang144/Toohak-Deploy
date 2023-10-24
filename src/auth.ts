@@ -168,7 +168,6 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
 
 export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: string, nameLast: string): Record<string, never> | ErrorObject => {
   const data = getData();
-
   // Derive user from the token by that logic this error should trigger first.
   const validToken = data.tokens.find((item) => item.sessionId === token);
   if (!validToken) {
@@ -225,7 +224,7 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
-  if (user.password === oldPassword) {
+  if (user.password !== oldPassword) {
     return { error: 'Incorrect old password', statusCode: 400 };
   }
   if (oldPassword === newPassword) {
