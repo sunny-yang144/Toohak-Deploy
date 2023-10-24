@@ -576,8 +576,6 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
     return { error: 'This is not a valid question within this quiz.', statusCode: 400 };
   }
 
-  // Need to determine way of tracking users in active quiz session
-
   const currentData = data.quizzes[quizId].questions[questionId];
   const newQuizDuration = data.quizzes[quizId].duration - currentData.duration;
 
