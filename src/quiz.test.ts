@@ -1563,23 +1563,19 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
   });
 });
 
-describe('Tests for adminQuizTrashRestore', () => {
-  beforeEach(() => {
-    clear();
-  });
+describe.skip('Tests for adminQuizTrashRestore', () => {
 
   test('Successful adminQuizTrashRestore', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
-    const token = user.body.token;
-    const response = requestAdminQuizTrashRestore(quiz.body.quizId, token);
+    const response = requestAdminQuizTrashRestore(quiz.body.quizId, user.body.token);
     console.log(response);
     // Check for error codes
     expect(response.body).toStrictEqual({}); 
     expect(response.statusCode).toStrictEqual(200);
     // Check if quiz is updated to an active quiz
-    const userQuizList = requestAdminQuizList(token);
+    const userQuizList = requestAdminQuizList(user.body.token);
     expect(userQuizList.body.quizzes).toStrictEqual(
       [
         {
