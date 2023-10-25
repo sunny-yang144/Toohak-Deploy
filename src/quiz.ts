@@ -867,6 +867,10 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
   if (!question) {
     return { error: 'The question Id is invalid', statusCode: 400 };
   }
+  
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
+  }
 
   // Check if the new position is within bounds
   if (newPosition < 0 || newPosition >= quiz.questions.length) {
@@ -875,8 +879,13 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
 
   // Move the question to the new position
   const currentIndex = quiz.questions.indexOf(question);
+  if (currentIndex === newPosition) {
+    return { error: 'newPosition is the position of the current question', statusCode: 400 };
+  }
   quiz.questions.splice(currentIndex, 1);
   quiz.questions.splice(newPosition, 0, question);
+
+
 
   // Update the quiz's timeLastEdited since questions have been reordered
   const currentTime = new Date();
