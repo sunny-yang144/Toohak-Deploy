@@ -65,7 +65,7 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
     nameFirst: nameFirst,
     nameLast: nameLast,
     password: password,
-    numSuccessfulLogins: 0,
+    numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
     ownedQuizzes: [],
     oldPasswords: [],

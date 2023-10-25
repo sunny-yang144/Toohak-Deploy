@@ -1,4 +1,4 @@
-import { getData, setData, Question, QuestionBody, Answer, colours } from './dataStore';
+import { getData, setData, Question, QuestionBody, Answer, colours, AnswerToken, QuestionToken } from './dataStore';
 import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour } from './other';
 
 interface ErrorObject {
@@ -220,10 +220,14 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
   }
   // Success, remove quiz then return empty
   user.ownedQuizzes.splice(ownQuizIndex, 1);
-
   // Since the trash hasnt been remove, the quiz still exists, instead we just move it to the user's trash.
   user.trash.push(quizId);
-
+  // Also need to update the timeLastEdited on the quiz
+  const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
+  quiz.timeLastEdited = unixtimeSeconds;
+  
   setData(data);
   return {};
 };
@@ -453,12 +457,59 @@ export const adminQuizTrashRemove = (token: string, quizIds: number[]): Record<s
 };
 
 export const adminQuizTransfer = (quizId: number, token: string, userEmail: string): Record<string, never> | ErrorObject => {
+  const data = getData();
+  
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  // Check whether token is valid
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
+  }
+
+  const user = data.users.find((user) => user.userId === validToken.userId);
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
+  }
+  // The user that will gain the new quiz
+  const userTransfer = data.users.find((user) => user.email === userEmail);
+
+  if (!userTransfer) {
+    return { error: 'This email does not exist', statusCode: 400 };
+  }
+
+  if (user.email === userEmail) {
+    return { error: `The email ${userEmail} already owns this quiz`, statusCode: 400 };
+  }
+
+  // Check if user with email userEmail has a quiz with the same name as quiz with quizId
+  for (const ownedQuizId of userTransfer.ownedQuizzes) {
+    const ownedQuiz = data.quizzes.find((quizObject) => quizObject.quizId === ownedQuizId);
+    if (ownedQuiz.name === quiz.name) {
+      return { error: `Target user already has a quiz named ${quiz.name}`, statusCode: 400 };
+    }
+  }
+  // Remove quizId from token holder
+  const indexToRemove = user.ownedQuizzes.indexOf(quizId);
+  if (indexToRemove !== -1) {
+    user.ownedQuizzes.splice(indexToRemove, 1);
+  }
+
+  userTransfer.ownedQuizzes.push(quizId)
+  
+  setData(data);
   return {};
 };
 
 export const adminQuizQuestionCreate = (quizId: number, token: string, questionBody: QuestionBody): adminQuizQuestionCreateReturn | ErrorObject => {
   const data = getData();
-  // console.log(questionBody);
+  
   const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
@@ -549,16 +600,31 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
     points: questionBody.points,
     answers: [],
   };
+
   for (const answer of questionBody.answers) {
+    const answerId = generateAnswerId(data.answers);
     const answerObject: Answer = {
-      answerId: generateAnswerId(data.answers),
+      answerId: answerId,
       answer: answer.answer,
       colour: getRandomColour(),
       correct: answer.correct,
     };
+    // Must also add answerToken to answers array in data
+    const answerTokenObject: AnswerToken = {
+      answerId: answerId,
+      questionId: questionId,
+    }
+
+    data.answers.push(answerTokenObject);
     questionObject.answers.push(answerObject);
   }
   quiz.questions.push(questionObject);
+  // Must also add questionToken to questions array in data
+  const questionTokenObject: QuestionToken = {
+    questionId: questionId,
+    quizId: quizId,
+  }
+  data.questions.push(questionTokenObject);
   // Must change timeLastEditied due to adding a question
   const currentTime = new Date();
   const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
@@ -567,7 +633,8 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
   quiz.duration += questionBody.duration;
 
   quiz.numQuestions++;
-
+  console.log(questionObject);
+  setData(data);
   return { questionId: questionId };
 };
 

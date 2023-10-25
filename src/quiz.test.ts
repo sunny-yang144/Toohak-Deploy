@@ -18,11 +18,14 @@ import {
   clear,
 } from './test-helpers';
 
+import { expect } from '@jest/globals';
+
 import { v4 as uuidv4 } from 'uuid';
 
-import { colours } from './dataStore';
+import { colours, MAX_COLOUR_VAL } from './dataStore';
 
 import { QuestionBody } from './dataStore';
+import exp from 'constants';
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
@@ -47,6 +50,10 @@ const sampleQuestion1: QuestionBody = {
     {
       answer: 'Prince Charles',
       correct: true
+    },
+    {
+      answer: 'Queen Elizabeth', 
+      correct: true
     }
   ]
 };
@@ -59,6 +66,10 @@ const sampleQuestion2: QuestionBody = {
     {
       answer: '2',
       correct: true
+    },
+    {
+      answer: '6',
+      correct: false
     }
   ]
 };
@@ -66,27 +77,7 @@ const sampleQuestion2: QuestionBody = {
 beforeEach(() => {
   clear();
 });
-/**
-   * 1. [x] 2. [x] 3. [x] 4. [x] 5. [x]
-   *
-   *            ERROR CASES
-   * 1. Case where there is an invalid authUserId
-   * i.e. create an authUserId + 1 (will always be invalid)
-   *
-   * 2. No Quiz is created
-   *
-   *            SUCCESS CASES/MISC
-   * 3. Single quiz created, list generated after inputing quiz owner
-   *
-   * 4. Case where multiple quizzes are created with the same Id
-   * i.e. gives back a list of quizzes
-   *
-   * 5. Case where multiple authUserId, create a quiz, then use
-   * another Id to create another quiz. Check if:
-   * given wrong id -> ERROR
-   * given correct id -> gives list.
-   *
-   */
+
 describe('Tests for adminQuizList', () => {
   test('Invalid token', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
@@ -272,47 +263,6 @@ describe('Tests for adminQuizRemove', () => {
 });
 
 describe('Tests for adminQuizInfo', () => {
-  /**
-
-  * 1. [x] 2. [x] 3. [x] 4. [x] 5. [x]
-   *
-   * Function structure
-   *
-   * Parameters:
-   * ( authUserId, quizId )
-   *
-   * Returns:
-   *
-   * ObjectTYPE
-   * {quizId: number,
-   *  name: string,
-   *  timeCreated: number, (UNIX TIME)
-   *  timeLastEdited: number,
-   *  description: string,}
-}
-   */
-
-  /**
-     *           ERROR CASES
-     * 1. Case where there is an invalid authUserId
-     * i.e. create an authUserId + 1 (will always be invalid)
-     *
-     * 2. Case where the QuizId doesn't exit
-     *
-     * 3. Case quiz isnt owned by the User (User should have an array
-     * containing all quizIds owned by that user)
-     * i.e. Create two users, use one to create a quiz test.
-     * Check if other user is unable to check Info on quiz.
-     *
-     *            SUCCESS CASES
-     * 4. Create user and create quiz using userId, use the
-     * quiz owner to check info (match return object)
-     *
-     * 5. Create user and multiple quizzes using userId,
-     * find info on first quiz, then second quiz.
-     *
-     */
-
   test('Invalid token', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
@@ -398,7 +348,7 @@ describe('Tests for adminQuizInfo', () => {
     expect(response2.statusCode).toStrictEqual(200);
   });
 
-  test.skip('Quizzes made with some questions added to it.', () => {
+  test('Quizzes made with some questions added to it.', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const addedQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
@@ -417,11 +367,18 @@ describe('Tests for adminQuizInfo', () => {
             question: expect.any(String),
             duration: expect.any(Number),
             points: expect.any(Number),
+            // Since all questions require at least 2 answer options
             answers: [
               {
                 answerId: expect.any(Number),
                 answer: expect.any(String),
-                colour: expect.any(colours),
+                colour: expect.any(String),
+                correct: expect.any(Boolean),
+              },
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(String),
                 correct: expect.any(Boolean),
               }
             ],
@@ -430,6 +387,10 @@ describe('Tests for adminQuizInfo', () => {
         duration: expect.any(Number),
       }
     );
+    // Additional check of colour
+    const colour = response.body.questions[0].answers[0].colour;
+    const coloursArray = Object.values(colours);
+    expect(coloursArray).toContain(colour);
     expect(response.statusCode).toStrictEqual(200);
   });
 });
@@ -677,21 +638,25 @@ describe.skip('Tests to Empty adminQuizTrashRemove', () => {
   });
 });
 
-describe.skip('Testing adminQuizTransfer', () => {
-  const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-  const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
-  const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-  const token = user.body.token;
-  const token2 = user2.body.token;
-
+describe('Testing adminQuizTransfer', () => {
+  
   test('Successful adminQuizTransfer', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    const token2 = user2.body.token;
+
     const response = requestAdminQuizTransfer(token, validDetails.EMAIL2, quiz.body.quizId);
     // Check if function returns any errors
     expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
     // Confirm user no longer has quiz and that user2 now posseses quiz
-    expect(requestAdminQuizList(token)).toStrictEqual({ quizzes: [] });
-    expect(requestAdminQuizList(token2)).toStrictEqual(
+    const response1 = requestAdminQuizList(token);
+    const response2 = requestAdminQuizList(token2);
+
+    expect(response1.body).toStrictEqual({ quizzes: [] });
+    expect(response2.body).toStrictEqual(
       {
         quizzes:
         [{
@@ -702,24 +667,44 @@ describe.skip('Testing adminQuizTransfer', () => {
   });
 
   test('Unsuccessful adminQuizTransfer, quizId does not refer to a valid quiz', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    const token2 = user2.body.token;
     const response = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL2, -666);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful adminQuizTransfer, userEmail is not a real user', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    const token2 = user2.body.token;
     const response = requestAdminQuizTransfer(user.body.token, 'notRealUser@gmail.com', quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful adminQuizTransfer, userEmail is the current logged in user', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    const token2 = user2.body.token;
     const response = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL, quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful adminQuizTransfer, quizId refers to a quiz that has a name that is already used by the target user', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    const token2 = user2.body.token;
     requestAdminQuizCreate(token2, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION2);
     const response = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL2, quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
@@ -727,18 +712,33 @@ describe.skip('Testing adminQuizTransfer', () => {
   });
 
   test('Unsuccessful adminQuizTransfer, token is empty', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    const token2 = user2.body.token;
     const response = requestAdminQuizTransfer('', validDetails.EMAIL2, quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful adminQuizTransfer, token is invalid', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    const token2 = user2.body.token;
     const response = requestAdminQuizTransfer('-666', validDetails.EMAIL2, quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful adminQuizTransfer, token is valid but user does not own this quiz', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const token = user.body.token;
+    const token2 = user2.body.token;
     const response = requestAdminQuizTransfer(token2, validDetails.EMAIL2, quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
@@ -752,26 +752,86 @@ describe('Tests for adminQuizQuestionCreate', () => {
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
 
     const token = user.body.token;
-    // Create question details
-    const question = {
-      question: 'What does KFC sell?',
-      duration: 4,
-      points: 5,
-    };
-    const answers = [
-      { answer: 'Chicken', correct: true },
-      { answer: 'Nuggets', correct: true },
-    ];
-    const questionBody = {
-      question: question.question,
-      duration: question.duration,
-      points: question.points,
-      answers: answers,
-    };
 
-    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, sampleQuestion1);
     expect(quizQuestion.body).toStrictEqual({ questionId: expect.any(Number) });
     expect(quizQuestion.statusCode).toStrictEqual(200);
+  });
+
+  // Since signular question creation is tested in Info, we can skip that test.
+
+  test('Quiz with multiple questions added', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+
+    const token = user.body.token;
+
+    const quizQuestion1 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, sampleQuestion1);
+    const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, sampleQuestion2);
+    expect(quizQuestion1.body).toStrictEqual({ questionId: expect.any(Number) });
+    expect(quizQuestion1.statusCode).toStrictEqual(200);
+
+    // Checking if the quiz actually contains two question
+    const quizInfo = requestAdminQuizInfo(token, quiz.body.quizId);
+    expect(quizInfo.body).toStrictEqual(
+      {
+        quizId: quiz.body.quizId,
+        name: expect.any(String),
+        timeCreated: expect.any(Number),
+        timeLastEdited: expect.any(Number),
+        description: expect.any(String),
+        numQuestions: expect.any(Number),
+        questions: [
+          {
+            questionId: quizQuestion1.body.questionId,
+            question: expect.any(String),
+            duration: expect.any(Number),
+            points: expect.any(Number),
+            // Since all questions require at least 2 answer options
+            answers: [
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(String),
+                correct: expect.any(Boolean),
+              },
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(String),
+                correct: expect.any(Boolean),
+              }
+            ],
+          },
+          {
+            questionId: quizQuestion2.body.questionId,
+            question: expect.any(String),
+            duration: expect.any(Number),
+            points: expect.any(Number),
+            // Since all questions require at least 2 answer options
+            answers: [
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(String),
+                correct: expect.any(Boolean),
+              },
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(String),
+                correct: expect.any(Boolean),
+              }
+            ],
+          }
+        ],
+        duration: expect.any(Number),
+      }
+    );
+    // Additional check of colour
+    const colour1 = quizInfo.body.questions[0].answers[0].colour;
+    const coloursArray = Object.values(colours);
+    expect(coloursArray).toContain(colour1);
   });
 
   test('Quiz ID does not refer to a valid quiz', () => {

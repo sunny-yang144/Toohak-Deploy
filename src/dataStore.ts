@@ -1,6 +1,8 @@
 // YOU SHOULD MODIFY THIS OBJECT BELOW
 import * as fs from 'fs';
 
+export const MAX_COLOUR_VAL = 6;
+
 export enum colours {
   RED = 'red',
   BLUE = 'blue',
