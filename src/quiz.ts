@@ -222,7 +222,7 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
 
   // Since the trash hasnt been remove, the quiz still exists, instead we just move it to the user's trash.
   user.trash.push(quizId);
-  console.log(user.trash);
+
   setData(data);
   return {};
 };
@@ -407,20 +407,21 @@ export const adminQuizRestore = (token: string, quizId: number): Record<string, 
   // Check whether quiz with quizId exists in the trash
   const quizInTrash = user.trash.find((trashQuizId) => trashQuizId === quizId );
   if (quizInTrash === undefined) {
-    return { error: `The quiz Id ${quizId} is not in the trash!`, statusCode: 400 };
+    return { error: `The quiz Id ${quizId} is not in the trash!`, statusCode: 403 };
   }
   //get the quizId and compare with the userId
   
   // Find the quiz object with the inputted Id
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  console.log(quiz.name);
 
   if (!quiz) {
     return { error: 'This is not a valid quizId', statusCode: 400 };
   }
-
   // Check if the name of the restored quiz is already used by another active quiz
   for (const existingQuiz of data.quizzes) {
-    if (existingQuiz.name === quiz.name && existingQuiz.quizId !== quizId) {
+    console.log(existingQuiz.name);
+    if (existingQuiz.name === quiz.name) {
       return { error: `The name ${quiz.name} is already used by another quiz!`, statusCode: 400 };
     }
   }
@@ -557,7 +558,6 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
 
   quiz.numQuestions++;
 
-  console.log(questionObject);
   return { questionId: questionId };
 };
 
