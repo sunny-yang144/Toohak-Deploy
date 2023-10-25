@@ -687,7 +687,6 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
   quiz.duration += questionBody.duration;
 
   quiz.numQuestions++;
-  console.log(questionObject);
   setData(data);
   return { questionId: questionId };
 };
@@ -802,7 +801,7 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
 };
 
 export const adminQuizQuestionDelete = (quizId: number, questionId: number, token: string): Record<string, never> | ErrorObject => {
-  let data = getData();
+  const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
   if (!validToken) {
     return { error: 'This is not a valid user token.', statusCode: 401 };
@@ -816,6 +815,10 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
   const validQuestionId = data.questions.find((id) => id.questionId === questionId && id.quizId === quizId);
   if (!validQuestionId) {
     return { error: 'This is not a valid question within this quiz.', statusCode: 400 };
+  }
+
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
 
   const currentData = data.quizzes[quizId].questions[questionId];
