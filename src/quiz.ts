@@ -217,7 +217,7 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
   if (ownQuizIndex === -1) {
     return { error: `Given authUserId ${user.userId} does not own quiz ${quizId}`, statusCode: 403 };
   }
-  // Success, remove quiz then return empty
+  // Success, remove quiz then return array
   user.ownedQuizzes.splice(ownQuizIndex, 1);
   // Since the trash hasnt been remove, the quiz still exists, instead we just move it to the user's trash.
   user.trash.push(quizId);
@@ -452,6 +452,61 @@ export const adminQuizRestore = (token: string, quizId: number): Record<string, 
 };
 
 export const adminQuizTrashRemove = (token: string, quizIds: number[]): Record<string, never> | ErrorObject => {
+  const data = getData();
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  // Check whether token is valid
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
+  }
+  const user = data.users.find((user) => user.userId === validToken.userId);
+  // Check whether user exists and is valid
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  // Checking if all quizIds are owned by this user.
+  for (const quizId of quizIds) {
+    if (!user.trash.some(quiz => quiz === quizId) && !user.ownedQuizzes.some(quiz => quiz === quizId)) {
+      return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
+    }
+  }
+
+  // Checking if the quiz is in the users trash
+  for (const quizId of quizIds) {
+    if (!user.trash.some(quiz => quiz === quizId)) {
+      return { error: 'Quiz is not in users trash', statusCode: 400 };
+    }
+  }
+
+  // Remove all the questions and answers in every quiz (after all quizIds 
+  // have been checked to be valid).
+  let newAnswers;
+  let newQuestions;
+  for (const quizId of quizIds) {
+    const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+    if (quiz.questions.length > 0) {
+      for (const question of quiz.questions) {
+        newAnswers = data.answers.filter(answerToken => answerToken.questionId !== question.questionId);
+      }
+      newQuestions = data.questions.filter(questionToken => questionToken.quizId !== quizId);
+    }
+  }
+  data.answers = newAnswers;
+  data.questions = newQuestions;
+
+  // After questions and answers associated with the quiz has been remove,
+  // the quiz itself can be removed.
+
+  for (const quizId of quizIds) {
+    const userQuizIndex = user.trash.findIndex(ownQuiz => ownQuiz === quizId);
+    if (userQuizIndex >= 0) {
+      user.trash.splice(userQuizIndex, 1);
+    }
+    const dataQuizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
+    if (dataQuizIndex >= 0) {
+      data.quizzes.splice(dataQuizIndex, 1);
+    }
+  }
   return {};
 };
 
@@ -771,6 +826,9 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
   // Find index of the object in the array
   const questionIndex = data.quizzes[quizId].questions.indexOf(question);
   // Remove object at index
+  if (questionIndex === -1) {
+    return { error: 'This is not a valid question within this quiz.', statusCode: 400 };
+  }
   data.quizzes[quizId].questions.splice(questionIndex, 1);
   // Find question token and delete
   const quizQuestionIndex = data.questions.indexOf(validQuestionId);

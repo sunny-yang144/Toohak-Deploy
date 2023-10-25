@@ -575,66 +575,66 @@ describe('Tests for adminQuizTrash', () => {
     expect(response.statusCode).toStrictEqual(401);
   });
 });
-describe.skip('Tests to Empty adminQuizTrashRemove', () => {
+describe('Tests to Empty adminQuizTrashRemove', () => {
   test('Successful Trash Empty', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
-    const clearTrash = requestAdminTrashRemove(user.body.token, quiz.body.quizId); // needs to be an array of quizzes
-    const response = requestAdminQuizTrash(user.body.token);
-    expect(response.body).toStrictEqual({
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    const clearTrash = requestAdminTrashRemove(user.body.token, [quiz.body.quizId]); // needs to be an array of quizzes
+    expect(clearTrash.statusCode).toStrictEqual(200);
+
+    const checkTrash = requestAdminQuizTrash(user.body.token);
+    expect(checkTrash.body).toStrictEqual({
       quizzes: []
     });
-    expect(response.statusCode).toStrictEqual(200);
   });
 
   test('quizId is not in the Trash', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const clearTrash = requestAdminTrashRemove(user.body.token, quiz.body.quizId);
-    const response = requestAdminQuizTrash(user.body.token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) });
-    expect(response.statusCode).toStrictEqual(400);
+    const clearTrash = requestAdminTrashRemove(user.body.token, [quiz.body.quizId]);
+    expect(clearTrash.body).toStrictEqual({ error: expect.any(String) });
+    expect(clearTrash.statusCode).toStrictEqual(400);
   });
 
+  // If a quizId is not valid, then it cant be owned by user so error 403 hits first.
   test('quizId is not Valid', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
-    const clearTrash = requestAdminTrashRemove(user.body.token, quiz.body.quizId + 1);
-    const response = requestAdminQuizTrash(user.body.token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) });
-    expect(response.statusCode).toStrictEqual(400);
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    const clearTrash = requestAdminTrashRemove(user.body.token, [quiz.body.quizId + 1]);
+    expect(clearTrash.body).toStrictEqual({ error: expect.any(String) });
+    expect(clearTrash.statusCode).toStrictEqual(403);
   });
 
   test('User does not own Quiz', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
-    const clearTrash = requestAdminTrashRemove(user.body.token + 1, quiz.body.quizId);
-    const response = requestAdminQuizTrash(user.body.token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) });
-    expect(response.statusCode).toStrictEqual(400);
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    const clearTrash = requestAdminTrashRemove(user2.body.token, [quiz.body.quizId]);
+    expect(clearTrash.body).toStrictEqual({ error: expect.any(String) });
+    expect(clearTrash.statusCode).toStrictEqual(403);
   });
 
   test('Invalid token', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
-    const clearTrash = requestAdminTrashRemove(user.body.token, quiz.body.quizId);
-    const response = requestAdminQuizTrash(user.body.token + 1);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); // 'Invalid token'
-    expect(response.statusCode).toStrictEqual(401);
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    const invalidToken = uuidv4();
+    const clearTrash = requestAdminTrashRemove(invalidToken, [quiz.body.quizId]);
+    expect(clearTrash.body).toStrictEqual({ error: expect.any(String) }); // 'Invalid token'
+    expect(clearTrash.statusCode).toStrictEqual(401);
   });
 
   test('Valid Token, User is not Owner of Quiz', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
-    const clearTrash = requestAdminTrashRemove(user.body.token, quiz.body.quizId);
-    const response = requestAdminQuizTrash(user.body.token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); // 'Invalid token'
-    expect(response.statusCode).toStrictEqual(403);
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    const clearTrash = requestAdminTrashRemove(user2.body.token, [quiz.body.quizId]);
+    expect(clearTrash.body).toStrictEqual({ error: expect.any(String) }); // 'Invalid token'
+    expect(clearTrash.statusCode).toStrictEqual(403);
   });
 });
 
