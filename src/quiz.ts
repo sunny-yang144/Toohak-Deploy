@@ -32,7 +32,6 @@ interface adminQuizTrashReturn {
 interface adminQuizQuestionCreateReturn {
   questionId: number;
 }
-
 interface adminQuizQuestionDuplicateReturn{
   newQuestionId: number;
 }
@@ -828,5 +827,41 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
 };
 
 export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, token: string): adminQuizQuestionDuplicateReturn | ErrorObject => {
-  return { newQuestionId: 5546 };
+  let data = getData();
+
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
+  }
+
+  const user = data.users.find((user) => user.userId === validToken.userId);
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId)
+
+  const question = quiz.questions.find((question) => question.questionId === questionId);
+  if (!question) {
+    return { error: `The question Id ${question} does not refer to a valid quiz!`, statusCode: 400 };
+  }
+
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
+  }
+
+  // Find index of QuizQuestion to duplicate
+  const questionIndex = quiz.questions.indexOf(question);
+  // Create duplicate of question (will go to end of array)
+  const newQuestion = adminQuizQuestionCreate(quizId, token, question) as adminQuizQuestionCreateReturn;
+  // Move new question to directly after index of original quesiton
+  adminQuizQuestionMove(quizId, newQuestion.questionId, token, questionIndex + 1);
+
+  // Update timeLastEdited
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
+  quiz.timeLastEdited = unixtimeSeconds;
+
+  setData(data);
+  return { newQuestionId: newQuestion.questionId };
 };
