@@ -222,6 +222,7 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
 
   // Since the trash hasnt been remove, the quiz still exists, instead we just move it to the user's trash.
   user.trash.push(quizId);
+  console.log(user.trash);
   setData(data);
   return {};
 };
@@ -395,26 +396,21 @@ export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObjec
 export const adminQuizRestore = (token: string, quizId: number): Record<string, never> | ErrorObject => {
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
-
-  // Check whether token is valid
   if (!validToken) {
-    return { error: `The token ${token} is invalid!`, statusCode: 401 };
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
-
   const user = data.users.find((user) => user.userId === validToken.userId);
-
-  // Check whether user exists and is valid
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
   // Check whether quiz with quizId exists in the trash
-  const quizInTrash = user.trash.find((trashQuizId) => trashQuizId === quizId);
-
-  if (!quizInTrash) {
+  const quizInTrash = user.trash.find((trashQuizId) => trashQuizId === quizId );
+  if (quizInTrash === undefined) {
     return { error: `The quiz Id ${quizId} is not in the trash!`, statusCode: 400 };
   }
-
+  //get the quizId and compare with the userId
+  
   // Find the quiz object with the inputted Id
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
@@ -424,7 +420,7 @@ export const adminQuizRestore = (token: string, quizId: number): Record<string, 
 
   // Check if the name of the restored quiz is already used by another active quiz
   for (const existingQuiz of data.quizzes) {
-    if (existingQuiz.name === quiz.name) {
+    if (existingQuiz.name === quiz.name && existingQuiz.quizId !== quizId) {
       return { error: `The name ${quiz.name} is already used by another quiz!`, statusCode: 400 };
     }
   }
