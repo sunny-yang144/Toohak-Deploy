@@ -706,6 +706,47 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
 };
 
 export const adminQuizQuestionMove = (quizId: number, questionId: number, token: string, newPosition: number): Record<string, never> | ErrorObject => {
+  const data = getData();
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+
+  if (!validToken) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const user = data.users.find((user) => user.userId === validToken.userId);
+
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+
+  if (!quiz) {
+    return { error: 'The quiz Id is invalid', statusCode: 400 };
+  }
+
+  const question = quiz.questions.find((q) => q.questionId === questionId);
+
+  if (!question) {
+    return { error: 'The question Id is invalid', statusCode: 400 };
+  }
+
+  // Check if the new position is within bounds
+  if (newPosition < 0 || newPosition >= quiz.questions.length) {
+    return { error: 'Invalid new position', statusCode: 400 };
+  }
+
+  // Move the question to the new position
+  const currentIndex = quiz.questions.indexOf(question);
+  quiz.questions.splice(currentIndex, 1);
+  quiz.questions.splice(newPosition, 0, question);
+
+  // Update the quiz's timeLastEdited since questions have been reordered
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
+  quiz.timeLastEdited = unixtimeSeconds;
+
+  setData(data);
   return {};
 };
 
