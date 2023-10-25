@@ -102,8 +102,9 @@ export const adminQuizCreate = (token: string, name: string, description: string
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
-  for (const quiz of data.quizzes) {
-    if (quiz.name === name) {
+  for (const ownedQuizId of user.ownedQuizzes) {
+    const ownedQuiz = data.quizzes.find((quizObject) => quizObject.quizId === ownedQuizId);
+    if (ownedQuiz.name === name) {
       return { error: `The name ${name} is already used by another quiz!`, statusCode: 400 };
     }
   }
@@ -442,12 +443,59 @@ export const adminQuizTrashRemove = (token: string, quizIds: number[]): Record<s
 };
 
 export const adminQuizTransfer = (quizId: number, token: string, userEmail: string): Record<string, never> | ErrorObject => {
+  const data = getData();
+  
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  // Check whether token is valid
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
+  }
+
+  const user = data.users.find((user) => user.userId === validToken.userId);
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
+  }
+  // The user that will gain the new quiz
+  const userTransfer = data.users.find((user) => user.email === userEmail);
+
+  if (!userTransfer) {
+    return { error: 'This email does not exist', statusCode: 400 };
+  }
+
+  if (user.email === userEmail) {
+    return { error: `The email ${userEmail} already owns this quiz`, statusCode: 400 };
+  }
+
+  // Check if user with email userEmail has a quiz with the same name as quiz with quizId
+  for (const ownedQuizId of userTransfer.ownedQuizzes) {
+    const ownedQuiz = data.quizzes.find((quizObject) => quizObject.quizId === ownedQuizId);
+    if (ownedQuiz.name === quiz.name) {
+      return { error: `Target user already has a quiz named ${quiz.name}`, statusCode: 400 };
+    }
+  }
+  // Remove quizId from token holder
+  const indexToRemove = user.ownedQuizzes.indexOf(quizId);
+  if (indexToRemove !== -1) {
+    user.ownedQuizzes.splice(indexToRemove, 1);
+  }
+
+  userTransfer.ownedQuizzes.push(quizId)
+  
+  setData(data);
   return {};
 };
 
 export const adminQuizQuestionCreate = (quizId: number, token: string, questionBody: QuestionBody): adminQuizQuestionCreateReturn | ErrorObject => {
   const data = getData();
-  // console.log(questionBody);
+  
   const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
