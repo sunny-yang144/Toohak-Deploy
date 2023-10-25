@@ -1391,66 +1391,75 @@ describe('Tests for adminQuizQuestionDelete', () => {
   });
 });
 
-describe.skip('Tests for adminQuizQuestionDuplicate', () => {
-  // Create user and quiz
-  const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-  const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
-  const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-  const token = user.body.token;
-  const token2 = user2.body.token;
-  // Create question details
-  const question = {
-    question: 'What does KFC sell?',
-    duration: 4,
-    points: 5,
-  };
-  const answers = [
-    { answer: 'Chicken', correct: true },
-    { answer: 'Nuggets', correct: true },
-  ];
-  const questionBody = {
-    question: question.question,
-    duration: question.duration,
-    points: question.points,
-    answers: answers,
-  };
-  // Create quizQuestion for duplication
-  const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
-
-  test('Successful quizQuestionDuplicate', () => {
-    const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, quizQuestion.body.questionId, token);
+describe('Tests for adminQuizQuestionDuplicate', () => {
+    test('Successful quizQuestionDuplicate', () => {
+        // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    };
+    // Create quizQuestion for duplication
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, questionBody);
+    const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, quizQuestion.body.questionId, user.body.token);
     // Check for error codes
-    expect(response.body).toStrictEqual({});
+    expect(response.body).toStrictEqual({ newQuestionId: expect.any(Number) });
     expect(response.statusCode).toStrictEqual(200);
     // Check if quiz was duplicated
     const quizInfoNew = requestAdminQuizInfo(user.body.token, quiz.body.quizId);
     expect(quizInfoNew.body.questions).toStrictEqual(
       [
         {
-          questionId: expect.any(String), // Should be question 1
-          question: `${question.question}`,
-          duration: `${question.duration}`,
-          points: `${question.points}`,
+          questionId: quizQuestion.body.questionId, // Should now be question 1
+          question: question.question,
+          duration: question.duration,
+          points: question.points,
           answers: [
             {
-              answerId: expect.any(String),
-              answer: `${answers}`,
+              answerId: expect.any(Number),
+              answer: expect.any(String),
               colour: expect.any(String),
-              correct: expect.any(String),
+              correct: expect.any(Boolean),
+            },
+            {
+              answerId: expect.any(Number),
+              answer: expect.any(String),
+              colour: expect.any(String),
+              correct: expect.any(Boolean),
             }
           ],
         },
         {
-          questionId: expect.any(String), // Should be question 1's duplicate
-          question: `${question}`,
-          duration: `${question.duration}`,
-          points: `${question.points}`,
+          questionId: expect.any(Number), // Should now be question 1's duplicate
+          question: question.question,
+          duration: question.duration,
+          points: question.points,
           answers: [
             {
-              answerId: expect.any(String),
-              answer: `${answers}`,
+              answerId: expect.any(Number),
+              answer: expect.any(String),
               colour: expect.any(String),
-              correct: expect.any(String),
+              correct: expect.any(Boolean),
+            },
+            {
+              answerId: expect.any(Number),
+              answer: expect.any(String),
+              colour: expect.any(String),
+              correct: expect.any(Boolean),
             }
           ],
         },
@@ -1458,32 +1467,39 @@ describe.skip('Tests for adminQuizQuestionDuplicate', () => {
     );
   });
 
-  test('Unsuccessful call, quizId does not refer to a valid quiz', () => {
-    const response = requestAdminQuizQuestionDuplicate(-666, quizQuestion.body.questionId, token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) });
-    expect(response.statusCode).toStrictEqual(400);
-  });
-
   test('Unsuccessful call, questionId does not refer to a valid question within quiz', () => {
-    const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, -666, token);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, -666, user.body.token);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful call, token is empty', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
     const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, quizQuestion.body.questionId, '');
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful call, token is invalid', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
     const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, quizQuestion.body.questionId, '-666');
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful call, valid token but user is not an owner of quiz', () => {
-    const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, quizQuestion.body.questionId, token2);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, quizQuestion.body.questionId, user2.body.token);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
   });
@@ -1533,14 +1549,13 @@ describe('Tests for adminQuizQuestionMove', () => {
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody2);
     // Create newPosition (The position index is assumed to start at 0)
     const newPosition = 0;  
-    // This case will test if the second question will be moved to first place
+    // This case will test if the second question will bUpdatee moved to first place
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, token, newPosition);
     // Check for error codes
     expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
     // Check if parameters were updated
     const quizInfoNew = requestAdminQuizInfo(token, quiz.body.quizId);
-    console.log(quizInfoNew.body.questions);
     expect(quizInfoNew.body.questions).toStrictEqual(
       [
         {
@@ -1933,7 +1948,6 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
 });
 
 describe('Tests for adminQuizTrashRestore', () => {
-
   test('Successful adminQuizTrashRestore', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
