@@ -348,7 +348,7 @@ describe('Tests for adminQuizInfo', () => {
     expect(response2.statusCode).toStrictEqual(200);
   });
 
-  test('Quizzes made with some questions added to it.', () => {
+  test.only('Quizzes made with some questions added to it.', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const addedQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);

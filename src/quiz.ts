@@ -217,7 +217,7 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
   if (ownQuizIndex === -1) {
     return { error: `Given authUserId ${user.userId} does not own quiz ${quizId}`, statusCode: 403 };
   }
-  // Success, remove quiz then return empty
+  // Success, remove quiz then return array
   user.ownedQuizzes.splice(ownQuizIndex, 1);
 
   // Since the trash hasnt been remove, the quiz still exists, instead we just move it to the user's trash.
@@ -438,6 +438,52 @@ export const adminQuizRestore = (token: string, quizId: number): Record<string, 
 };
 
 export const adminQuizTrashRemove = (token: string, quizIds: number[]): Record<string, never> | ErrorObject => {
+  const data = getData();
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+  // Check whether token is valid
+  if (!validToken) {
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
+  }
+  const user = data.users.find((user) => user.userId === validToken.userId);
+  // Check whether user exists and is valid
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  // Check if quiz exists in the user interface, that is it is either in trash or ownedQuizzes
+  for (const quizId of quizIds) {
+    if (!user.trash.some(quiz => quiz === quizId) || !user.ownedQuizzes.some(quiz => quiz === quizId)) {
+      return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
+    }
+  }
+
+  // Checks if all quizzes are valid, meaning it exists in the quizzes array
+  for (const quizId of quizIds) {
+    if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
+      return { error: 'There is an invalid quiz in your input', statusCode: 400};
+    }
+  }
+
+  // For each quizId, remove the quizId from user trash, then remove from quizzes array.
+  // Also gives an error if a quiz is not in the trash
+  for (const quizId of quizIds) {
+    const userQuizIndex = user.trash.findIndex(ownQuiz => ownQuiz === quizId);
+    if (userQuizIndex === -1) {
+      return { error: 'There is a quiz not in trash', statusCode: 400 };
+    }
+
+    const dataQuizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
+    if (dataQuizIndex === -1) {
+      return { error: 'Invalid Quiz', statusCode: 400};
+    }
+
+    // Success, remove quiz from users trash and remove quiz from data
+    user.trash.splice(userQuizIndex, 1);
+    data.quizzes.splice(dataQuizIndex, 1);
+
+    // Also need to remove, the questions and answers associated with the quiz. 
+    
+  }
   return {};
 };
 
@@ -694,6 +740,9 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
   // Find index of the object in the array
   const questionIndex = data.quizzes[quizId].questions.indexOf(question);
   // Remove object at index
+  if (questionIndex === -1) {
+    return { error: 'This is not a valid question within this quiz.', statusCode: 400 };
+  }
   data.quizzes[quizId].questions.splice(questionIndex, 1);
   // Find question token and delete
   const quizQuestionIndex = data.questions.indexOf(validQuestionId);
