@@ -18,11 +18,14 @@ import {
   clear,
 } from './test-helpers';
 
+import { expect } from '@jest/globals';
+
 import { v4 as uuidv4 } from 'uuid';
 
-import { colours } from './dataStore';
+import { colours, MAX_COLOUR_VAL } from './dataStore';
 
 import { QuestionBody } from './dataStore';
+import exp from 'constants';
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
@@ -47,6 +50,10 @@ const sampleQuestion1: QuestionBody = {
     {
       answer: 'Prince Charles',
       correct: true
+    },
+    {
+      answer: 'Queen Elizabeth', 
+      correct: true
     }
   ]
 };
@@ -59,6 +66,10 @@ const sampleQuestion2: QuestionBody = {
     {
       answer: '2',
       correct: true
+    },
+    {
+      answer: '6',
+      correct: false
     }
   ]
 };
@@ -66,27 +77,7 @@ const sampleQuestion2: QuestionBody = {
 beforeEach(() => {
   clear();
 });
-/**
-   * 1. [x] 2. [x] 3. [x] 4. [x] 5. [x]
-   *
-   *            ERROR CASES
-   * 1. Case where there is an invalid authUserId
-   * i.e. create an authUserId + 1 (will always be invalid)
-   *
-   * 2. No Quiz is created
-   *
-   *            SUCCESS CASES/MISC
-   * 3. Single quiz created, list generated after inputing quiz owner
-   *
-   * 4. Case where multiple quizzes are created with the same Id
-   * i.e. gives back a list of quizzes
-   *
-   * 5. Case where multiple authUserId, create a quiz, then use
-   * another Id to create another quiz. Check if:
-   * given wrong id -> ERROR
-   * given correct id -> gives list.
-   *
-   */
+
 describe('Tests for adminQuizList', () => {
   test('Invalid token', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
@@ -272,47 +263,6 @@ describe('Tests for adminQuizRemove', () => {
 });
 
 describe('Tests for adminQuizInfo', () => {
-  /**
-
-  * 1. [x] 2. [x] 3. [x] 4. [x] 5. [x]
-   *
-   * Function structure
-   *
-   * Parameters:
-   * ( authUserId, quizId )
-   *
-   * Returns:
-   *
-   * ObjectTYPE
-   * {quizId: number,
-   *  name: string,
-   *  timeCreated: number, (UNIX TIME)
-   *  timeLastEdited: number,
-   *  description: string,}
-}
-   */
-
-  /**
-     *           ERROR CASES
-     * 1. Case where there is an invalid authUserId
-     * i.e. create an authUserId + 1 (will always be invalid)
-     *
-     * 2. Case where the QuizId doesn't exit
-     *
-     * 3. Case quiz isnt owned by the User (User should have an array
-     * containing all quizIds owned by that user)
-     * i.e. Create two users, use one to create a quiz test.
-     * Check if other user is unable to check Info on quiz.
-     *
-     *            SUCCESS CASES
-     * 4. Create user and create quiz using userId, use the
-     * quiz owner to check info (match return object)
-     *
-     * 5. Create user and multiple quizzes using userId,
-     * find info on first quiz, then second quiz.
-     *
-     */
-
   test('Invalid token', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
@@ -398,7 +348,7 @@ describe('Tests for adminQuizInfo', () => {
     expect(response2.statusCode).toStrictEqual(200);
   });
 
-  test.skip('Quizzes made with some questions added to it.', () => {
+  test('Quizzes made with some questions added to it.', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const addedQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
@@ -417,11 +367,18 @@ describe('Tests for adminQuizInfo', () => {
             question: expect.any(String),
             duration: expect.any(Number),
             points: expect.any(Number),
+            // Since all questions require at least 2 answer options
             answers: [
               {
                 answerId: expect.any(Number),
                 answer: expect.any(String),
-                colour: expect.any(colours),
+                colour: expect.any(String),
+                correct: expect.any(Boolean),
+              },
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(String),
                 correct: expect.any(Boolean),
               }
             ],
@@ -430,6 +387,10 @@ describe('Tests for adminQuizInfo', () => {
         duration: expect.any(Number),
       }
     );
+    // Additional check of colour
+    const colour = response.body.questions[0].answers[0].colour;
+    const coloursArray = Object.values(colours);
+    expect(coloursArray).toContain(colour);
     expect(response.statusCode).toStrictEqual(200);
   });
 });

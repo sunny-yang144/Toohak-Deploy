@@ -556,8 +556,7 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
   quiz.duration += questionBody.duration;
 
   quiz.numQuestions++;
-
-  console.log(questionObject);
+  setData(data);
   return { questionId: questionId };
 };
 
