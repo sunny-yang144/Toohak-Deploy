@@ -102,8 +102,9 @@ export const adminQuizCreate = (token: string, name: string, description: string
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
-  for (const quiz of data.quizzes) {
-    if (quiz.name === name) {
+  for (const ownedQuizId of user.ownedQuizzes) {
+    const ownedQuiz = data.quizzes.find((quizObject) => quizObject.quizId === ownedQuizId);
+    if (ownedQuiz.name === name) {
       return { error: `The name ${name} is already used by another quiz!`, statusCode: 400 };
     }
   }
@@ -404,24 +405,33 @@ export const adminQuizRestore = (token: string, quizId: number): Record<string, 
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
+  if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
+  }
+
+  // Check if we can find quiz with quizId is owned quizzes
+  if (user.ownedQuizzes.find((trashQuizId) => trashQuizId === quizId)) {
+    // If so then quiz is not in the trash
+    return { error: `The quiz Id ${quizId} is not in the trash!`, statusCode: 400 };
+  }
+
   // Check whether quiz with quizId exists in the trash
   const quizInTrash = user.trash.find((trashQuizId) => trashQuizId === quizId );
   if (quizInTrash === undefined) {
-    return { error: `The quiz Id ${quizId} is not in the trash!`, statusCode: 403 };
+    // This means quizId was never owned by this token user
+    return { error: `The quiz Id ${quizId} is not owned by this user!`, statusCode: 403 };
   }
   //get the quizId and compare with the userId
   
   // Find the quiz object with the inputted Id
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-  console.log(quiz.name);
 
   if (!quiz) {
     return { error: 'This is not a valid quizId', statusCode: 400 };
   }
   // Check if the name of the restored quiz is already used by another active quiz
   for (const existingQuiz of data.quizzes) {
-    console.log(existingQuiz.name);
-    if (existingQuiz.name === quiz.name) {
+    if (existingQuiz.name === quiz.name && existingQuiz.quizId !== quizId) {
       return { error: `The name ${quiz.name} is already used by another quiz!`, statusCode: 400 };
     }
   }

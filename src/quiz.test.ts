@@ -1726,7 +1726,7 @@ describe.skip('Tests for adminQuizQuestionUpdate', () => {
   });
 });
 
-describe.only('Tests for adminQuizTrashRestore', () => {
+describe('Tests for adminQuizTrashRestore', () => {
 
   test('Successful adminQuizTrashRestore', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
@@ -1806,7 +1806,6 @@ describe.only('Tests for adminQuizTrashRestore', () => {
     const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
     const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const response = requestAdminQuizTrashRestore(quiz.body.quizId, user2.body.token);
-    console.log(response);
     expect(response.body).toStrictEqual({ error: expect.any(String) }); 
     expect(response.statusCode).toStrictEqual(403);
   });
