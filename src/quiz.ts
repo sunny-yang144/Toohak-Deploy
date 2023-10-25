@@ -432,6 +432,10 @@ export const adminQuizRestore = (token: string, quizId: number): Record<string, 
   // Restore the quiz by removing it from the trash and updating ownership
   user.trash = user.trash.filter((trashQuizId) => trashQuizId !== quizId);
   user.ownedQuizzes.push(quizId);
+  //update timeLastEdited
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
+  quiz.timeLastEdited = unixtimeSeconds;
 
   setData(data);
   return {};
