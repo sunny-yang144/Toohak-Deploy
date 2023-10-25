@@ -1217,68 +1217,175 @@ describe('Tests for adminQuizQuestionCreate', () => {
   });
 });
 
-describe.skip('Tests for adminQuizQuestionDelete', () => {
-  // Create user and quiz
-  const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-  const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
-  const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-  const token = user.body.token;
-  const token2 = user2.body.token;
-  // Create question details
-  const question = {
-    question: 'What does KFC sell?',
-    duration: 4,
-    points: 5,
-  };
-  const answers = [
-    { answer: 'Chicken', correct: true },
-    { answer: 'Nuggets', correct: true },
-  ];
-  const questionBody = {
-    question: question.question,
-    duration: question.duration,
-    points: question.points,
-    answers: answers,
-  };
-  // Create quizQuestion for deletion
-  const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
-
+describe('Tests for adminQuizQuestionDelete', () => {
   test('Successful adminQuizQuestionDelete', () => {
-    const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestion.body.questionId, token);
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    };
+    // Create quizQuestion for deletion
+    const quizQuestionId = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, questionBody);
+    const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestionId.body.questionId, user.body.token);
     // Check for error codes
     expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
     // Check if question was removed from quizInfo
-    const quizInfoNew = requestAdminQuizInfo(token, quiz.body.quizId);
-    expect(quizInfoNew.body.questions).toStrictEqual({});
+    const quizInfoAfter = requestAdminQuizInfo(user.body.token, quiz.body.quizId);
+    expect(quizInfoAfter.body.questions).toStrictEqual([]);
   });
 
   test('Unsuccessful call, quizId does not refer to a valid quiz', () => {
-    const response = requestAdminQuizQuestionDelete(-666, quizQuestion.body.questionId, token);
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    };
+    // Create quizQuestion for deletion
+    const quizQuestionId = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, questionBody);
+    const response = requestAdminQuizQuestionDelete(-666, quizQuestionId.body.questionId, user.body.token);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful call, questionId does not refer to a valid question within this quiz', () => {
-    const response = requestAdminQuizQuestionDelete(quiz.body.quizId, -666, token);
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    };
+    // Create quizQuestion for deletion
+    const quizQuestionId = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, questionBody);
+    const response = requestAdminQuizQuestionDelete(quiz.body.quizId, -666, user.body.token);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
 
   test('Unsuccessful call, token is empty', () => {
-    const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestion.body.questionId, '');
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    };
+    // Create quizQuestion for deletion
+    const quizQuestionId = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, questionBody);
+    const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestionId.body.questionId, '');
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful call, token is invalid', () => {
-    const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestion.body.questionId, '-666');
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    };
+    // Create quizQuestion for deletion
+    const quizQuestionId = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, questionBody);
+    const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestionId.body.questionId, '-666');
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 
   test('Unsuccessful call, token is valid but user is not a owner of this quiz', () => {
-    const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestion.body.questionId, token2);
+    // Create user and quiz
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    // Create question details
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+    };
+    // Create quizQuestion for deletion
+    const quizQuestionId = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, questionBody);
+    const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestionId.body.questionId, user2.body.token);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
   });
