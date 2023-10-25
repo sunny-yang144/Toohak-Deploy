@@ -220,9 +220,14 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
   }
   // Success, remove quiz then return empty
   user.ownedQuizzes.splice(ownQuizIndex, 1);
-
   // Since the trash hasnt been remove, the quiz still exists, instead we just move it to the user's trash.
   user.trash.push(quizId);
+  // Also need to update the timeLastEdited on the quiz
+  const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
+  quiz.timeLastEdited = unixtimeSeconds;
+  
   setData(data);
   return {};
 };
