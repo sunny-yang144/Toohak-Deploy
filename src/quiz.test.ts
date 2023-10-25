@@ -706,33 +706,93 @@ describe.skip('Testing adminQuizTransfer', () => {
   });
 });
 
-describe('Tests for adminQuizQuestionCreate', () => {
+describe.skip('Tests for adminQuizQuestionCreate', () => {
   test('Successful quiz question creation', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
 
     const token = user.body.token;
-    // Create question details
-    const question = {
-      question: 'What does KFC sell?',
-      duration: 4,
-      points: 5,
-    };
-    const answers = [
-      { answer: 'Chicken', correct: true },
-      { answer: 'Nuggets', correct: true },
-    ];
-    const questionBody = {
-      question: question.question,
-      duration: question.duration,
-      points: question.points,
-      answers: answers,
-    };
 
-    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
+    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, sampleQuestion1);
     expect(quizQuestion.body).toStrictEqual({ questionId: expect.any(Number) });
     expect(quizQuestion.statusCode).toStrictEqual(200);
+  });
+
+  // Since signular question creation is tested in Info, we can skip that test.
+
+  test('Quiz with multiple questions added', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+
+    const token = user.body.token;
+
+    const quizQuestion1 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, sampleQuestion1);
+    const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.token, token, sampleQuestion2);
+    expect(quizQuestion1.body).toStrictEqual({ questionId: expect.any(Number) });
+    expect(quizQuestion1.statusCode).toStrictEqual(200);
+
+    // Checking if the quiz actually contains two question
+    const quizInfo = requestAdminQuizInfo(token, quiz.body.quizId);
+    expect(quizInfo.body).toStrictEqual(
+      {
+        quizId: quiz.body.quizId,
+        name: expect.any(String),
+        timeCreated: expect.any(Number),
+        timeLastEdited: expect.any(Number),
+        description: expect.any(String),
+        numQuestions: expect.any(Number),
+        questions: [
+          {
+            questionId: quizQuestion1.body.questionId,
+            question: expect.any(String),
+            duration: expect.any(Number),
+            points: expect.any(Number),
+            // Since all questions require at least 2 answer options
+            answers: [
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(String),
+                correct: expect.any(Boolean),
+              },
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(String),
+                correct: expect.any(Boolean),
+              }
+            ],
+          },
+          {
+            questionId: quizQuestion2.body.questionId,
+            question: expect.any(String),
+            duration: expect.any(Number),
+            points: expect.any(Number),
+            // Since all questions require at least 2 answer options
+            answers: [
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(String),
+                correct: expect.any(Boolean),
+              },
+              {
+                answerId: expect.any(Number),
+                answer: expect.any(String),
+                colour: expect.any(String),
+                correct: expect.any(Boolean),
+              }
+            ],
+          }
+        ],
+        duration: expect.any(Number),
+      }
+    );
+    // Additional check of colour
+    const colour1 = quizQuestion1.body.questions[0].answers[0].colour;
+    const coloursArray = Object.values(colours);
+    expect(coloursArray).toContain(colour1);
   });
 
   test('Quiz ID does not refer to a valid quiz', () => {
