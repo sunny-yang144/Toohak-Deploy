@@ -1,4 +1,4 @@
-import { getData, setData, Question, QuestionBody, Answer, colours } from './dataStore';
+import { getData, setData, Question, QuestionBody, Answer, colours, AnswerToken, QuestionToken } from './dataStore';
 import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour } from './other';
 
 interface ErrorObject {
@@ -591,16 +591,31 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
     points: questionBody.points,
     answers: [],
   };
+
   for (const answer of questionBody.answers) {
+    const answerId = generateAnswerId(data.answers);
     const answerObject: Answer = {
-      answerId: generateAnswerId(data.answers),
+      answerId: answerId,
       answer: answer.answer,
       colour: getRandomColour(),
       correct: answer.correct,
     };
+    // Must also add answerToken to answers array in data
+    const answerTokenObject: AnswerToken = {
+      answerId: answerId,
+      questionId: questionId,
+    }
+
+    data.answers.push(answerTokenObject);
     questionObject.answers.push(answerObject);
   }
   quiz.questions.push(questionObject);
+  // Must also add questionToken to questions array in data
+  const questionTokenObject: QuestionToken = {
+    questionId: questionId,
+    quizId: quizId,
+  }
+  data.questions.push(questionTokenObject);
   // Must change timeLastEditied due to adding a question
   const currentTime = new Date();
   const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
@@ -609,6 +624,7 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
   quiz.duration += questionBody.duration;
 
   quiz.numQuestions++;
+  console.log(questionObject);
   setData(data);
   return { questionId: questionId };
 };
