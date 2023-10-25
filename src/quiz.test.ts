@@ -745,7 +745,7 @@ describe('Testing adminQuizTransfer', () => {
   });
 });
 
-describe.skip('Tests for adminQuizQuestionCreate', () => {
+describe('Tests for adminQuizQuestionCreate', () => {
   test('Successful quiz question creation', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
@@ -767,7 +767,7 @@ describe.skip('Tests for adminQuizQuestionCreate', () => {
     const token = user.body.token;
 
     const quizQuestion1 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, sampleQuestion1);
-    const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.token, token, sampleQuestion2);
+    const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, sampleQuestion2);
     expect(quizQuestion1.body).toStrictEqual({ questionId: expect.any(Number) });
     expect(quizQuestion1.statusCode).toStrictEqual(200);
 
@@ -829,7 +829,7 @@ describe.skip('Tests for adminQuizQuestionCreate', () => {
       }
     );
     // Additional check of colour
-    const colour1 = quizQuestion1.body.questions[0].answers[0].colour;
+    const colour1 = quizInfo.body.questions[0].answers[0].colour;
     const coloursArray = Object.values(colours);
     expect(coloursArray).toContain(colour1);
   });
