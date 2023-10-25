@@ -401,36 +401,41 @@ export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObjec
 export const adminQuizRestore = (token: string, quizId: number): Record<string, never> | ErrorObject => {
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
-
-  // Check whether token is valid
   if (!validToken) {
-    return { error: `The token ${token} is invalid!`, statusCode: 401 };
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
-
   const user = data.users.find((user) => user.userId === validToken.userId);
-
-  // Check whether user exists and is valid
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
-  // Check whether quiz with quizId exists in the trash
-  const quizInTrash = user.trash.find((trashQuizId) => trashQuizId === quizId);
+  if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
+  }
 
-  if (!quizInTrash) {
+  // Check if we can find quiz with quizId is owned quizzes
+  if (user.ownedQuizzes.find((trashQuizId) => trashQuizId === quizId)) {
+    // If so then quiz is not in the trash
     return { error: `The quiz Id ${quizId} is not in the trash!`, statusCode: 400 };
   }
 
+  // Check whether quiz with quizId exists in the trash
+  const quizInTrash = user.trash.find((trashQuizId) => trashQuizId === quizId );
+  if (quizInTrash === undefined) {
+    // This means quizId was never owned by this token user
+    return { error: `The quiz Id ${quizId} is not owned by this user!`, statusCode: 403 };
+  }
+  //get the quizId and compare with the userId
+  
   // Find the quiz object with the inputted Id
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
   if (!quiz) {
     return { error: 'This is not a valid quizId', statusCode: 400 };
   }
-
   // Check if the name of the restored quiz is already used by another active quiz
   for (const existingQuiz of data.quizzes) {
-    if (existingQuiz.name === quiz.name) {
+    if (existingQuiz.name === quiz.name && existingQuiz.quizId !== quizId) {
       return { error: `The name ${quiz.name} is already used by another quiz!`, statusCode: 400 };
     }
   }
@@ -438,6 +443,10 @@ export const adminQuizRestore = (token: string, quizId: number): Record<string, 
   // Restore the quiz by removing it from the trash and updating ownership
   user.trash = user.trash.filter((trashQuizId) => trashQuizId !== quizId);
   user.ownedQuizzes.push(quizId);
+  //update timeLastEdited
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
+  quiz.timeLastEdited = unixtimeSeconds;
 
   setData(data);
   return {};
@@ -774,6 +783,47 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
 };
 
 export const adminQuizQuestionMove = (quizId: number, questionId: number, token: string, newPosition: number): Record<string, never> | ErrorObject => {
+  const data = getData();
+  const validToken = data.tokens.find((item) => item.sessionId === token);
+
+  if (!validToken) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const user = data.users.find((user) => user.userId === validToken.userId);
+
+  if (!user) {
+    return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+
+  if (!quiz) {
+    return { error: 'The quiz Id is invalid', statusCode: 400 };
+  }
+
+  const question = quiz.questions.find((q) => q.questionId === questionId);
+
+  if (!question) {
+    return { error: 'The question Id is invalid', statusCode: 400 };
+  }
+
+  // Check if the new position is within bounds
+  if (newPosition < 0 || newPosition >= quiz.questions.length) {
+    return { error: 'Invalid new position', statusCode: 400 };
+  }
+
+  // Move the question to the new position
+  const currentIndex = quiz.questions.indexOf(question);
+  quiz.questions.splice(currentIndex, 1);
+  quiz.questions.splice(newPosition, 0, question);
+
+  // Update the quiz's timeLastEdited since questions have been reordered
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
+  quiz.timeLastEdited = unixtimeSeconds;
+
+  setData(data);
   return {};
 };
 
