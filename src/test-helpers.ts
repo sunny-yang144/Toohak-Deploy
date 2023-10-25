@@ -250,7 +250,7 @@ export function requestAdminQuizTrash (token: string) {
 
 export function requestAdminTrashRemove (token: string, quizIds: number[]) {
   // Package the array so it can be sent through HTTP;
-  const encodedQuizIds = encodeURIComponent(JSON.stringify(quizIds));
+  const encodedQuizIds = encodeURI(JSON.stringify(quizIds));
   const res = request(
     'DELETE',
     SERVER_URL + '/v1/admin/quiz/trash/empty',

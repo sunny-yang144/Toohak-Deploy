@@ -274,24 +274,9 @@ app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   const token = req.query.token as string;
   const encodedQuizIds = req.query.encodedQuizIds;
+  const decodedQuizIds = JSON.parse(decodeURIComponent(encodedQuizIds as string));
 
-  if (typeof encodedQuizIds !== 'string') {
-    return res.status(400).json({ error: 'Invalid or missing encodedQuizIds parameter' });
-  }
-
-  let quizIds;
-  try {
-    quizIds = JSON.parse(decodeURIComponent(encodedQuizIds));
-
-    if (!Array.isArray(quizIds) || !quizIds.every(id => typeof id === 'number')) {
-      return res.status(400).json({ error: 'Invalid quizIds parameter. It should be an array of numbers.' });
-    }
-  } catch (error) {
-    return res.status(400).json({ error: 'Failed to parse encodedQuizIds parameter.' });
-  }
-
-  // From the error handling above, quizIds is assumed to be a number array.
-  const response = adminQuizTrashRemove(token, quizIds);
+  const response = adminQuizTrashRemove(token, decodedQuizIds);
 
   if ('error' in response) {
     return res.status(response.statusCode).json({
