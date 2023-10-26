@@ -856,20 +856,14 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
-  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-
-  if (!quiz) {
-    return { error: 'The quiz Id is invalid', statusCode: 400 };
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
-
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   const question = quiz.questions.find((q) => q.questionId === questionId);
 
   if (!question) {
     return { error: 'The question Id is invalid', statusCode: 400 };
-  }
-  
-  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
 
   // Check if the new position is within bounds
