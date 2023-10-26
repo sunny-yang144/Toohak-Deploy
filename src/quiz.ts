@@ -703,6 +703,10 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
     return { error: 'This is not a valid user token.', statusCode: 401 };
   }
 
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
+  }
+  
   const validQuestionId = data.questions.find((question) => question.questionId === questionId);
   if (!validQuestionId) {
     return { error: 'The question Id refers to an invalid question within this quiz.', statusCode: 400 };
@@ -737,7 +741,7 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
   const otherQuestionsDuration = quiz.duration - quiz.questions[questionId].duration;
   const newQuizDuration = otherQuestionsDuration + questionBody.duration;
   
-  if (newQuizDuration > 3) {
+  if (newQuizDuration > 180) {
     return { error: 'Quiz duration exceeds 3 minutes.', statusCode: 400 };
   }
 
@@ -745,8 +749,8 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
     return { error: 'The points are less than 1 (>1).', statusCode: 400 };
   }
 
-  if (questionBody.points > 30) {
-    return { error: 'The points are greater than 30 (<30).', statusCode: 400 };
+  if (questionBody.points > 10) {
+    return { error: 'The points are greater than 10 (<10).', statusCode: 400 };
   }
 
   let flag = false;
@@ -812,13 +816,13 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
     return { error: 'This is not a valid user token.', statusCode: 401 };
   }
 
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
+  }
+
   const validQuestionId = data.questions.find((id) => id.questionId === questionId && id.quizId === quizId);
   if (!validQuestionId) {
     return { error: 'This is not a valid question within this quiz.', statusCode: 400 };
-  }
-
-  if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
 
   const currentData = data.quizzes[quizId].questions[questionId];
