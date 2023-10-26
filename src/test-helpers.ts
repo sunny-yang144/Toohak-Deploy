@@ -352,14 +352,13 @@ export function requestAdminQuizTrashRestore (quizId: number, token: string) {
 }
 
 export function requestAdminQuizQuestionUpdate (quizId: number, questionId: number, token: string, questionBody: QuestionBody) {
-  const encodedQuestionBody = encodeURIComponent(JSON.stringify(questionBody));
   const res = request(
     'PUT',
     SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}`,
     {
       json: {
         token,
-        encodedQuestionBody,
+        questionBody,
       }
     }
   );
