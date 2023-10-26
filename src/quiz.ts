@@ -706,7 +706,7 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
   if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
     return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
-  
+
   const validQuestionId = data.questions.find((question) => question.questionId === questionId);
   if (!validQuestionId) {
     return { error: 'The question Id refers to an invalid question within this quiz.', statusCode: 400 };
@@ -788,7 +788,7 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
   for (let index = 0; index < questionBody.answers.length; index++) {
     tempAnswer = { answerId: index, 
                    answer: questionBody.answers[index].answer, 
-                   colour: colours.RED, 
+                   colour: getRandomColour(), 
                    correct: questionBody.answers[index].correct }
     newAnswers.push(tempAnswer);
   }
@@ -799,6 +799,11 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
   
   data.quizzes[quizId].questions[questionId] = currentData;
   data.quizzes[quizId].duration = newQuizDuration;
+
+  // Must change timeLastEditied due to updating a question
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
+  quiz.timeLastEdited = unixtimeSeconds;
   
   setData(data);
   return{};
@@ -882,8 +887,6 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
   }
   quiz.questions.splice(currentIndex, 1);
   quiz.questions.splice(newPosition, 0, question);
-
-
 
   // Update the quiz's timeLastEdited since questions have been reordered
   const currentTime = new Date();
