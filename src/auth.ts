@@ -1,4 +1,3 @@
-import { isTemplateExpression, updateLanguageServiceSourceFile } from 'typescript';
 import validator from 'validator';
 import { getData, setData, User } from './dataStore';
 import { generateToken } from './other';

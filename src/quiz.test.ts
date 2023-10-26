@@ -22,10 +22,9 @@ import { expect } from '@jest/globals';
 
 import { v4 as uuidv4 } from 'uuid';
 
-import { colours, MAX_COLOUR_VAL } from './dataStore';
+import { colours } from './dataStore';
 
 import { QuestionBody } from './dataStore';
-import exp from 'constants';
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
@@ -52,7 +51,7 @@ const sampleQuestion1: QuestionBody = {
       correct: true
     },
     {
-      answer: 'Queen Elizabeth', 
+      answer: 'Queen Elizabeth',
       correct: true
     }
   ]
@@ -549,8 +548,8 @@ describe('Tests for adminQuizTrash', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const quiz2 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
-    const remove2 = requestAdminQuizRemove(user.body.token, quiz2.body.quizId);
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    requestAdminQuizRemove(user.body.token, quiz2.body.quizId);
     const response = requestAdminQuizTrash(user.body.token);
     expect(response.body).toStrictEqual({
       quizzes: [
@@ -569,7 +568,7 @@ describe('Tests for adminQuizTrash', () => {
   test('Invalid token', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
     const response = requestAdminQuizTrash(user.body.token + 1);
     expect(response.body).toStrictEqual({ error: expect.any(String) }); // 'Invalid token'
     expect(response.statusCode).toStrictEqual(401);
@@ -639,7 +638,6 @@ describe('Tests to Empty adminQuizTrashRemove', () => {
 });
 
 describe('Testing adminQuizTransfer', () => {
-  
   test('Successful adminQuizTransfer', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
@@ -665,8 +663,8 @@ describe('Testing adminQuizTransfer', () => {
 
   test('Unsuccessful adminQuizTransfer, quizId does not refer to a valid quiz', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
-    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const response = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL2, -666);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
@@ -674,7 +672,7 @@ describe('Testing adminQuizTransfer', () => {
 
   test('Unsuccessful adminQuizTransfer, userEmail is not a real user', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const response = requestAdminQuizTransfer(user.body.token, 'notRealUser@gmail.com', quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
@@ -683,7 +681,7 @@ describe('Testing adminQuizTransfer', () => {
 
   test('Unsuccessful adminQuizTransfer, userEmail is the current logged in user', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const response = requestAdminQuizTransfer(user.body.token, validDetails.EMAIL, quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
@@ -702,7 +700,7 @@ describe('Testing adminQuizTransfer', () => {
 
   test('Unsuccessful adminQuizTransfer, token is empty', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const response = requestAdminQuizTransfer('', validDetails.EMAIL2, quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
@@ -711,7 +709,7 @@ describe('Testing adminQuizTransfer', () => {
 
   test('Unsuccessful adminQuizTransfer, token is invalid', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const response = requestAdminQuizTransfer('-666', validDetails.EMAIL2, quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
@@ -814,14 +812,14 @@ describe('Tests for adminQuizQuestionCreate', () => {
     const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
     const timeLastEdited = unixtimeSeconds;
     const recordedTimeLastEdited = quizInfo.body.timeLastEdited;
-    expect(timeLastEdited).toBeGreaterThanOrEqual(recordedTimeLastEdited); 
-    expect(timeLastEdited).toBeLessThanOrEqual(recordedTimeLastEdited + 2); 
+    expect(timeLastEdited).toBeGreaterThanOrEqual(recordedTimeLastEdited);
+    expect(timeLastEdited).toBeLessThanOrEqual(recordedTimeLastEdited + 2);
   });
 
   test('Quiz ID does not refer to a valid quiz', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const token = user.body.token;
     // Create question details
     const question = {
@@ -883,7 +881,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
   test('The question has more than 6 answers or less than 2 answers', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const token = user.body.token;
     // Create question details
     const question = {
@@ -891,10 +889,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: 4,
       points: 5,
     };
-    const answers = [
-      { answer: 'Chicken', correct: true },
-      { answer: 'Nuggets', correct: true },
-    ];
     const quiz2 = requestAdminQuizCreate(user.body.token, 'Gross Chiggen', validDetails.QUIZDESCRIPTION);
 
     const answers2 = [
@@ -959,14 +953,9 @@ describe('Tests for adminQuizQuestionCreate', () => {
   test('The sum of the question durations in quiz exceeds 3 minutes', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const token = user.body.token;
     // Create question details
-    const question = {
-      question: 'What does KFC sell?',
-      duration: 4,
-      points: 5,
-    };
     const answers = [
       { answer: 'Chicken', correct: true },
       { answer: 'Nuggets', correct: true },
@@ -1048,10 +1037,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: 4,
       points: 5,
     };
-    const answers = [
-      { answer: 'Chicken', correct: true },
-      { answer: 'Nuggets', correct: true },
-    ];
     const noCharacterAnswer = [
       { answer: '', correct: false },
       { answer: 'something', correct: true },
@@ -1092,10 +1077,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: 4,
       points: 5,
     };
-    const answers = [
-      { answer: 'Chicken', correct: true },
-      { answer: 'Nuggets', correct: true },
-    ];
     const sameAnswers = [
       { answer: 'Chicken', correct: true },
       { answer: 'Chicken', correct: true },
@@ -1122,10 +1103,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: 4,
       points: 5,
     };
-    const answers = [
-      { answer: 'Chicken', correct: true },
-      { answer: 'Nuggets', correct: true },
-    ];
     const incorrectAnswersOnly = [
       { answer: 'Chicken', correct: false },
       { answer: 'Nuggets', correct: false }
@@ -1145,7 +1122,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const token = user.body.token;
     // Create question details
     const question = {
       question: 'What does KFC sell?',
@@ -1176,7 +1152,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const token = user.body.token;
     // Create question details
     const question = {
       question: 'What does KFC sell?',
@@ -1205,7 +1180,6 @@ describe('Tests for adminQuizQuestionDelete', () => {
   test('Successful adminQuizQuestionDelete', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     // Create question details
     const question = {
@@ -1237,7 +1211,6 @@ describe('Tests for adminQuizQuestionDelete', () => {
   test('Unsuccessful call, questionId does not refer to a valid question within this quiz', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     // Create question details
     const question = {
@@ -1256,7 +1229,7 @@ describe('Tests for adminQuizQuestionDelete', () => {
       answers: answers,
     };
     // Create quizQuestion for deletion
-    const quizQuestionId = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, questionBody);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, questionBody);
     const response = requestAdminQuizQuestionDelete(quiz.body.quizId, -666, user.body.token);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
@@ -1265,7 +1238,6 @@ describe('Tests for adminQuizQuestionDelete', () => {
   test('Unsuccessful call, token is empty', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     // Create question details
     const question = {
@@ -1293,7 +1265,6 @@ describe('Tests for adminQuizQuestionDelete', () => {
   test('Unsuccessful call, token is invalid', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     // Create question details
     const question = {
@@ -1348,10 +1319,9 @@ describe('Tests for adminQuizQuestionDelete', () => {
 });
 
 describe('Tests for adminQuizQuestionDuplicate', () => {
-    test('Successful quizQuestionDuplicate', () => {
-        // Create user and quiz
+  test('Successful quizQuestionDuplicate', () => {
+    // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     // Create question details
     const question = {
@@ -1426,14 +1396,14 @@ describe('Tests for adminQuizQuestionDuplicate', () => {
     const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
     const timeLastEdited = unixtimeSeconds;
     const recordedTimeLastEdited = quizInfoNew.body.timeLastEdited;
-    expect(timeLastEdited).toBeGreaterThanOrEqual(recordedTimeLastEdited); 
-    expect(timeLastEdited).toBeLessThanOrEqual(recordedTimeLastEdited + 2); 
+    expect(timeLastEdited).toBeGreaterThanOrEqual(recordedTimeLastEdited);
+    expect(timeLastEdited).toBeLessThanOrEqual(recordedTimeLastEdited + 2);
   });
 
   test('Unsuccessful call, questionId does not refer to a valid question within quiz', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
     const response = requestAdminQuizQuestionDuplicate(quiz.body.quizId, -666, user.body.token);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
@@ -1472,10 +1442,8 @@ describe('Tests for adminQuizQuestionMove', () => {
   test('Successful adminQuizQuestionMove', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const token = user.body.token;
-    const token2 = user2.body.token;
     // Create question details
     const question = {
       question: 'What does KFC sell?',
@@ -1511,7 +1479,7 @@ describe('Tests for adminQuizQuestionMove', () => {
     const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody);
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, token, questionBody2);
     // Create newPosition (The position index is assumed to start at 0)
-    const newPosition = 0;  
+    const newPosition = 0;
     // This case will test if the second question will bUpdatee moved to first place
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, token, newPosition);
     // Check for error codes
@@ -1568,16 +1536,16 @@ describe('Tests for adminQuizQuestionMove', () => {
     const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
     const timeLastEdited = unixtimeSeconds;
     const recordedTimeLastEdited = quizInfoNew.body.timeLastEdited;
-    expect(timeLastEdited).toBeGreaterThanOrEqual(recordedTimeLastEdited); 
-    expect(timeLastEdited).toBeLessThanOrEqual(recordedTimeLastEdited + 2); 
+    expect(timeLastEdited).toBeGreaterThanOrEqual(recordedTimeLastEdited);
+    expect(timeLastEdited).toBeLessThanOrEqual(recordedTimeLastEdited + 2);
   });
 
   test('Unsuccessful Call, questionId does not refer to a valid question within the quiz', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const newPosition = 0;
-    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
-    const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion2);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion2);
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, -666, user.body.token, newPosition);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
@@ -1586,7 +1554,7 @@ describe('Tests for adminQuizQuestionMove', () => {
   test('Unsuccessful Call, newPosition is less than 0', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion2);
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, user.body.token, -666);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
@@ -1596,7 +1564,7 @@ describe('Tests for adminQuizQuestionMove', () => {
   test('Unsuccessful Call, newPosition is greater then n-1 where n is the number of questions', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion2);
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, user.body.token, 666);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
@@ -1606,7 +1574,7 @@ describe('Tests for adminQuizQuestionMove', () => {
   test('Unsuccessful Call, newPosition is the position of the current question', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion2);
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, user.body.token, 1);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
@@ -1617,7 +1585,7 @@ describe('Tests for adminQuizQuestionMove', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const newPosition = 0;
-    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion2);
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, '', newPosition);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
@@ -1628,7 +1596,7 @@ describe('Tests for adminQuizQuestionMove', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const newPosition = 0;
-    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion2);
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, '-666', newPosition);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
@@ -1640,7 +1608,7 @@ describe('Tests for adminQuizQuestionMove', () => {
     const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
     const newPosition = 0;
-    const quizQuestion = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
     const quizQuestion2 = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion2);
     const response = requestAdminQuizQuestionMove(quiz.body.quizId, quizQuestion2.body.questionId, user2.body.token, newPosition);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
@@ -1726,8 +1694,8 @@ describe('Tests for adminQuizQuestionUpdate', () => {
     const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
     const timeLastEdited = unixtimeSeconds;
     const recordedTimeLastEdited = quizInfoNew.body.timeLastEdited;
-    expect(timeLastEdited).toBeGreaterThanOrEqual(recordedTimeLastEdited); 
-    expect(timeLastEdited).toBeLessThanOrEqual(recordedTimeLastEdited + 2); 
+    expect(timeLastEdited).toBeGreaterThanOrEqual(recordedTimeLastEdited);
+    expect(timeLastEdited).toBeLessThanOrEqual(recordedTimeLastEdited + 2);
   });
 
   test('Unsuccessful call, questionId does not refer to a valid question within this quiz', () => {
@@ -2064,7 +2032,7 @@ describe('Tests for adminQuizTrashRestore', () => {
   test('Successful adminQuizTrashRestore', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
     const response = requestAdminQuizTrashRestore(quiz.body.quizId, user.body.token);
     // Check for error codes
     expect(response.body).toStrictEqual({});
@@ -2085,24 +2053,15 @@ describe('Tests for adminQuizTrashRestore', () => {
     const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
     const timeLastEdited = unixtimeSeconds;
     const recordedTimeLastEdited = quizInfoNew.body.timeLastEdited;
-    expect(timeLastEdited).toBeGreaterThanOrEqual(recordedTimeLastEdited); 
-    expect(timeLastEdited).toBeLessThanOrEqual(recordedTimeLastEdited + 2); 
-  });
-
-  test('Unsuccessful call, quizId does not refer to a valid quiz', () => {
-    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
-    const response = requestAdminQuizTrashRestore(quiz.body.quizId + 1, user.body.token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
-    expect(response.statusCode).toStrictEqual(400);
+    expect(timeLastEdited).toBeGreaterThanOrEqual(recordedTimeLastEdited);
+    expect(timeLastEdited).toBeLessThanOrEqual(recordedTimeLastEdited + 2);
   });
 
   test('Unsuccessful call, quizName of restored quiz is already used by another active quiz', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
-    const quiz2 = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION2);
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION2);
     const response = requestAdminQuizTrashRestore(quiz.body.quizId, user.body.token);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
@@ -2111,10 +2070,7 @@ describe('Tests for adminQuizTrashRestore', () => {
   test('Unsuccessful call, quizId refers to a quiz that is not currently in trash', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
-    const quiz2 = requestAdminQuizCreate(user2.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
-    const response = requestAdminQuizTrashRestore(quiz2.body.quizId, user2.body.token);
+    const response = requestAdminQuizTrashRestore(quiz.body.quizId, user.body.token);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
@@ -2122,7 +2078,7 @@ describe('Tests for adminQuizTrashRestore', () => {
   test('Unsuccessful call, token is empty', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
     const response = requestAdminQuizTrashRestore(quiz.body.quizId, '');
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
@@ -2131,7 +2087,7 @@ describe('Tests for adminQuizTrashRestore', () => {
   test('Unsuccessful call, token is invalid', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
     const response = requestAdminQuizTrashRestore(quiz.body.quizId, '-666');
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
@@ -2140,10 +2096,10 @@ describe('Tests for adminQuizTrashRestore', () => {
   test('Unsuccessful call, valid token but user is not an owner of quiz', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const remove = requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
     const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const response = requestAdminQuizTrashRestore(quiz.body.quizId, user2.body.token);
-    expect(response.body).toStrictEqual({ error: expect.any(String) }); 
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
   });
 });

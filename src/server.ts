@@ -7,7 +7,6 @@ import YAML from 'yaml';
 import sui from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
-import process, { allowedNodeEnvironmentFlags } from 'process';
 import {
   adminAuthRegister,
   adminUserDetails,
@@ -37,7 +36,6 @@ import {
 
 import { clear } from './other';
 import { setData, dataStoreFile } from './dataStore';
-import { addAbortListener } from 'events';
 
 // Set up web app
 const app = express();

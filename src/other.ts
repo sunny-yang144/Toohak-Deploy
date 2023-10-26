@@ -1,4 +1,4 @@
-import { setData, getData, User, Quiz, Question, Answer, colours, AnswerToken, QuestionToken } from './dataStore';
+import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken } from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
 
 export function clear (): Record<string, never> {

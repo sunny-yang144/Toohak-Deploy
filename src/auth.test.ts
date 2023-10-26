@@ -200,7 +200,7 @@ describe('Tests for adminAuthLogout', () => {
   });
 
   test('Token is empty or invalid', () => {
-    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response1 = requestAdminAuthLogout('');
     expect(response1.body).toStrictEqual({ error: expect.any(String) });
     expect(response1.statusCode).toStrictEqual(401);
@@ -222,17 +222,18 @@ describe('Testing adminUserDetailsUpdate', () => {
     // Check if parameters were updated
 
     const detailsCheck = requestAdminUserDetails(user.body.token);
-    expect(detailsCheck.body).toStrictEqual
-    ({
-      user:
+    expect(detailsCheck.body).toStrictEqual(
       {
-        userId: expect.any(Number),
-        name: `${validDetails.NAMEFIRST2} ${validDetails.NAMELAST2}`,
-        email: validDetails.EMAIL2,
-        numSuccessfulLogins: expect.any(Number),
-        numFailedPasswordsSinceLastLogin: expect.any(Number),
+        user:
+        {
+          userId: expect.any(Number),
+          name: `${validDetails.NAMEFIRST2} ${validDetails.NAMELAST2}`,
+          email: validDetails.EMAIL2,
+          numSuccessfulLogins: expect.any(Number),
+          numFailedPasswordsSinceLastLogin: expect.any(Number),
+        }
       }
-    });
+    );
   });
 
   test('Unsuccessful call, email2 is not valid', () => {
