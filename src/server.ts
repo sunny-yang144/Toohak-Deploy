@@ -271,10 +271,9 @@ app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
 
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   const token = req.query.token as string;
-  const encodedQuizIds = req.query.encodedQuizIds;
-  const decodedQuizIds = JSON.parse(decodeURIComponent(encodedQuizIds as string));
+  const quizIds = JSON.parse(req.query.quizIds as string) as number[];
 
-  const response = adminQuizTrashRemove(token, decodedQuizIds);
+  const response = adminQuizTrashRemove(token, quizIds);
 
   if ('error' in response) {
     return res.status(response.statusCode).json({
@@ -300,10 +299,9 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
 
 app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
-  const { token, encodedQuestionBody } = req.body;
+  const { token, questionBody } = req.body;
 
-  const decodedQuestionBody = JSON.parse(decodeURIComponent(encodedQuestionBody));
-  const response = adminQuizQuestionCreate(quizId, token, decodedQuestionBody);
+  const response = adminQuizQuestionCreate(quizId, token, questionBody);
 
   if ('error' in response) {
     return res.status(response.statusCode).json({

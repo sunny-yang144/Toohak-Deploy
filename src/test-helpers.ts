@@ -248,15 +248,13 @@ export function requestAdminQuizTrash (token: string) {
 }
 
 export function requestAdminTrashRemove (token: string, quizIds: number[]) {
-  // Package the array so it can be sent through HTTP;
-  const encodedQuizIds = encodeURI(JSON.stringify(quizIds));
   const res = request(
     'DELETE',
     SERVER_URL + '/v1/admin/quiz/trash/empty',
     {
       qs: {
         token,
-        encodedQuizIds,
+        quizIds: JSON.stringify(quizIds),
       }
     }
   );
@@ -267,14 +265,13 @@ export function requestAdminTrashRemove (token: string, quizIds: number[]) {
 }
 
 export function requestAdminQuizQuestionCreate (quizId: number, token: string, questionBody: QuestionBody) {
-  const encodedQuestionBody = encodeURI(JSON.stringify(questionBody));
   const res = request(
     'POST',
     SERVER_URL + `/v1/admin/quiz/${quizId}/question`,
     {
       json: {
         token,
-        encodedQuestionBody,
+        questionBody,
       }
     }
   );
