@@ -96,6 +96,12 @@ export function generateToken (user: User) {
   return token;
 }
 
+/**
+ * Returns a random colour from the enum selection
+ * when called.
+ *
+ * @returns colours
+ */
 export function getRandomColour(): colours {
   const coloursObject = Object.values(colours);
   const randomIndex: number = Math.floor(Math.random() * coloursObject.length);

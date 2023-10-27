@@ -42,13 +42,8 @@ interface adminQuizQuestionDuplicateReturn{
  * 1. Token is not a valid
  *
  * @param {number} token
- * @returns {{ quizzes:
-*      Array<{
-  *        quizId: number,
-  *        name: string
-  *      }>
-  * }} | errorMessage
-  */
+ * @returns adminQuizListReturn | errorMessage
+ */
 export const adminQuizList = (token: string): adminQuizListReturn | ErrorObject => {
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
@@ -78,6 +73,15 @@ export const adminQuizList = (token: string): adminQuizListReturn | ErrorObject 
   return { quizzes };
 };
 
+/**
+ * Creates a quiz and adds it to the database.
+ * Then gives a reference to the quiz to the user.
+ *
+ * @param token
+ * @param name
+ * @param description
+ * @returns adminQuizCreateReturn | ErrorObject
+ */
 export const adminQuizCreate = (token: string, name: string, description: string): adminQuizCreateReturn | ErrorObject => {
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
@@ -143,17 +147,14 @@ export const adminQuizCreate = (token: string, name: string, description: string
 };
 
 /**
+ * Given a valid user token and a valid QuizId to inspect,
+ * return the details of the quiz to the user.
+ *
+ * @param token
+ * @param quizId
+ * @returns adminQuizInfoReturn | ErrorObject
+ */
 
- * @param {number} authUserId
- * @param {number} quizId
- * @returns {{
-*   quizId: number,
-*   name: string,
-*   timeCreated: number,
-*   timeLastEdited: number,
-*   description: string
-* }} | errorMessage
-*/
 export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoReturn | ErrorObject => {
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
@@ -190,16 +191,16 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
   };
   return quizInfo;
 };
-/*
-  Permanently remove quiz given a quizId, removes from
-    - Owned quizzes array
-    - Quizzes array
 
-  Returns error if:
-    - AuthUserId is not valid
-    - QuizId does not refer to a valid quiz
-    - QuizId does not refer to a quiz the user owns
-*/
+/**
+ * Moves the users reference to the quiz, from their
+ * ownedQuizzes to their trash.
+ *
+ * @param token
+ * @param quizId
+ * @returns Empty | ErrorObject
+ */
+
 export const adminQuizRemove = (token: string, quizId: number): Record<string, never> | ErrorObject => {
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
@@ -240,24 +241,17 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
 };
 
 /**
- * Updates the name of a quiz
+ * Given a valid user token, updates the name of a quiz and also updating the
+ * time an edit has occured.
  *
  * Helper functions:
  * 1. isAlphanumericWithSpaces()
  *    Used to check if name uses valid characters.
  *
- * Gives an error when:
- * 1. AuthUserId is not a valid user
- * 2. Quiz ID does not refer to a valid quiz
- * 3. Quiz ID does not refer to a quiz that this user owns
- * 4. Name contains invalid characters. Valid characters are alphanumeric and spaces
- * 5. Name is either less than 3 characters long or more than 30 characters long
- * 6. Name is already used by the current logged in user for another quiz
- *
  * @param {number} authUserId
  * @param {number} quizId
  * @param {string} name
- * @returns {{}} | errorMessage
+ * @returns Empty | errorMessage
  */
 
 export const adminQuizNameUpdate = (token: string, quizId: number, name: string): Record<string, never> | ErrorObject => {
@@ -323,18 +317,14 @@ function isAlphanumericWithSpaces(str: string) {
 }
 
 /**
- * Updates the description of a quiz
+ * Updates the description of a quiz given that a valid
+ * user token is provided.
  *
- * Gives an error when:
- * 1. AuthUserId is not a valid user
- * 2. Quiz ID does not refer to a valid quiz
- * 3. Quiz ID does not refer to a quiz that this user owns
- * 4. Description is more than 100 characters in length (note: empty strings are OK)
  *
  * @param {number} authUserId
  * @param {number} quizId
  * @param {string} name
- * @returns {{}} | errorMessage
+ * @returns Empty | errorMessage
  */
 
 export const adminQuizDescriptionUpdate = (token: string, quizId: number, description: string): Record<string, never> | ErrorObject => {
@@ -379,6 +369,13 @@ export const adminQuizDescriptionUpdate = (token: string, quizId: number, descri
 /// //////////////////////////////////// ITERATION 2 //////////////////////////////////////////////
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Given a valid user token, display the trash of the user
+ * associated with the token.
+ *
+ * @param token
+ * @returns adminQuizTrashReturn | ErrorObject
+ */
 export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObject => {
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
@@ -404,6 +401,15 @@ export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObjec
   }
   return { quizzes };
 };
+
+/**
+ * Given a valid user token, if possible moves quiz from the
+ * users trash back to their ownedQuizzes.
+ *
+ * @param token
+ * @param quizId
+ * @returns Empty | ErrorObject
+ */
 
 export const adminQuizRestore = (token: string, quizId: number): Record<string, never> | ErrorObject => {
   const data = getData();
@@ -451,6 +457,16 @@ export const adminQuizRestore = (token: string, quizId: number): Record<string, 
   setData(data);
   return {};
 };
+
+/**
+ * Given an array of desired quizzes to remove. Permanently
+ * delete the quizzes from the database as well as the users reference
+ * to the quizzes.
+ *
+ * @param token
+ * @param quizIds
+ * @returns Empty | ErrorObject
+ */
 
 export const adminQuizTrashRemove = (token: string, quizIds: number[]): Record<string, never> | ErrorObject => {
   const data = getData();
@@ -514,6 +530,17 @@ export const adminQuizTrashRemove = (token: string, quizIds: number[]): Record<s
   return {};
 };
 
+/**
+ * Transfer ownership of a quiz from one user to another.
+ * i.e. gives the reference to the quiz to the other user
+ * based on their email.
+ *
+ * @param quizId
+ * @param token
+ * @param userEmail
+ * @returns Empty | ErrorObject
+ */
+
 export const adminQuizTransfer = (quizId: number, token: string, userEmail: string): Record<string, never> | ErrorObject => {
   const data = getData();
 
@@ -571,6 +598,17 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
   setData(data);
   return {};
 };
+
+/**
+ * Adds a question reference to the database, then attaches the
+ * question itself to the quiz.
+ * A question contains, its answer aswell.
+ *
+ * @param quizId
+ * @param token
+ * @param userEmail
+ * @returns adminQuizQuestionCreateReturn | ErrorObject
+ */
 
 export const adminQuizQuestionCreate = (quizId: number, token: string, questionBody: QuestionBody): adminQuizQuestionCreateReturn | ErrorObject => {
   const data = getData();
@@ -705,6 +743,16 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
   return { questionId: questionId };
 };
 
+/**
+ * Updates a question in a respective quiz, also updates
+ * the last edited time for the quiz.
+ *
+ * @param quizId
+ * @param questionId
+ * @param token
+ * @param questionBody
+ * @returns Empty | ErrorObject
+ */
 export const adminQuizQuestionUpdate = (quizId: number, questionId: number, token: string, questionBody: QuestionBody): Record<string, never> | ErrorObject => {
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
@@ -825,6 +873,15 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
   return {};
 };
 
+/**
+ * Deletes a question from a quiz, removes the reference from the
+ * database.
+ *
+ * @param quizId
+ * @param questionId
+ * @param token
+ * @returns Empty | ErrorObject
+ */
 export const adminQuizQuestionDelete = (quizId: number, questionId: number, token: string): Record<string, never> | ErrorObject => {
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
@@ -869,6 +926,17 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
   setData(data);
   return {};
 };
+
+/**
+ * Moves a question from its original location to its new position
+ * then shifts the trailing questions down.
+ *
+ * @param quizId
+ * @param questionId
+ * @param token
+ * @param newPosition
+ * @returns Empty | ErrorObject
+ */
 
 export const adminQuizQuestionMove = (quizId: number, questionId: number, token: string, newPosition: number): Record<string, never> | ErrorObject => {
   const data = getData();
@@ -919,6 +987,16 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
   setData(data);
   return {};
 };
+
+/**
+ * Duplicates a question and adds it right after.
+ * This creates a new QuestionId.
+ *
+ * @param quizId
+ * @param questionId
+ * @param token
+ * @returns adminQuizQuestionDuplicateReturn | ErrorObject
+ */
 
 export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, token: string): adminQuizQuestionDuplicateReturn | ErrorObject => {
   const data = getData();
