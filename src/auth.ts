@@ -25,11 +25,11 @@ interface adminAuthLoginReturn {
 /**
  * Creates a new user and logins in the user, by assigning a valid token.
  * Ensures email, password, and names are correct.
- * 
- * @param email 
- * @param password 
- * @param nameFirst 
- * @param nameLast 
+ *
+ * @param email
+ * @param password
+ * @param nameFirst
+ * @param nameLast
  * @returns adminAuthRegisterReutn | ErrorObject
  */
 export const adminAuthRegister = (email: string, password: string, nameFirst: string, nameLast: string): adminAuthRegisterReturn | ErrorObject => {
@@ -91,13 +91,13 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
 };
 
 /**
- * After user logs out, if email and password is correct, 
+ * After user logs out, if email and password is correct,
  * logs user in by generating a token.
  * Also increments successful logins and if login fails,
  * increments failed passwords.
- * 
- * @param email 
- * @param password 
+ *
+ * @param email
+ * @param password
  * @returns adminAuthLoginReturn | ErrorObject
  */
 export const adminAuthLogin = (email: string, password: string): adminAuthLoginReturn | ErrorObject => {
@@ -120,10 +120,10 @@ export const adminAuthLogin = (email: string, password: string): adminAuthLoginR
 };
 
 /**
- * Given a token, gives the client the details of a 
+ * Given a token, gives the client the details of a
  * user.
- * 
- * @param token 
+ *
+ * @param token
  * @returns adminUserDetailsReturn | ErrorObject
  */
 export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorObject => {
@@ -156,8 +156,8 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
 
 /**
  * Logs out a user, removing their token from the database
- * 
- * @param token 
+ *
+ * @param token
  * @returns Empty | ErrorObject
  */
 export const adminAuthLogout = (token: string): Record<string, never> | ErrorObject => {
@@ -201,11 +201,11 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
 /**
  * Updates a users details if a valid token can be provided and new details
  * are correct.
- * 
- * @param token 
- * @param email 
- * @param nameFirst 
- * @param nameLast 
+ *
+ * @param token
+ * @param email
+ * @param nameFirst
+ * @param nameLast
  * @returns Empty | ErrorObject
  */
 export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: string, nameLast: string): Record<string, never> | ErrorObject => {
@@ -255,10 +255,10 @@ export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: 
 
 /**
  * Updates a users password given that a valid token is provided
- * 
- * @param token 
- * @param oldPassword 
- * @param newPassword 
+ *
+ * @param token
+ * @param oldPassword
+ * @param newPassword
  * @returns Empty | ErrorObject
  */
 export const adminUserPasswordUpdate = (token: string, oldPassword: string, newPassword: string) : Record<string, never> | ErrorObject => {

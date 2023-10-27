@@ -99,7 +99,7 @@ export function generateToken (user: User) {
 /**
  * Returns a random colour from the enum selection
  * when called.
- * 
+ *
  * @returns colours
  */
 export function getRandomColour(): colours {

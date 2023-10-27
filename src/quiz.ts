@@ -76,10 +76,10 @@ export const adminQuizList = (token: string): adminQuizListReturn | ErrorObject 
 /**
  * Creates a quiz and adds it to the database.
  * Then gives a reference to the quiz to the user.
- * 
- * @param token 
- * @param name 
- * @param description 
+ *
+ * @param token
+ * @param name
+ * @param description
  * @returns adminQuizCreateReturn | ErrorObject
  */
 export const adminQuizCreate = (token: string, name: string, description: string): adminQuizCreateReturn | ErrorObject => {
@@ -149,9 +149,9 @@ export const adminQuizCreate = (token: string, name: string, description: string
 /**
  * Given a valid user token and a valid QuizId to inspect,
  * return the details of the quiz to the user.
- * 
- * @param token 
- * @param quizId 
+ *
+ * @param token
+ * @param quizId
  * @returns adminQuizInfoReturn | ErrorObject
  */
 
@@ -192,13 +192,12 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
   return quizInfo;
 };
 
-
 /**
  * Moves the users reference to the quiz, from their
  * ownedQuizzes to their trash.
- * 
- * @param token 
- * @param quizId 
+ *
+ * @param token
+ * @param quizId
  * @returns Empty | ErrorObject
  */
 
@@ -373,8 +372,8 @@ export const adminQuizDescriptionUpdate = (token: string, quizId: number, descri
 /**
  * Given a valid user token, display the trash of the user
  * associated with the token.
- * 
- * @param token 
+ *
+ * @param token
  * @returns adminQuizTrashReturn | ErrorObject
  */
 export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObject => {
@@ -405,10 +404,10 @@ export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObjec
 
 /**
  * Given a valid user token, if possible moves quiz from the
- * users trash back to their ownedQuizzes. 
- * 
- * @param token 
- * @param quizId 
+ * users trash back to their ownedQuizzes.
+ *
+ * @param token
+ * @param quizId
  * @returns Empty | ErrorObject
  */
 
@@ -460,12 +459,12 @@ export const adminQuizRestore = (token: string, quizId: number): Record<string, 
 };
 
 /**
- * Given an array of desired quizzes to remove. Permanently 
+ * Given an array of desired quizzes to remove. Permanently
  * delete the quizzes from the database as well as the users reference
- * to the quizzes. 
- * 
- * @param token 
- * @param quizIds 
+ * to the quizzes.
+ *
+ * @param token
+ * @param quizIds
  * @returns Empty | ErrorObject
  */
 
@@ -535,10 +534,10 @@ export const adminQuizTrashRemove = (token: string, quizIds: number[]): Record<s
  * Transfer ownership of a quiz from one user to another.
  * i.e. gives the reference to the quiz to the other user
  * based on their email.
- * 
- * @param quizId 
- * @param token 
- * @param userEmail 
+ *
+ * @param quizId
+ * @param token
+ * @param userEmail
  * @returns Empty | ErrorObject
  */
 
@@ -604,10 +603,10 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
  * Adds a question reference to the database, then attaches the
  * question itself to the quiz.
  * A question contains, its answer aswell.
- * 
- * @param quizId 
- * @param token 
- * @param userEmail 
+ *
+ * @param quizId
+ * @param token
+ * @param userEmail
  * @returns adminQuizQuestionCreateReturn | ErrorObject
  */
 
@@ -746,12 +745,12 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
 
 /**
  * Updates a question in a respective quiz, also updates
- * the last edited time for the quiz. 
- * 
- * @param quizId 
- * @param questionId 
- * @param token 
- * @param questionBody 
+ * the last edited time for the quiz.
+ *
+ * @param quizId
+ * @param questionId
+ * @param token
+ * @param questionBody
  * @returns Empty | ErrorObject
  */
 export const adminQuizQuestionUpdate = (quizId: number, questionId: number, token: string, questionBody: QuestionBody): Record<string, never> | ErrorObject => {
@@ -876,11 +875,11 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
 
 /**
  * Deletes a question from a quiz, removes the reference from the
- * database. 
- * 
- * @param quizId 
- * @param questionId 
- * @param token 
+ * database.
+ *
+ * @param quizId
+ * @param questionId
+ * @param token
  * @returns Empty | ErrorObject
  */
 export const adminQuizQuestionDelete = (quizId: number, questionId: number, token: string): Record<string, never> | ErrorObject => {
@@ -931,11 +930,11 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
 /**
  * Moves a question from its original location to its new position
  * then shifts the trailing questions down.
- * 
- * @param quizId 
- * @param questionId 
- * @param token 
- * @param newPosition 
+ *
+ * @param quizId
+ * @param questionId
+ * @param token
+ * @param newPosition
  * @returns Empty | ErrorObject
  */
 
@@ -991,11 +990,11 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
 
 /**
  * Duplicates a question and adds it right after.
- * This creates a new QuestionId. 
- * 
- * @param quizId 
- * @param questionId 
- * @param token 
+ * This creates a new QuestionId.
+ *
+ * @param quizId
+ * @param questionId
+ * @param token
  * @returns adminQuizQuestionDuplicateReturn | ErrorObject
  */
 
