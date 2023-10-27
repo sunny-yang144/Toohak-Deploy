@@ -22,6 +22,16 @@ interface adminAuthLoginReturn {
   token: string
 }
 
+/**
+ * Creates a new user and logins in the user, by assigning a valid token.
+ * Ensures email, password, and names are correct.
+ * 
+ * @param email 
+ * @param password 
+ * @param nameFirst 
+ * @param nameLast 
+ * @returns adminAuthRegisterReutn | ErrorObject
+ */
 export const adminAuthRegister = (email: string, password: string, nameFirst: string, nameLast: string): adminAuthRegisterReturn | ErrorObject => {
   const data = getData();
 
@@ -79,12 +89,17 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
   setData(data);
   return { token: token.sessionId };
 };
-/*
-Returns authUserId given a valid registered user email and password
-Returns error if:
-  - Email address does not exist
-  - Password is not correct for given email
-*/
+
+/**
+ * After user logs out, if email and password is correct, 
+ * logs user in by generating a token.
+ * Also increments successful logins and if login fails,
+ * increments failed passwords.
+ * 
+ * @param email 
+ * @param password 
+ * @returns adminAuthLoginReturn | ErrorObject
+ */
 export const adminAuthLogin = (email: string, password: string): adminAuthLoginReturn | ErrorObject => {
   const data = getData();
   const user = data.users.find(user => user.email === email);
@@ -104,6 +119,13 @@ export const adminAuthLogin = (email: string, password: string): adminAuthLoginR
   return { token: token.sessionId };
 };
 
+/**
+ * Given a token, gives the client the details of a 
+ * user.
+ * 
+ * @param token 
+ * @returns adminUserDetailsReturn | ErrorObject
+ */
 export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorObject => {
   const data = getData();
 
@@ -132,6 +154,12 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
 /// //////////////////////////////////// ITERATION 2 //////////////////////////////////////////////
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Logs out a user, removing their token from the database
+ * 
+ * @param token 
+ * @returns Empty | ErrorObject
+ */
 export const adminAuthLogout = (token: string): Record<string, never> | ErrorObject => {
   const data = getData();
 
@@ -170,6 +198,16 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
   return {};
 };
 
+/**
+ * Updates a users details if a valid token can be provided and new details
+ * are correct.
+ * 
+ * @param token 
+ * @param email 
+ * @param nameFirst 
+ * @param nameLast 
+ * @returns Empty | ErrorObject
+ */
 export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: string, nameLast: string): Record<string, never> | ErrorObject => {
   const data = getData();
   // Derive user from the token by that logic this error should trigger first.
@@ -215,6 +253,14 @@ export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: 
   return {};
 };
 
+/**
+ * Updates a users password given that a valid token is provided
+ * 
+ * @param token 
+ * @param oldPassword 
+ * @param newPassword 
+ * @returns Empty | ErrorObject
+ */
 export const adminUserPasswordUpdate = (token: string, oldPassword: string, newPassword: string) : Record<string, never> | ErrorObject => {
   const data = getData();
 
