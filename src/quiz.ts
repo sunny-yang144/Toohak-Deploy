@@ -103,6 +103,10 @@ export const adminQuizCreate = (token: string, name: string, description: string
 
   for (const ownedQuizId of user.ownedQuizzes) {
     const ownedQuiz = data.quizzes.find((quizObject) => quizObject.quizId === ownedQuizId);
+    if (!ownedQuiz) {
+      return { error: 'There are no quizzes!', statusCode: 400 };
+    }
+
     if (ownedQuiz.name === name) {
       return { error: `The name ${name} is already used by another quiz!`, statusCode: 400 };
     }
@@ -223,6 +227,10 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
   user.trash.push(quizId);
   // Also need to update the timeLastEdited on the quiz
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+  if (!quiz) {
+    return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
+  }
+
   const currentTime = new Date();
   const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
   quiz.timeLastEdited = unixtimeSeconds;
@@ -477,6 +485,9 @@ export const adminQuizTrashRemove = (token: string, quizIds: number[]): Record<s
   let newQuestions;
   for (const quizId of quizIds) {
     const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+    if (!quiz) {
+      return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
+    }
     if (quiz.questions.length > 0) {
       for (const question of quiz.questions) {
         newAnswers = data.answers.filter(answerToken => answerToken.questionId !== question.questionId);
@@ -517,6 +528,9 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
+  if (!quiz) {
+    return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
+  }
 
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
     return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
@@ -538,6 +552,10 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
   // Check if user with email userEmail has a quiz with the same name as quiz with quizId
   for (const ownedQuizId of userTransfer.ownedQuizzes) {
     const ownedQuiz = data.quizzes.find((quizObject) => quizObject.quizId === ownedQuizId);
+    if (!ownedQuiz) {
+      return { error: 'There are no quizzes!', statusCode: 400 };
+    }
+
     if (ownedQuiz.name === quiz.name) {
       return { error: `Target user already has a quiz named ${quiz.name}`, statusCode: 400 };
     }
@@ -567,6 +585,9 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
+  }
+  if (!quiz) {
+    return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
   }
 
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
@@ -829,7 +850,10 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
   const newQuizDuration = data.quizzes[quizId].duration - currentData.duration;
 
   // Find and return object matching questionId
-  const question: Question = data.quizzes[quizId].questions.find((q) => q.questionId === questionId);
+  const question = data.quizzes[quizId].questions.find((question) => question.questionId === questionId);
+  if (!question) {
+    return { error: 'This questionId does not exist.', statusCode: 400 };
+  }
   // Find index of the object in the array
   const questionIndex = data.quizzes[quizId].questions.indexOf(question);
   // Remove object at index
@@ -864,6 +888,10 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
     return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!quiz) {
+    return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
+  }
+
   const question = quiz.questions.find((q) => q.questionId === questionId);
 
   if (!question) {
@@ -906,6 +934,9 @@ export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, t
   }
 
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!quiz) {
+    return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
+  }
 
   const question = quiz.questions.find((question) => question.questionId === questionId);
   if (!question) {

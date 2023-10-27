@@ -136,6 +136,7 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
   const data = getData();
 
   const validToken = data.tokens.find((item) => item.sessionId === token);
+
   if (!validToken) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   } else {
@@ -143,6 +144,10 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
     // Therefore we find the index of the item in the respective arrays.
 
     const user = data.users.find((item) => item.userId === validToken.userId);
+    if (!user) {
+      return { error: 'This is not a valid user token', statusCode: 401 };
+    }
+
     const validUserToken = user.tokens.find((item) => item.sessionId === token);
     if (!validUserToken) {
       return { error: 'This is not a valid user token', statusCode: 401 };
