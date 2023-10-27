@@ -290,8 +290,13 @@ export const adminQuizNameUpdate = (token: string, quizId: number, name: string)
     return { error: `The name ${name} is too long (<30).`, statusCode: 400 };
   }
 
-  for (const quiz of data.quizzes) {
-    if (quiz.name === name) {
+  for (const ownedQuizId of user.ownedQuizzes) {
+    const ownedQuiz = data.quizzes.find((quizObject) => quizObject.quizId === ownedQuizId);
+    if (!ownedQuiz) {
+      return { error: 'There are no quizzes!', statusCode: 400 };
+    }
+
+    if (ownedQuiz.name === name) {
       return { error: `The name ${name} is already used by another quiz!`, statusCode: 400 };
     }
   }
