@@ -108,12 +108,15 @@ export const adminAuthLogin = (email: string, password: string): adminAuthLoginR
   }
   if (user.password !== password) {
     user.numFailedPasswordsSinceLastLogin += 1;
+    setData(data);
     return { error: 'Incorrect password', statusCode: 400 };
+  } else {
+    user.numFailedPasswordsSinceLastLogin = 0;
   }
-  user.numFailedPasswordsSinceLastLogin = 0;
   user.numSuccessfulLogins += 1;
 
   const token = generateToken(user);
+  data.tokens.push(token);
 
   setData(data);
   return { token: token.sessionId };
