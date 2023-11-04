@@ -4,7 +4,7 @@ import {
   requestAdminQuizCreate,
   requestAdminQuizInfo,
   clear
-} from './test-helpers';
+} from '../test-helpers';
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
@@ -21,6 +21,11 @@ enum validDetails {
 beforeEach(() => {
   clear();
 });
+
+afterAll(() => {
+  clear();
+});
+
 describe('Tests for clear', () => {
   test('Successfully returns empty object', () => {
     expect(clear()).toStrictEqual({});
@@ -47,6 +52,3 @@ describe('Tests for clear', () => {
     expect(response.statusCode).toStrictEqual(400);
   });
 });
-
-// When all tests are run clear the data
-clear();
