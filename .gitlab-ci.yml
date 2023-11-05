@@ -6,14 +6,22 @@ stages:
 before_script:
   - npm install
 
+lint:
+  stage: lint
+  script:
+    - npm run lint
+
+tsc:
+  stage: tsc
+  script:
+    - npm run tsc
+
 tests:
   stage: checks
   only:
     - master
     - merge_requests
   script:
-    - npm run lint
-    - npm run tsc
     - SERVER_LOG=$(mktemp)
     - npm run start >& $SERVER_LOG &
     - timeout 10s grep -q "⚡️ Server started on port" <(tail -f $SERVER_LOG) || (cat $SERVER_LOG && exit 1)
