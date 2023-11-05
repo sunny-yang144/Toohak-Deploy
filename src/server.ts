@@ -15,6 +15,14 @@ import {
   adminAuthLogout,
   adminUserDetailsUpdate,
   adminUserPasswordUpdate,
+  guestPlayerJoin,
+  guestPlayerStatus,
+  currentQuestionInfoPlayer,
+  playerAnswers,
+  questionResults,
+  finalResults,
+  allChatMessages,
+  sendChatMessages,
 } from './auth';
 
 import {
@@ -33,26 +41,20 @@ import {
   adminQuizQuestionDelete,
   adminQuizQuestionMove,
   adminQuizQuestionDuplicate,
-  // updateQuizThumbnail,
-  // viewSessionActivity,
-  // newSessionQuiz,
-  // updateSessionState,
-  // getSessionStatus,
-  // getQuizSessionResults,
-  // getQuizSessionResultsCSV,
-  // guestPlayerJoin,
-  // guestPlayerStatus,
-  // currentQuestionInfoPlayer,
-  // playerAnswers,
-  // questionResults,
-  // finalResults,
-  // allChatMessages,
-  // sendChatMessages,
+  updateQuizThumbNail,
+  viewSessionActivity,
+  newSessionQuiz,
+  updateSessionState,
+  getSessionStatus,
+  getQuizSessionResults,
+  getQuizSessionResultsCSV
 } from './quiz';
 
 import { clear } from './other';
 import { setData, dataStoreFile } from './dataStore';
 import { requestAdminUserPasswordUpdate } from './tests/test-helpers';
+import { Session } from 'inspector';
+import { ppid } from 'process';
 
 // Set up web app
 const app = express();
@@ -512,13 +514,99 @@ app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request,
 /// ////////////////////////////     ITERATION 3 NEW      ///////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 
-// app.put('/v/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
-//   const quizId = parseInt(req.params.quizid);
-//   const token = req.headers.token as string;
-//   const { imgUrl } = req.body;
-//   res.json(updateQuizThumbnail)
-// });
+app.put('/v1/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const token = req.headers.token as string;
+  const { imgUrl } = req.body;
+  res.json(updateQuizThumbNail(quizId, token, imgUrl));
+});
 
+app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
+  const quizId = parseInt(req.params.quizid);
+  res.json(viewSessionActivity(token, quizId));
+});
+
+app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const token = req.headers.token as string;
+  const { autoStartNum } = req.body;
+  res.json(newSessionQuiz(quizId, token, autoStartNum));
+});
+
+app.put('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const sessionId = parseInt(req.params.sessionid);
+  const token = req.headers.token as string;
+  const { action } = req.body;
+  res.json(updateSessionState(quizId, sessionId, token, action));
+});
+
+app.get('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const sessionId = parseInt(req.params.sessionid);
+  const token = req.headers.token as string;
+  res.json(getSessionStatus(quizId, sessionId, token));
+});
+
+app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const sessionId = parseInt(req.params.sessionid);
+  const token = req.headers.token as string;
+  res.json(getQuizSessionResults(quizId, sessionId, token));
+});
+
+app.get('/v1/admin/quiz/:quizid/session/:sessionid/results/csv', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const sessionId = parseInt(req.params.sessionid);
+  const token = req.headers.token as string;
+  res.json(getQuizSessionResultsCSV(quizId, sessionId, token));
+});
+
+app.post('/v1/player/join', (req: Request, res: Response) => {
+  const { sessionId, name } = req.body;
+  res.json(guestPlayerJoin(sessionId, name));
+});
+
+app.get('/v1/player/:playerid' , (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerid);
+  res.json(guestPlayerStatus(playerId));
+});
+
+app.get('/v1/player/:playerid/question/:questionposition', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerid);
+  const questionPosition = parseInt(req.params.questionposition);
+  res.json(currentQuestionInfoPlayer(playerId, questionPosition));
+});
+
+app.put('/v1/player/:playerid/question/:questionposition/answer', (req: Request, res: Response) => {
+  const { answerIds } = req.body;
+  const playerId = parseInt(req.params.playerid);
+  const questionPosition = parseInt(req.params.questionposition);
+  res.json(playerAnswers(answerIds, playerId, questionPosition));
+});
+
+app.get('/v1/player/:playerid/question/:questionposition/results', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerid);
+  const questionPosition = parseInt(req.params.questionposition);
+  res.json(questionResults(playerId, questionPosition));
+});
+
+app.get('/v1/player/:playerid/results', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerid);
+  res.json(finalResults(playerId));
+});
+
+app.get('/v1/player/:playerid/chat', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerid);
+  res.json(allChatMessages(playerId));
+});
+
+app.post('/v1/player/:playerid/chat', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerid);
+  const { messageBody } = req.body;
+  res.json(sendChatMessages(playerId, messageBody));
+});
 
 
 // ====================================================================
