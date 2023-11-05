@@ -1,4 +1,4 @@
-import { getData, setData, Question, QuestionBody, Answer, AnswerToken, QuestionToken } from './dataStore';
+import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours } from './dataStore';
 import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour } from './other';
 
 type EmptyObject = Record<string, never>;
@@ -43,6 +43,34 @@ interface viewSessionActivityReturn {
 }
 interface newSessionQuizReturn {
   sessionId: number;
+}
+
+interface getSessionStatusReturn {
+  state: string;
+  atQuestion: number;
+  players: string[];
+  metadata: Quiz;
+}
+
+export interface UserScore {
+  name: string;
+  score: number;
+}
+
+export interface QuestionResult {
+  questionId: number;
+  playersCorrectList: string[];
+  averageAnswerTime: number;
+  percentCorrect: number;
+}
+
+interface getQuizSessionResultsReturn {
+  usersRankedByScore: UserScore[];
+  questionResults: QuestionResult[];
+}
+
+interface getQuizSessionResultsCSVReturn {
+  url: string;
 }
 
 /**
@@ -1066,13 +1094,13 @@ export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: strin
 
 export const viewSessionActivity = (token: string, quizId: number): viewSessionActivityReturn | ErrorObject => {
   return {
-    "activeSessions": [
+    activeSessions: [
       247,
       566,
       629,
       923
     ],
-    "inactiveSessions": [
+    inactiveSessions: [
       422,
       817
     ]
@@ -1081,6 +1109,74 @@ export const viewSessionActivity = (token: string, quizId: number): viewSessionA
 
 export const newSessionQuiz = (quizId: number, token: string, autoStartNum: number): newSessionQuizReturn | EmptyObject => {
   return {
-    "sessionId": 5546
+    sessionId: 5546
+  };
+};
+
+export const updateSessionState = (quizId: number, sessionId: number, token: string, action: string): Record<string, never> | ErrorObject => {
+  return {};
+};
+
+export const getSessionStatus = (quizId: number, sessionId: number, token: string): getSessionStatusReturn | ErrorObject => {
+  return {
+    state: "LOBBY",
+    atQuestion: 3,
+    players: [
+      "Hayden"
+    ],
+    metadata: {
+      quizId: 5546,
+      name: "This is the name of the quiz",
+      timeCreated: 1683019484,
+      timeLastEdited: 1683019484,
+      description: "This quiz is so we can have a lot of fun",
+      numQuestions: 1,
+      questions: [
+        {
+          questionId: 5546,
+          question: "Who is the Monarch of England?",
+          duration: 4,
+          thumbnailUrl: "http://google.com/some/image/path.jpg",
+          points: 5,
+          answers: [
+            {
+              answerId: 2384,
+              answer: "Prince Charles",
+              colour: colours.RED,
+              correct: true
+            }
+          ]
+        }
+      ],
+      "duration": 44,
+      "thumbnailUrl": "http://google.com/some/image/path.jpg"
+    }
+  };
+};
+
+export const getQuizSessionResults = (quizId: number, sessionId: number, token: string): getQuizSessionResultsReturn | ErrorObject => {
+  return {
+    usersRankedByScore: [
+      {
+        name: "Hayden",
+        score: 45
+      }
+    ],
+    questionResults: [
+      {
+        questionId: 5546,
+        playersCorrectList: [
+          "Hayden"
+        ],
+        averageAnswerTime: 45,
+        percentCorrect: 54
+      }
+    ]
+  };
+};
+
+export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, token: string): getQuizSessionResultsCSVReturn | ErrorObject => {
+  return {
+    url: "http://google.com/some/image/path.csv"
   };
 };
