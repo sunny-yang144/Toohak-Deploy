@@ -1,6 +1,8 @@
 import { getData, setData, Question, QuestionBody, Answer, AnswerToken, QuestionToken } from './dataStore';
 import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour } from './other';
 
+type EmptyObject = Record<string, never>;
+
 interface ErrorObject {
   error: string;
   statusCode: number;
@@ -32,9 +34,17 @@ interface adminQuizTrashReturn {
 interface adminQuizQuestionCreateReturn {
   questionId: number;
 }
-interface adminQuizQuestionDuplicateReturn{
+interface adminQuizQuestionDuplicateReturn {
   newQuestionId: number;
 }
+interface viewSessionActivityReturn {
+  activeSessions: number[];
+  inactiveSessions: number[];
+}
+interface newSessionQuizReturn {
+  sessionId: number;
+}
+
 /**
  * Lists out all of the Quizzes a user owns
  *
@@ -1044,4 +1054,33 @@ export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, t
 
   setData(data);
   return { newQuestionId: newQuestion.questionId };
+};
+
+/// ///////////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////// ITERATION 3 NEW ///////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////////////////////
+
+export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: string): Record<string, never> | ErrorObject => {
+  return {};
+};
+
+export const viewSessionActivity = (token: string, quizId: number): viewSessionActivityReturn | ErrorObject => {
+  return {
+    "activeSessions": [
+      247,
+      566,
+      629,
+      923
+    ],
+    "inactiveSessions": [
+      422,
+      817
+    ]
+  };
+};
+
+export const newSessionQuiz = (quizId: number, token: string, autoStartNum: number): newSessionQuizReturn | EmptyObject => {
+  return {
+    "sessionId": 5546
+  };
 };
