@@ -35,7 +35,7 @@ export interface MessageBody {
   messageBody: string;
 }
 export interface Message {
-  messageBody: string; 
+  messageBody: string;
   playerId: number;
   playerName: string;
   timeSent: number;

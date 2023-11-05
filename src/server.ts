@@ -52,9 +52,6 @@ import {
 
 import { clear } from './other';
 import { setData, dataStoreFile } from './dataStore';
-import { requestAdminUserPasswordUpdate } from './tests/test-helpers';
-import { Session } from 'inspector';
-import { ppid } from 'process';
 
 // Set up web app
 const app = express();
@@ -568,7 +565,7 @@ app.post('/v1/player/join', (req: Request, res: Response) => {
   res.json(guestPlayerJoin(sessionId, name));
 });
 
-app.get('/v1/player/:playerid' , (req: Request, res: Response) => {
+app.get('/v1/player/:playerid', (req: Request, res: Response) => {
   const playerId = parseInt(req.params.playerid);
   res.json(guestPlayerStatus(playerId));
 });
@@ -607,7 +604,6 @@ app.post('/v1/player/:playerid/chat', (req: Request, res: Response) => {
   const { messageBody } = req.body;
   res.json(sendChatMessages(playerId, messageBody));
 });
-
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================

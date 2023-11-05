@@ -12,8 +12,6 @@ import {
 
 import { expect } from '@jest/globals';
 
-import { v4 as uuidv4 } from 'uuid';
-
 import { colours } from '../../dataStore';
 
 import { QuestionBody } from '../../dataStore';

@@ -1119,37 +1119,37 @@ export const updateSessionState = (quizId: number, sessionId: number, token: str
 
 export const getSessionStatus = (quizId: number, sessionId: number, token: string): getSessionStatusReturn | ErrorObject => {
   return {
-    state: "LOBBY",
+    state: 'LOBBY',
     atQuestion: 3,
     players: [
-      "Hayden"
+      'Hayden'
     ],
     metadata: {
       quizId: 5546,
-      name: "This is the name of the quiz",
+      name: 'This is the name of the quiz',
       timeCreated: 1683019484,
       timeLastEdited: 1683019484,
-      description: "This quiz is so we can have a lot of fun",
+      description: 'This quiz is so we can have a lot of fun',
       numQuestions: 1,
       questions: [
         {
           questionId: 5546,
-          question: "Who is the Monarch of England?",
+          question: 'Who is the Monarch of England?',
           duration: 4,
-          thumbnailUrl: "http://google.com/some/image/path.jpg",
+          thumbnailUrl: 'http://google.com/some/image/path.jpg',
           points: 5,
           answers: [
             {
               answerId: 2384,
-              answer: "Prince Charles",
+              answer: 'Prince Charles',
               colour: colours.RED,
               correct: true
             }
           ]
         }
       ],
-      "duration": 44,
-      "thumbnailUrl": "http://google.com/some/image/path.jpg"
+      duration: 44,
+      thumbnailUrl: 'http://google.com/some/image/path.jpg'
     }
   };
 };
@@ -1158,7 +1158,7 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
   return {
     usersRankedByScore: [
       {
-        name: "Hayden",
+        name: 'Hayden',
         score: 45
       }
     ],
@@ -1166,7 +1166,7 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
       {
         questionId: 5546,
         playersCorrectList: [
-          "Hayden"
+          'Hayden'
         ],
         averageAnswerTime: 45,
         percentCorrect: 54
@@ -1177,6 +1177,6 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
 
 export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, token: string): getQuizSessionResultsCSVReturn | ErrorObject => {
   return {
-    url: "http://google.com/some/image/path.csv"
+    url: 'http://google.com/some/image/path.csv'
   };
 };

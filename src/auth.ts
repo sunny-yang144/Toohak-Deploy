@@ -59,7 +59,6 @@ interface allChatMessagesReturn {
   messages: Message[];
 }
 
-
 /**
  * Creates a new user and logins in the user, by assigning a valid token.
  * Ensures email, password, and names are correct.
@@ -354,7 +353,7 @@ export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoi
 
 export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn | ErrorObject => {
   return {
-    state: "LOBBY",
+    state: 'LOBBY',
     numQuestions: 1,
     atQuestion: 3
   };
@@ -363,14 +362,14 @@ export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn | E
 export const currentQuestionInfoPlayer = (playerId: number, questionPosition: number): currentQuestionInfoPlayerReturn | ErrorObject => {
   return {
     questionId: 5546,
-    question: "Who is the Monarch of England?",
+    question: 'Who is the Monarch of England?',
     duration: 4,
-    thumbnailUrl: "http://google.com/some/image/path.jpg",
+    thumbnailUrl: 'http://google.com/some/image/path.jpg',
     points: 5,
     answers: [
       {
         answerId: 2384,
-        answer: "Prince Charles",
+        answer: 'Prince Charles',
         colour: colours.RED
       }
     ]
@@ -385,7 +384,7 @@ export const questionResults = (playerId: number, questionPostion: number): ques
   return {
     questionId: 5546,
     playersCorrectList: [
-      "Hayden"
+      'Hayden'
     ],
     averageAnswerTime: 45,
     percentCorrect: 54
@@ -396,7 +395,7 @@ export const finalResults = (playerId: number): finalResultsReturn | ErrorObject
   return {
     usersRankedByScore: [
       {
-        name: "Hayden",
+        name: 'Hayden',
         score: 45
       }
     ],
@@ -404,7 +403,7 @@ export const finalResults = (playerId: number): finalResultsReturn | ErrorObject
       {
         questionId: 5546,
         playersCorrectList: [
-          "Hayden"
+          'Hayden'
         ],
         averageAnswerTime: 45,
         percentCorrect: 54
@@ -417,15 +416,15 @@ export const allChatMessages = (playerId: number): allChatMessagesReturn | Error
   return {
     messages: [
       {
-        messageBody: "This is a message body",
+        messageBody: 'This is a message body',
         playerId: 5546,
-        playerName: "Yuchao Jiang",
+        playerName: 'Yuchao Jiang',
         timeSent: 1683019484
       }
     ]
   };
 };
 
-export const sendChatMessages = (playerId: number, message: MessageBody): Record<string,never> | ErrorObject => {
+export const sendChatMessages = (playerId: number, message: MessageBody): Record<string, never> | ErrorObject => {
   return {};
 };

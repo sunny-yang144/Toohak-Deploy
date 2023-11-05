@@ -4,8 +4,6 @@ import {
   requestAdminQuizCreate,
   requestAdminQuizInfo,
   requestAdminQuizRemove,
-  requestAdminQuizNameUpdate,
-  requestAdminQuizDescriptionUpdate,
   requestAdminQuizTrash,
   requestAdminTrashRemove,
   requestAdminQuizTransfer,
