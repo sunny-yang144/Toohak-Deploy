@@ -1,6 +1,8 @@
 image: node:18-bullseye-slim
 
 stages:
+  - lint
+  - tsc
   - checks
 
 before_script:
@@ -8,11 +10,17 @@ before_script:
 
 lint:
   stage: lint
+  only:
+    - master
+    - merge_requests
   script:
     - npm run lint
 
 tsc:
   stage: tsc
+  only:
+    - master
+    - merge_requests
   script:
     - npm run tsc
 
