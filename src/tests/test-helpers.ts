@@ -52,6 +52,7 @@ export function requestAdminUserDetails (token: string) {
     statusCode: res.statusCode
   };
 }
+
 export function requestAdminQuizList (token: string) {
   const res = request(
     'GET',
@@ -367,3 +368,197 @@ export function requestAdminQuizQuestionUpdate (quizId: number, questionId: numb
 /// /////////////////////////////     ITERATION 2      //////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 
+export function requestAdminAuthLogoutV2 (token: string) {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v2/admin/auth/logout',
+    {
+      headers: { 
+        token 
+      },
+      json: {}
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestAdminUserDetailsV2 (token: string) {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v2/admin/user/details',
+    {
+      headers: {
+        token
+      },
+      qs: {}
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestAdminUserDetailsUpdateV2 (token: string, email: string, nameFirst: string, nameLast: string) {
+  const res = request(
+    'PUT',
+    SERVER_URL + '/v2/admin/user/details',
+    {
+      headers: {
+        token,
+      },
+      json: {
+        email,
+        nameFirst,
+        nameLast,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestAdminUserPasswordUpdateV2 (token: string, oldPassword: string, newPassword: string) {
+  const res = request(
+    'PUT',
+    SERVER_URL + '/v2/admin/user/password',
+    {
+      headers: {
+        token,
+      },
+      json: {
+        oldPassword,
+        newPassword,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestAdminQuizListV2 (token: string) {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v2/admin/quiz/list',
+    {
+      headers: {
+        token,
+      },
+      qs: {}
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestAdminQuizCreateV2 (token: string, name: string, description: string) {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v2/admin/quiz',
+    {
+      headers: {
+        token,
+      },
+      json: {
+        name,
+        description,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestAdminQuizRemoveV2 (token: string, quizId: number) {
+  const res = request(
+    'DELETE',
+    SERVER_URL + `/v2/admin/quiz/${quizId}`,
+    {
+      headers: {
+        token,
+      },
+      qs: {}
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestAdminQuizInfoV2 (token: string, quizId: number) {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v2/admin/quiz/${quizId}`,
+    {
+      headers: {
+        token,
+      },
+      qs: {}
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestAdminQuizNameUpdateV2 (token: string, quizId: number, name: string) {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/name`,
+    {
+      headers: {
+        token,
+      },
+      json: {
+        name,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestAdminQuizDescriptionUpdateV2 (token: string, quizId: number, description: string) {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/description`,
+    {
+      headers: {
+        token,
+      },
+      json: {
+        description,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestAdminQuizTrashV2 (token: string) {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v2/admin/quiz/trash',
+    {
+      headers: {
+        token,
+      },
+      qs: {}
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestAdminQuizTrashRestoreV2 (quizId: number, token: string) {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/restore`,
+    {
+      headers: {
+        token,
+      },
+      json: {}
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
