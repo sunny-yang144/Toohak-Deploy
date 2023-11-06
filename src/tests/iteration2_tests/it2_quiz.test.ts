@@ -1672,5 +1672,3 @@ describe('Tests for adminQuizTrashRestore', () => {
     expect(response.statusCode).toStrictEqual(403);
   });
 });
-// When all tests are run clear the data
-clear();
