@@ -156,6 +156,19 @@ describe('Tests to Empty adminQuizTrashRemove', () => {
       quizzes: []
     });
   });
+  test('Successful Trash Empty, but for a quiz with questions', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizRemove(user.body.token, quiz.body.quizId);
+    const clearTrash = requestAdminTrashRemove(user.body.token, [quiz.body.quizId]); // needs to be an array of quizzes
+    expect(clearTrash.statusCode).toStrictEqual(200);
+
+    const checkTrash = requestAdminQuizTrash(user.body.token);
+    expect(checkTrash.body).toStrictEqual({
+      quizzes: []
+    });
+  });
 
   test('quizId is not in the Trash', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
@@ -389,7 +402,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     requestAdminQuizCreate(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
-    const token = user.body.token;
     // Create question details
     const question = {
       question: 'What does KFC sell?',
@@ -406,7 +418,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
       points: question.points,
       answers: answers,
     };
-    const quizQuestion = requestAdminQuizQuestionCreate(-1, token, questionBody);
+    const quizQuestion = requestAdminQuizQuestionCreate(-1, user.body.token, questionBody);
     expect(quizQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion.statusCode).toStrictEqual(400);
   });
@@ -1556,6 +1568,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
     };
     const noCorrectAnswer = [
       { answer: 'No correct answers', correct: false },
+      { answer: 'bruh someone forgot', correct: false }
     ];
     const questionBodyNoCorrectAnswer = {
       question: question2.question,
@@ -1672,5 +1685,3 @@ describe('Tests for adminQuizTrashRestore', () => {
     expect(response.statusCode).toStrictEqual(403);
   });
 });
-// When all tests are run clear the data
-clear();
