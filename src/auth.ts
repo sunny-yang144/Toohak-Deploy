@@ -1,4 +1,5 @@
 import validator from 'validator';
+import HTTPError from 'http-errors';
 import {
   colours,
   getData,
@@ -83,34 +84,34 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
   const searchEmail = data.users.find(user => user.email === email);
 
   if (searchEmail) {
-    return { error: 'This email is already in use', statusCode: 400 };
+    throw HTTPError(400, 'This email is already in use');
   }
   if (!validator.isEmail(email)) {
-    return { error: 'This is not a valid email', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid email');
   }
   const pattern = /^[a-zA-Z\s\-']+$/;
   if (!pattern.test(nameFirst)) {
-    return { error: 'This is not a valid first name', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid first name');
   }
   const firstNameLength = nameFirst.length;
   if ((firstNameLength < 2) || (firstNameLength > 20)) {
-    return { error: 'This is not a valid first name', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid first name');
   }
   if (!pattern.test(nameLast)) {
-    return { error: 'This is not a valid last name', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid last name');
   }
   const lastNameLength = nameLast.length;
   if ((lastNameLength < 2) || (lastNameLength > 20)) {
-    return { error: 'This is not a valid last name', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid last name');
   }
   const passwordLength = password.length;
   if (passwordLength < 8) {
-    return { error: 'This is not a valid password', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid password');
   }
   const letterCheck = /[a-zA-Z]/;
   const numberCheck = /\d/;
   if (!(letterCheck.test(password) && numberCheck.test(password))) {
-    return { error: 'This is not a valid password', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid password');
   }
   const userId = data.users.length;
   const user: User = {
@@ -149,12 +150,12 @@ export const adminAuthLogin = (email: string, password: string): adminAuthLoginR
   const data = getData();
   const user = data.users.find(user => user.email === email);
   if (!user) {
-    return { error: `The given email ${email} does not exist`, statusCode: 400 };
+    throw HTTPError(400, `The given email ${email} does not exist`);
   }
   if (user.password !== password) {
     user.numFailedPasswordsSinceLastLogin += 1;
     setData(data);
-    return { error: 'Incorrect password', statusCode: 400 };
+    throw HTTPError(400, 'Incorrect password')
   } else {
     user.numFailedPasswordsSinceLastLogin = 0;
   }
@@ -178,7 +179,7 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
-    return { error: 'This is not a valid user token', statusCode: 401 };
+    throw HTTPError(401, 'This is not a valid user token');
   }
 
   return {
@@ -206,7 +207,7 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
-    return { error: 'This is not a valid user token', statusCode: 401 };
+    throw HTTPError(401, 'This is not a valid user token');
   }
   user.tokens = user.tokens.filter(t => t.sessionId !== token);
 
@@ -228,29 +229,29 @@ export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: 
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
-    return { error: 'This is not a valid user token', statusCode: 401 };
+    throw HTTPError(401, 'This is not a valid user token');
   }
 
   if (data.users.some((u: User) => (u.email === email && u.userId !== user.userId))) {
-    return { error: 'Email already in use', statusCode: 400 };
+    throw HTTPError(400, 'Email already in use');
   }
   if (!validator.isEmail(email)) {
-    return { error: 'This is not a valid email', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid email');
   }
   const pattern = /^[a-zA-Z\s\-']+$/;
   if (!pattern.test(nameFirst)) {
-    return { error: 'This is not a valid first name', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid first name');
   }
   const firstNameLength = nameFirst.length;
   if ((firstNameLength < 2) || (firstNameLength > 20)) {
-    return { error: 'This is not a valid first name', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid first name');
   }
   if (!pattern.test(nameLast)) {
-    return { error: 'This is not a valid last name', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid first name');
   }
   const lastNameLength = nameLast.length;
   if ((lastNameLength < 2) || (lastNameLength > 20)) {
-    return { error: 'This is not a valid last name', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid last name');
   }
 
   user.email = email;
@@ -273,26 +274,25 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
-    return { error: 'This is not a valid user token', statusCode: 401 };
+    throw HTTPError(401, 'This is not a valid user token');
   }
-
   if (user.password !== oldPassword) {
-    return { error: 'Incorrect old password', statusCode: 400 };
+    throw HTTPError(400, 'Incorrect old password');
   }
   if (oldPassword === newPassword) {
-    return { error: 'New password must be different from current password', statusCode: 400 };
+    throw HTTPError(400, 'New password must be different from current password');
   }
   if (user.oldPasswords.some((item) => item === newPassword)) {
-    return { error: 'New password must be different from a password used before', statusCode: 400 };
+    throw HTTPError(400, 'New password must be different from a password used before');
   }
   const passwordLength = newPassword.length;
   if (passwordLength < 8) {
-    return { error: 'This is not a valid password', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid password');
   }
   const letterCheck = /[a-zA-Z]/;
   const numberCheck = /\d/;
   if (!(letterCheck.test(newPassword) && numberCheck.test(newPassword))) {
-    return { error: 'This is not a valid password', statusCode: 400 };
+    throw HTTPError(400, 'This is not a valid password');
   }
 
   user.password = newPassword;
@@ -308,12 +308,15 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
 // """""" MAYBE THIS SHOULD BE MOVED INTO a new folder such as players.ts """""" //
 
 export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoinReturn | ErrorObject => {
+  // throw HTTPError(400, 'Name of user entered is not unique');
+  // throw HTTPError(400, 'Session is not in lobby state');
   return {
     playerId: 5546
   };
 };
 
 export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
   return {
     state: 'LOBBY',
     numQuestions: 1,
@@ -322,6 +325,11 @@ export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn | E
 };
 
 export const currentQuestionInfoPlayer = (playerId: number, questionPosition: number): currentQuestionInfoPlayerReturn | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
+  // throw HTTPError(400, 'The question position is invalid for the session this player is in');
+  // throw HTTPError(400, 'The session is currently not on this question');
+  // throw HTTPError(400, 'The session is in lobby state');
+  // throw HTTPError(400, 'The session is in end state');
   return {
     questionId: 5546,
     question: 'Who is the Monarch of England?',
@@ -339,10 +347,21 @@ export const currentQuestionInfoPlayer = (playerId: number, questionPosition: nu
 };
 
 export const playerAnswers = (answerIds: number[], playerId: number, questionPosition: number): Record<string, never> | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
+  // throw HTTPError(400, 'The question position is invalid for the session this player is in');
+  // throw HTTPError(400, 'The session is not in QUESTION_OPEN state');
+  // throw HTTPError(400, 'The session is not up to this question yet');
+  // throw HTTPError(400, 'The answer IDs are invalid for this particular question');
+  // throw HTTPError(400, 'Duplicate answer IDs provided');
+  // throw HTTPError(400, 'Less than 1 answer ID was submitted');
   return {};
 };
 
 export const questionResults = (playerId: number, questionPostion: number): questionResultsReturn | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
+  // throw HTTPError(400, 'The question position is invalid for the session this player is in');
+  // throw HTTPError(400, 'The session is not in ANSWER_SHOW state');
+  // throw HTTPError(400, 'The session is not up to this question yet');
   return {
     questionId: 5546,
     playersCorrectList: [
@@ -354,6 +373,8 @@ export const questionResults = (playerId: number, questionPostion: number): ques
 };
 
 export const finalResults = (playerId: number): finalResultsReturn | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
+  // throw HTTPError(400, 'The session is not in FINAL_RESULTS state');
   return {
     usersRankedByScore: [
       {
@@ -375,6 +396,7 @@ export const finalResults = (playerId: number): finalResultsReturn | ErrorObject
 };
 
 export const allChatMessages = (playerId: number): allChatMessagesReturn | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
   return {
     messages: [
       {
@@ -388,5 +410,8 @@ export const allChatMessages = (playerId: number): allChatMessagesReturn | Error
 };
 
 export const sendChatMessages = (playerId: number, message: MessageBody): Record<string, never> | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
+  // throw HTTPError(400, 'Message body is less than 1 character');
+  // throw HTTPError(400, 'Message body is greater than 100 characters');
   return {};
 };
