@@ -155,7 +155,7 @@ export const adminAuthLogin = (email: string, password: string): adminAuthLoginR
   if (user.password !== password) {
     user.numFailedPasswordsSinceLastLogin += 1;
     setData(data);
-    throw HTTPError(400, 'Incorrect password')
+    throw HTTPError(400, 'Incorrect password');
   } else {
     user.numFailedPasswordsSinceLastLogin = 0;
   }

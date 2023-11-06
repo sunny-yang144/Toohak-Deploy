@@ -706,7 +706,7 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
   let numCorrectAnswers = 0;
   for (const answer of questionBody.answers) {
     if (answer.answer.length > 30) {
-      throw HTTPError(400,  `The answer "${answer.answer}" is too long (<30).`);
+      throw HTTPError(400, `The answer "${answer.answer}" is too long (<30).`);
     }
 
     if (answer.answer.length < 1) {
@@ -813,7 +813,7 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
   }
 
   if (questionBody.question.length < 5) {
-    throw HTTPError(400, 'The question is too short (>5).')
+    throw HTTPError(400, 'The question is too short (>5).');
   }
 
   if (questionBody.question.length > 50) {
