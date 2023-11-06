@@ -562,3 +562,37 @@ export function requestAdminQuizTrashRestoreV2 (quizId: number, token: string) {
     body: JSON.parse(res.body.toString()),
   };
 }
+export function requestAdminTrashRemoveV2 (token: string, quizIds: number[]) {
+  const res = request(
+    'DELETE',
+    SERVER_URL + '/v2/admin/quiz/trash/empty',
+    {
+      headers: {
+        token,
+      },
+      qs: {
+        quizIds: JSON.stringify(quizIds),
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestAdminQuizTransferV2 (token: string, userEmail: string, quizId: number) {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/transfer`,
+    {
+      headers: {
+        token,
+      },
+      json: {
+        userEmail,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
