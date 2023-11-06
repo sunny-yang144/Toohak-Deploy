@@ -1,6 +1,6 @@
 import request from 'sync-request-curl';
-import { port, url } from './config.json';
-import { QuestionBody } from './dataStore';
+import { port, url } from '../config.json';
+import { QuestionBody } from '../dataStore';
 const SERVER_URL = `${url}:${port}`;
 
 export function requestAdminAuthRegister (email: string, password: string, nameFirst: string, nameLast: string) {

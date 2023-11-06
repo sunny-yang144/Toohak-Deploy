@@ -31,6 +31,15 @@ export interface User {
   trash: number[], // Similar to ownedQuizzes, the user has the Ids of all the quizzes in their trash
   tokens: Token[], // If we have a user, we can check what token they are assigned.
 }
+export interface MessageBody {
+  messageBody: string;
+}
+export interface Message {
+  messageBody: string;
+  playerId: number;
+  playerName: string;
+  timeSent: number;
+}
 export interface Answer {
   answerId: number;
   answer: string;
@@ -41,6 +50,7 @@ export interface Question {
   questionId: number;
   question: string;
   duration: number;
+  thumbnailUrl?: string;
   points: number;
   answers: Answer[];
 }
@@ -53,6 +63,7 @@ export interface Quiz {
   numQuestions: number;
   questions: Question[];
   duration: number;
+  thumbnailUrl?: string;
 }
 export interface AnswerBody {
   answer: string;
@@ -107,23 +118,5 @@ export function setData(newData: DataStore) {
 }
 // Opens the dataStorage JSON file and translates it back into typescript
 export function getData(): DataStore {
-  // const serializedData = fs.readFileSync(dataStoreFile, 'utf8');
-  // return JSON.parse(serializedData);
   return data;
 }
-
-// YOU SHOULDNT NEED TO MODIFY THE FUNCTIONS BELOW IN ITERATION 1
-
-/*
-Example usage
-    let store = getData()
-    console.log(store) # Prints { 'names': ['Hayden', 'Tam', 'Rani', 'Giuliana', 'Rando'] }
-
-    names = store.names
-
-    names.pop()
-    names.push('Jake')
-
-    console.log(store) # Prints { 'names': ['Hayden', 'Tam', 'Rani', 'Giuliana', 'Jake'] }
-    setData(store)
-*/

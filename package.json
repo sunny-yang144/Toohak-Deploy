@@ -4,7 +4,10 @@
         "tsc": "tsc --project tsconfig.json",
         "lint": "eslint src/**/*.{ts,js}",
         "lint-fix": "eslint --fix src/**/*.{ts,js}",
-        "start": "ts-node-dev -T src/server.ts"
+        "start": "ts-node-dev -T src/server.ts",
+        "ts-node-coverage": "nyc --reporter=text --reporter=lcov ts-node -T src/server.ts",
+        "cleanup-sync-request": "pkill -f node_modules/sync-rpc/lib/worker.js > /dev/null 2>&1",
+        "posttest": "npm run cleanup-sync-request || true"
     },
     "dependencies": {
         "@types/uuid": "^9.0.6",
@@ -32,7 +35,7 @@
         "@types/validator": "^13.7.2",
         "@typescript-eslint/eslint-plugin": "^5.21.0",
         "@typescript-eslint/parser": "^5.21.0",
-        "eslint": "^8.25.0",
+        "eslint": "^8.53.0",
         "eslint-plugin-jest": "^26.1.5",
         "jest": "^28.1.0",
         "nyc": "^15.1.0",

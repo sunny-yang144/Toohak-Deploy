@@ -1,6 +1,7 @@
 import validator from 'validator';
-import { getData, setData, User } from './dataStore';
+import { colours, getData, setData, User, Answer, Message, MessageBody } from './dataStore';
 import { generateToken } from './other';
+import { UserScore, QuestionResult } from './quiz';
 
 interface ErrorObject {
   error: string;
@@ -20,6 +21,42 @@ interface adminAuthRegisterReturn {
 }
 interface adminAuthLoginReturn {
   token: string
+}
+
+interface guestPlayerJoinReturn {
+  playerId: number
+}
+
+interface guestPlayerStatusReturn {
+  state: string;
+  numQuestions: number;
+  atQuestion: number;
+}
+
+type AnswersWithoutCorrect = Omit<Answer, 'correct'>;
+interface currentQuestionInfoPlayerReturn {
+  questionId: number;
+  question: string;
+  duration: number;
+  thumbnailUrl: string;
+  points: number;
+  answers: AnswersWithoutCorrect[];
+}
+
+interface questionResultsReturn {
+  questionId: number;
+  playersCorrectList: string[];
+  averageAnswerTime: number;
+  percentCorrect: number;
+}
+
+interface finalResultsReturn {
+  usersRankedByScore: UserScore[];
+  questionResults: QuestionResult[];
+}
+
+interface allChatMessagesReturn {
+  messages: Message[];
 }
 
 /**
@@ -299,5 +336,95 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
   user.password = newPassword;
   user.oldPasswords.push(oldPassword);
   setData(data);
+  return {};
+};
+
+/// ///////////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////// ITERATION 3 NEW ///////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////////////////////
+
+// """""" MAYBE THIS SHOULD BE MOVED INTO a new folder such as players.ts """""" //
+
+export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoinReturn | ErrorObject => {
+  return {
+    playerId: 5546
+  };
+};
+
+export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn | ErrorObject => {
+  return {
+    state: 'LOBBY',
+    numQuestions: 1,
+    atQuestion: 3
+  };
+};
+
+export const currentQuestionInfoPlayer = (playerId: number, questionPosition: number): currentQuestionInfoPlayerReturn | ErrorObject => {
+  return {
+    questionId: 5546,
+    question: 'Who is the Monarch of England?',
+    duration: 4,
+    thumbnailUrl: 'http://google.com/some/image/path.jpg',
+    points: 5,
+    answers: [
+      {
+        answerId: 2384,
+        answer: 'Prince Charles',
+        colour: colours.RED
+      }
+    ]
+  };
+};
+
+export const playerAnswers = (answerIds: number[], playerId: number, questionPosition: number): Record<string, never> | ErrorObject => {
+  return {};
+};
+
+export const questionResults = (playerId: number, questionPostion: number): questionResultsReturn | ErrorObject => {
+  return {
+    questionId: 5546,
+    playersCorrectList: [
+      'Hayden'
+    ],
+    averageAnswerTime: 45,
+    percentCorrect: 54
+  };
+};
+
+export const finalResults = (playerId: number): finalResultsReturn | ErrorObject => {
+  return {
+    usersRankedByScore: [
+      {
+        name: 'Hayden',
+        score: 45
+      }
+    ],
+    questionResults: [
+      {
+        questionId: 5546,
+        playersCorrectList: [
+          'Hayden'
+        ],
+        averageAnswerTime: 45,
+        percentCorrect: 54
+      }
+    ]
+  };
+};
+
+export const allChatMessages = (playerId: number): allChatMessagesReturn | ErrorObject => {
+  return {
+    messages: [
+      {
+        messageBody: 'This is a message body',
+        playerId: 5546,
+        playerName: 'Yuchao Jiang',
+        timeSent: 1683019484
+      }
+    ]
+  };
+};
+
+export const sendChatMessages = (playerId: number, message: MessageBody): Record<string, never> | ErrorObject => {
   return {};
 };
