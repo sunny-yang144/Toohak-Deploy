@@ -108,8 +108,6 @@ export function getRandomColour(): colours {
   return coloursObject[randomIndex];
 }
 
-
 export function getUserViaToken(token: string, data: DataStore): User {
   return data.users.find(u => u.tokens.some((t: Token) => t.sessionId === token));
 }
-

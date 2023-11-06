@@ -86,7 +86,7 @@ describe('Testing adminUserDetailsUpdate', () => {
     );
   });
   test('Unsuccessful call, user is changing to an email in use', () => {
-    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response = requestAdminUserDetailsUpdate(user2.body.token, validDetails.EMAIL, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     expect(response.body).toStrictEqual({ error: expect.any(String) });

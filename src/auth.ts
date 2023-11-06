@@ -1,13 +1,12 @@
 import validator from 'validator';
-import { Token } from 'yaml/dist/parse/cst';
-import { 
-  colours, 
-  getData, 
-  setData, 
-  User, 
-  Answer, 
-  Message, 
-  MessageBody, 
+import {
+  colours,
+  getData,
+  setData,
+  User,
+  Answer,
+  Message,
+  MessageBody,
 } from './dataStore';
 import { generateToken, getUserViaToken } from './other';
 import { UserScore, QuestionResult } from './quiz';
@@ -209,7 +208,7 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
-  user.tokens = user.tokens.filter(t => t.sessionId != token);
+  user.tokens = user.tokens.filter(t => t.sessionId !== token);
 
   setData(data);
   return {};
