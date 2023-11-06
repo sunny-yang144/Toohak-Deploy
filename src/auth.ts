@@ -1,6 +1,15 @@
 import validator from 'validator';
-import { colours, getData, setData, User, Answer, Message, MessageBody } from './dataStore';
-import { generateToken } from './other';
+import { Token } from 'yaml/dist/parse/cst';
+import { 
+  colours, 
+  getData, 
+  setData, 
+  User, 
+  Answer, 
+  Message, 
+  MessageBody, 
+} from './dataStore';
+import { generateToken, getUserViaToken } from './other';
 import { UserScore, QuestionResult } from './quiz';
 
 interface ErrorObject {
@@ -168,13 +177,7 @@ export const adminAuthLogin = (email: string, password: string): adminAuthLoginR
  */
 export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorObject => {
   const data = getData();
-
-  const validToken = data.tokens.find((item) => item.sessionId === token);
-  if (!validToken) {
-    return { error: 'This is not a valid user token', statusCode: 401 };
-  }
-
-  const user = data.users.find((item) => item.userId === validToken.userId);
+  const user = getUserViaToken(token, data);
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
@@ -202,37 +205,11 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
  */
 export const adminAuthLogout = (token: string): Record<string, never> | ErrorObject => {
   const data = getData();
-
-  const validToken = data.tokens.find((item) => item.sessionId === token);
-
-  if (!validToken) {
+  const user = getUserViaToken(token, data);
+  if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
-  } else {
-    // We need to remove the tokens from the users and the data's tracking of tokens
-    // Therefore we find the index of the item in the respective arrays.
-
-    const user = data.users.find((item) => item.userId === validToken.userId);
-    if (!user) {
-      return { error: 'This is not a valid user token', statusCode: 401 };
-    }
-
-    const validUserToken = user.tokens.find((item) => item.sessionId === token);
-    if (!validUserToken) {
-      return { error: 'This is not a valid user token', statusCode: 401 };
-    }
-
-    const tokenIndex = data.tokens.indexOf(validToken);
-    const userTokenIndex = user.tokens.indexOf(validUserToken);
-
-    // If an index exists which we assume does if the token is valid, then we splice to remove the item
-    if (tokenIndex !== -1) {
-      data.tokens.splice(tokenIndex, 1);
-    }
-
-    if (userTokenIndex !== -1) {
-      user.tokens.splice(userTokenIndex, 1);
-    }
   }
+  user.tokens = user.tokens.filter(t => t.sessionId != token);
 
   setData(data);
   return {};
@@ -250,21 +227,13 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
  */
 export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: string, nameLast: string): Record<string, never> | ErrorObject => {
   const data = getData();
-  // Derive user from the token by that logic this error should trigger first.
-  const validToken = data.tokens.find((item) => item.sessionId === token);
-  if (!validToken) {
-    return { error: 'This is not a valid user token', statusCode: 401 };
-  }
-
-  const user = data.users.find((user) => user.userId === validToken.userId);
+  const user = getUserViaToken(token, data);
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
-  const searchEmail = data.users.find(item => item.email === email && item.userId !== user.userId);
-
-  if (searchEmail) {
-    return { error: 'This email is already in use', statusCode: 400 };
+  if (data.users.some((u: User) => (u.email === email && u.userId !== user.userId))) {
+    return { error: 'Email already in use', statusCode: 400 };
   }
   if (!validator.isEmail(email)) {
     return { error: 'This is not a valid email', statusCode: 400 };
@@ -303,13 +272,7 @@ export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: 
  */
 export const adminUserPasswordUpdate = (token: string, oldPassword: string, newPassword: string) : Record<string, never> | ErrorObject => {
   const data = getData();
-
-  const validToken = data.tokens.find((item) => item.sessionId === token);
-  if (!validToken) {
-    return { error: 'This is not a valid user token', statusCode: 401 };
-  }
-
-  const user = data.users.find((item) => item.userId === validToken.userId);
+  const user = getUserViaToken(token, data);
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }

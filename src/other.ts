@@ -1,4 +1,4 @@
-import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken } from './dataStore';
+import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken, Token, DataStore } from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
 
 export function clear (): Record<string, never> {
@@ -107,3 +107,9 @@ export function getRandomColour(): colours {
   const randomIndex: number = Math.floor(Math.random() * coloursObject.length);
   return coloursObject[randomIndex];
 }
+
+
+export function getUserViaToken(token: string, data: DataStore): User {
+  return data.users.find(u => u.tokens.some((t: Token) => t.sessionId === token));
+}
+
