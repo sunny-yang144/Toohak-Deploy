@@ -14,20 +14,20 @@ export enum colours {
 }
 
 export type states =
-  "LOBBY" |
-  "QUESTION_COUNTDOWN" |
-  "QUESTION_CLOSE" |
-  "QUESTION_OPEN" |
-  "ANSWER_SHOW" |
-  "FINAL_RESULTS" |
-  "END";
+  'LOBBY' |
+  'QUESTION_COUNTDOWN' |
+  'QUESTION_CLOSE' |
+  'QUESTION_OPEN' |
+  'ANSWER_SHOW' |
+  'FINAL_RESULTS' |
+  'END';
 
 export type actions =
-  "NEXT_QUESTION" |
-  "SKIP_COUNTDOWN" |
-  "GO_TO_ANSWER" |
-  "GO_TO_FINAL_RESULTS" |
-  "END";
+  'NEXT_QUESTION' |
+  'SKIP_COUNTDOWN' |
+  'GO_TO_ANSWER' |
+  'GO_TO_FINAL_RESULTS' |
+  'END';
 
 export interface Token {
   sessionId: string;
@@ -86,7 +86,7 @@ export interface SessionQuestionResults {
 export interface Session {
   sessionId: number;
   quizId: number;
-  players: Player[]; 
+  players: Player[];
   atQuestion: number;
   state: states;
   questionResults: SessionQuestionResults[];
