@@ -373,8 +373,8 @@ export function requestAdminAuthLogoutV2 (token: string) {
     'POST',
     SERVER_URL + '/v2/admin/auth/logout',
     {
-      headers: { 
-        token 
+      headers: {
+        token
       },
       json: {}
     }

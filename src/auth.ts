@@ -24,7 +24,7 @@ interface adminUserDetailsReturn {
     numFailedPasswordsSinceLastLogin: number,
   }
 }
-interface adminAuthRegisterReturn {
+export interface adminAuthRegisterReturn {
   token: string
 }
 interface adminAuthLoginReturn {
