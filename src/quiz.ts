@@ -206,7 +206,7 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
       duration: quiz.duration,
     };
     return quizInfo;
-  };
+  }
 };
 
 /**
@@ -304,7 +304,7 @@ export const adminQuizNameUpdate = (token: string, quizId: number, name: string)
 
     setData(data);
     return {};
-  };
+  }
 };
 
 /**
@@ -356,7 +356,7 @@ export const adminQuizDescriptionUpdate = (token: string, quizId: number, descri
     editedQuiz.timeLastEdited = unixtimeSeconds;
     setData(data);
     return {};
-  };
+  }
 };
 
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -440,7 +440,7 @@ export const adminQuizRestore = (token: string, quizId: number): Record<string, 
 
     setData(data);
     return {};
-  };
+  }
 };
 
 /**
@@ -486,9 +486,9 @@ export const adminQuizTrashRemove = (token: string, quizIds: number[]): Record<s
           newAnswers = data.answers.filter(answerToken => answerToken.questionId !== question.questionId);
         }
         newQuestions = data.questions.filter(questionToken => questionToken.quizId !== quizId);
-      };
-    };
-  };
+      }
+    }
+  }
   data.answers = newAnswers;
   data.questions = newQuestions;
 
@@ -916,7 +916,7 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
 
     setData(data);
     return {};
-  };
+  }
 };
 
 /**
@@ -943,26 +943,26 @@ export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, t
     if (!question) {
       return { error: `The question Id ${question} does not refer to a valid quiz!`, statusCode: 400 };
     }
-  
+
     if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
       return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
     }
-  
+
     // Find index of QuizQuestion to duplicate
     const questionIndex = quiz.questions.indexOf(question);
     // Create duplicate of question (will go to end of array)
     const newQuestion = adminQuizQuestionCreate(quizId, token, question) as adminQuizQuestionCreateReturn;
     // Move new question to directly after index of original quesiton
     adminQuizQuestionMove(quizId, newQuestion.questionId, token, questionIndex + 1);
-  
+
     // Update timeLastEdited
     const currentTime = new Date();
     const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
     quiz.timeLastEdited = unixtimeSeconds;
-  
+
     setData(data);
     return { newQuestionId: newQuestion.questionId };
-  };
+  }
 };
 
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
