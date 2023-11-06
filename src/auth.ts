@@ -1,5 +1,5 @@
 import validator from 'validator';
-import HTTPError from 'http-errors';
+//import HTTPError from 'http-errors';
 import {
   colours,
   getData,
@@ -11,6 +11,7 @@ import {
 } from './dataStore';
 import { generateToken, getUserViaToken } from './other';
 import { UserScore, QuestionResult } from './quiz';
+// import { STATUS_CODES } from 'http';
 
 interface ErrorObject {
   error: string;
@@ -84,34 +85,34 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
   const searchEmail = data.users.find(user => user.email === email);
 
   if (searchEmail) {
-    throw HTTPError(400, 'This email is already in use');
+    return { error: 'This email is already in use', statusCode: 400 };
   }
   if (!validator.isEmail(email)) {
-    throw HTTPError(400, 'This is not a valid email');
+    return { error: 'This is not a valid email', statusCode: 400 };
   }
   const pattern = /^[a-zA-Z\s\-']+$/;
   if (!pattern.test(nameFirst)) {
-    throw HTTPError(400, 'This is not a valid first name');
+    return { error: 'This is not a valid first name', statusCode: 400 };
   }
   const firstNameLength = nameFirst.length;
   if ((firstNameLength < 2) || (firstNameLength > 20)) {
-    throw HTTPError(400, 'This is not a valid first name');
+    return { error: 'This is not a valid first name', statusCode: 400 };
   }
   if (!pattern.test(nameLast)) {
-    throw HTTPError(400, 'This is not a valid last name');
+    return { error: 'This is not a valid last name', statusCode: 400 };
   }
   const lastNameLength = nameLast.length;
   if ((lastNameLength < 2) || (lastNameLength > 20)) {
-    throw HTTPError(400, 'This is not a valid last name');
+    return { error: 'This is not a valid last name', statusCode: 400 };
   }
   const passwordLength = password.length;
   if (passwordLength < 8) {
-    throw HTTPError(400, 'This is not a valid password');
+    return { error: 'This is not a valid password', statusCode: 400 };
   }
   const letterCheck = /[a-zA-Z]/;
   const numberCheck = /\d/;
   if (!(letterCheck.test(password) && numberCheck.test(password))) {
-    throw HTTPError(400, 'This is not a valid password');
+    return { error: 'This is not a valid password', statusCode: 400 };
   }
   const userId = data.users.length;
   const user: User = {
@@ -150,12 +151,12 @@ export const adminAuthLogin = (email: string, password: string): adminAuthLoginR
   const data = getData();
   const user = data.users.find(user => user.email === email);
   if (!user) {
-    throw HTTPError(400, `The given email ${email} does not exist`);
+    return { error: `The given email ${email} does not exist`, statusCode: 400 };
   }
   if (user.password !== password) {
     user.numFailedPasswordsSinceLastLogin += 1;
     setData(data);
-    throw HTTPError(400, 'Incorrect password');
+    return { error: 'Incorrect password', statusCode: 400 };
   } else {
     user.numFailedPasswordsSinceLastLogin = 0;
   }
@@ -179,7 +180,7 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 400 };
   }
 
   return {
@@ -207,7 +208,7 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
   user.tokens = user.tokens.filter(t => t.sessionId !== token);
 
@@ -229,29 +230,29 @@ export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: 
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
   if (data.users.some((u: User) => (u.email === email && u.userId !== user.userId))) {
-    throw HTTPError(400, 'Email already in use');
+    return { error: 'Email already in use', statusCode: 400 };
   }
   if (!validator.isEmail(email)) {
-    throw HTTPError(400, 'This is not a valid email');
+    return { error: 'This is not a valid email', statusCode: 400 };
   }
   const pattern = /^[a-zA-Z\s\-']+$/;
   if (!pattern.test(nameFirst)) {
-    throw HTTPError(400, 'This is not a valid first name');
+    return { error: 'This is not a valid first name', statusCode: 400 };
   }
   const firstNameLength = nameFirst.length;
   if ((firstNameLength < 2) || (firstNameLength > 20)) {
-    throw HTTPError(400, 'This is not a valid first name');
+    return { error: 'This is not a valid first name', statusCode: 400 };
   }
   if (!pattern.test(nameLast)) {
-    throw HTTPError(400, 'This is not a valid first name');
+    return { error: 'This is not a valid first name', statusCode: 400 };
   }
   const lastNameLength = nameLast.length;
   if ((lastNameLength < 2) || (lastNameLength > 20)) {
-    throw HTTPError(400, 'This is not a valid last name');
+    return { error: 'This is not a valid last name', statusCode: 400 };
   }
 
   user.email = email;
@@ -274,25 +275,25 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
   if (user.password !== oldPassword) {
-    throw HTTPError(400, 'Incorrect old password');
+    return { error: 'Incorrect old password', statusCode: 400 };
   }
   if (oldPassword === newPassword) {
-    throw HTTPError(400, 'New password must be different from current password');
+    return { error: 'New password must be different from current password', statusCode: 400 };
   }
   if (user.oldPasswords.some((item) => item === newPassword)) {
-    throw HTTPError(400, 'New password must be different from a password used before');
+    return { error: 'New password must be different from a password used before', statusCode: 400 };
   }
   const passwordLength = newPassword.length;
   if (passwordLength < 8) {
-    throw HTTPError(400, 'This is not a valid password');
+    return { error: 'This is not a valid password', statusCode: 400 };
   }
   const letterCheck = /[a-zA-Z]/;
   const numberCheck = /\d/;
   if (!(letterCheck.test(newPassword) && numberCheck.test(newPassword))) {
-    throw HTTPError(400, 'This is not a valid password');
+    return { error: 'This is not a valid password', statusCode: 400 };
   }
 
   user.password = newPassword;

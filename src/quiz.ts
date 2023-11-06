@@ -1,4 +1,4 @@
-import HTTPError from 'http-errors';
+//import HTTPError from 'http-errors';
 import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours } from './dataStore';
 import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour } from './other';
 
@@ -88,11 +88,11 @@ export const adminQuizList = (token: string): adminQuizListReturn | ErrorObject 
   const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
-    throw HTTPError(401, `The token ${token} is invalid!`);
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   }
   const user = data.users.find((user) => user.userId === validToken.userId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
   const quizzes: quizObject[] = [];
@@ -126,38 +126,37 @@ export const adminQuizCreate = (token: string, name: string, description: string
   const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
-    throw HTTPError(401, `The token ${token} is invalid!`);
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   }
   // Checks for invalid characters
   if (!isAlphanumericWithSpaces(name)) {
-    throw HTTPError(400, `The quiz name ${name} contains invalid characters.`);
+    return { error: `The quiz name ${name} contains invalid characters.`, statusCode: 400 };
   }
   // Check if name is less than 3 characters long, or more than 30
   // characters long
   if (name.length < 3 || name.length > 30) {
-    throw HTTPError(400, `The quiz name ${name} is of invalid length.`);
+    return { error: `The quiz name ${name} is of invalid length.`, statusCode: 400 };
   }
   // Check if the quiz name is already used by the current logged in user for
   // another quiz
   const user = data.users.find((user) => user.userId === validToken.userId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
-
   for (const ownedQuizId of user.ownedQuizzes) {
     const ownedQuiz = data.quizzes.find((quizObject) => quizObject.quizId === ownedQuizId);
     if (!ownedQuiz) {
-      throw HTTPError(400, 'There are no quizzes!');
+      return { error: 'There are no quizzes!', statusCode: 400 };
     }
 
     if (ownedQuiz.name === name) {
-      throw HTTPError(400, `The name ${name} is already used by another quiz!`);
+      return { error: `The name ${name} is already used by another quiz!`, statusCode: 400 };
     }
   }
 
   // Check if description length is more than 100 characters
   if (description.length > 100) {
-    throw HTTPError(400, 'Description is more than 100 characters.');
+    return { error: 'Description is more than 100 characters.', statusCode: 400 };
   }
 
   // Add new quiz
@@ -199,24 +198,24 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
   const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
-    throw HTTPError(401, `The token ${token} is invalid!`);
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   }
   // Check whether quiz with quizId exists
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
-    throw HTTPError(400, `The quiz Id ${quizId} is invalid!`);
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   }
   const user = data.users.find((user) => user.userId === validToken.userId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
   // Check whether quiz with quizId is owned by user with authUserId
   if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    throw HTTPError(403, `This quiz ${quizId} is not owned by this User!`);
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
   // Find quiz with the inputted Id
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
-    throw HTTPError(400, 'This is not a valid quizId');
+    return { error: 'This is not a valid quizId', statusCode: 400 };
   }
   const quizInfo = {
     quizId: quiz.quizId,
@@ -245,21 +244,21 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
   const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
-    throw HTTPError(401, `The token ${token} is invalid!`);
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   }
   // Error, no quizId found in quizzes
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
   if (quizIndex === -1) {
-    throw HTTPError(400, `Given quizId ${quizId} is not valid`);
+    return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
   }
   // Error, userId does not own quizId
   const user = data.users.find(user => user.userId === validToken.userId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
   const ownQuizIndex = user.ownedQuizzes.findIndex(ownQuiz => ownQuiz === quizId);
   if (ownQuizIndex === -1) {
-    throw HTTPError(403, `Given authUserId ${user.userId} does not own quiz ${quizId}`);
+    return { error: `Given authUserId ${user.userId} does not own quiz ${quizId}`, statusCode: 403 };
   }
   // Success, remove quiz then return array
   user.ownedQuizzes.splice(ownQuizIndex, 1);
@@ -268,7 +267,7 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
   // Also need to update the timeLastEdited on the quiz
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
-    throw HTTPError(400, `Given quizId ${quizId} is not valid`);
+    return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
   }
 
   const currentTime = new Date();
@@ -299,43 +298,43 @@ export const adminQuizNameUpdate = (token: string, quizId: number, name: string)
   const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
-    throw HTTPError(401, `The token ${token} is invalid!`);
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   }
   const user = data.users.find((user) => user.userId === validToken.userId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
-    throw HTTPError(400, `The quiz Id ${quizId} is invalid!`);
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   }
   if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    throw HTTPError(403, `This quiz ${quizId} is not owned by this User!`);
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
   if (!isAlphanumericWithSpaces(name)) {
-    throw HTTPError(400, `The name ${name} contains invalid characters`);
+    return { error: `The name ${name} contains invalid characters`, statusCode: 400 };
   }
   if (name.length < 3) {
-    throw HTTPError(400, `The name ${name} is too short (>2).`);
+    return { error: `The name ${name} is too short (>2).`, statusCode: 400 };
   }
   if (name.length > 30) {
-    throw HTTPError(400, `The name ${name} is too long (<30).`);
+    return { error: `The name ${name} is too long (<30).`, statusCode: 400 };
   }
 
   for (const ownedQuizId of user.ownedQuizzes) {
     const ownedQuiz = data.quizzes.find((quizObject) => quizObject.quizId === ownedQuizId);
     if (!ownedQuiz) {
-      throw HTTPError(400, 'There are no quizzes!');
+      return { error: 'There are no quizzes!', statusCode: 400 };
     }
 
     if (ownedQuiz.name === name) {
-      throw HTTPError(400, `The name ${name} is already used by another quiz!`);
+      return { error: `The name ${name} is already used by another quiz!`, statusCode: 400 };
     }
   }
 
   // goto the quiz object with matching id, and change name.
   const editedQuiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!editedQuiz) {
-    throw HTTPError(400, `The quiz Id ${quizId} is invalid!`);
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   }
   editedQuiz.name = name;
   // Get and update the time edited
@@ -374,26 +373,26 @@ export const adminQuizDescriptionUpdate = (token: string, quizId: number, descri
   const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
-    throw HTTPError(401, `The token ${token} is invalid!`);
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   }
   const user = data.users.find((user) => user.userId === validToken.userId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
-    throw HTTPError(400, `The quiz Id ${quizId} is invalid!`);
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   }
   if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    throw HTTPError(403, `This quiz ${quizId} is not owned by this User!`);
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
   if (description.length > 100) {
-    throw HTTPError(400, 'Description is too long (<100)!');
+    return { error: 'Description is too long (<100)!', statusCode: 400 };
   }
 
   // goto the quiz object with matching id, and change description.
   const editedQuiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!editedQuiz) {
-    throw HTTPError(400, `The quiz Id ${quizId} is invalid!`);
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   }
 
   editedQuiz.description = description;
@@ -420,11 +419,11 @@ export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObjec
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
   if (!validToken) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
   const user = data.users.find((user) => user.userId === validToken.userId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
   const quizzes: quizObject[] = [];
   // Iterate through users quizzes and add their information to an array
@@ -455,37 +454,33 @@ export const adminQuizRestore = (token: string, quizId: number): Record<string, 
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
   if (!validToken) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
   const user = data.users.find((user) => user.userId === validToken.userId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
-
   // Check whether quiz with quizId exists in the trash
   if (!user.trash.some(quiz => quiz === quizId) && !user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    throw HTTPError(403, `This quiz ${quizId} is not owned by this User!`);
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
   // get the quizId and compare with the userId
-
   // Check if we can find quiz with quizId is owned quizzes
   if (!user.trash.some(quiz => quiz === quizId)) {
-    throw HTTPError(400, 'Quiz is not in users trash');
+    return { error: 'Quiz is not in users trash', statusCode: 400 };
   }
-
   // Find the quiz object with the inputted Id
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
   if (!quiz) {
-    throw HTTPError(400, 'This is not a valid quizId');
+    return { error: 'This is not a valid quizId', statusCode: 400 };
   }
   // Check if the name of the restored quiz is already used by another active quiz
   for (const existingQuiz of data.quizzes) {
     if (existingQuiz.name === quiz.name && existingQuiz.quizId !== quizId) {
-      throw HTTPError(400, `The name ${quiz.name} is already used by another quiz!`);
+      return { error: `The name ${quiz.name} is already used by another quiz!`, statusCode: 400 };
     }
   }
-
   // Restore the quiz by removing it from the trash and updating ownership
   user.trash = user.trash.filter((trashQuizId) => trashQuizId !== quizId);
   user.ownedQuizzes.push(quizId);
@@ -513,28 +508,25 @@ export const adminQuizTrashRemove = (token: string, quizIds: number[]): Record<s
   const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
-    throw HTTPError(401, `The token ${token} is invalid!`);
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   }
   const user = data.users.find((user) => user.userId === validToken.userId);
   // Check whether user exists and is valid
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
-
   // Checking if all quizIds are owned by this user.
   for (const quizId of quizIds) {
     if (!user.trash.some(quiz => quiz === quizId) && !user.ownedQuizzes.some(quiz => quiz === quizId)) {
-      throw HTTPError(403, `This quiz ${quizId} is not owned by this User!`);
+      return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
     }
   }
-
   // Checking if the quiz is in the users trash
   for (const quizId of quizIds) {
     if (!user.trash.some(quiz => quiz === quizId)) {
-      throw HTTPError(400, 'Quiz is not in users trash');
+      return { error: 'Quiz is not in users trash', statusCode: 400 };
     }
   }
-
   // Remove all the questions and answers in every quiz (after all quizIds
   // have been checked to be valid).
   let newAnswers;
@@ -542,7 +534,7 @@ export const adminQuizTrashRemove = (token: string, quizIds: number[]): Record<s
   for (const quizId of quizIds) {
     const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
     if (!quiz) {
-      throw HTTPError(400, `Given quizId ${quizId} is not valid`);
+      return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
     }
     if (quiz.questions.length > 0) {
       for (const question of quiz.questions) {
@@ -587,43 +579,41 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
   const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
-    throw HTTPError(401, `The token ${token} is invalid!`);
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   }
 
   const user = data.users.find((user) => user.userId === validToken.userId);
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
   if (!quiz) {
-    throw HTTPError(400, `Given quizId ${quizId} is not valid`);
+    return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
   }
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
-    throw HTTPError(400, `The quiz Id ${quizId} is invalid!`);
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   }
   if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    throw HTTPError(403, `This quiz ${quizId} is not owned by this User!`);
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
   // The user that will gain the new quiz
   const userTransfer = data.users.find((user) => user.email === userEmail);
-
   if (!userTransfer) {
-    throw HTTPError(400, 'This email does not exist');
+    return { error: 'This email does not exist', statusCode: 400 };
   }
-
   if (user.email === userEmail) {
-    throw HTTPError(400, `The email ${userEmail} already owns this quiz`);
+    return { error: `The email ${userEmail} already owns this quiz`, statusCode: 400 };
   }
 
   // Check if user with email userEmail has a quiz with the same name as quiz with quizId
   for (const ownedQuizId of userTransfer.ownedQuizzes) {
     const ownedQuiz = data.quizzes.find((quizObject) => quizObject.quizId === ownedQuizId);
     if (!ownedQuiz) {
-      throw HTTPError(400, 'There are no quizzes!');
+      return { error: 'There are no quizzes!', statusCode: 400 };
     }
 
     if (ownedQuiz.name === quiz.name) {
-      throw HTTPError(400, `Target user already has a quiz named ${quiz.name}`);
+      return { error: `Target user already has a quiz named ${quiz.name}`, statusCode: 400 };
     }
   }
   // Remove quizId from token holder
@@ -655,62 +645,59 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
   const validToken = data.tokens.find((item) => item.sessionId === token);
   // Check whether token is valid
   if (!validToken) {
-    throw HTTPError(401, `The token ${token} is invalid!`);
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   }
 
   const user = data.users.find((user) => user.userId === validToken.userId);
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token');
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
   if (!quiz) {
-    throw HTTPError(400, `Given quizId ${quizId} is not valid`);
+    return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
   }
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
-    throw HTTPError(400, `The quiz Id ${quizId} is invalid!`);
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   }
   if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    throw HTTPError(403, `This quiz ${quizId} is not owned by this User!`);
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
   if (questionBody.question.length < 5) {
-    throw HTTPError(400, `The question ${questionBody.question} is too short (>5).`);
+    return { error: `The question ${questionBody.question} is too short (>5).`, statusCode: 400 };
   }
   if (questionBody.question.length > 50) {
-    throw HTTPError(400, `The question ${questionBody.question} is too long (<50).`);
+    return { error: `The question ${questionBody.question} is too long (<50).`, statusCode: 400 };
   }
   if (questionBody.answers.length < 2) {
-    throw HTTPError(400, `The number of answers ${questionBody.answers.length} is too small (>2).`);
+    return { error: `The number of answers ${questionBody.answers.length} is too small (>2).`, statusCode: 400 };
   }
   if (questionBody.answers.length > 6) {
-    throw HTTPError(400, `The number of answers ${questionBody.answers.length} is too large (<6).`);
+    return { error: `The number of answers ${questionBody.answers.length} is too large (<6).`, statusCode: 400 };
   }
   if (questionBody.duration < 0) {
-    throw HTTPError(400, `The duration ${questionBody.duration} is not valid.`);
+    return { error: `The duration ${questionBody.duration} is not valid.`, statusCode: 400 };
   }
 
   let totalQuizDuration = quiz.duration;
   totalQuizDuration += questionBody.duration;
   if (totalQuizDuration > 180) {
-    throw HTTPError(400, `The quiz duration ${totalQuizDuration}s is too long (<180) when adding this question.`);
+    return { error: `The quiz duration ${totalQuizDuration}s is too long (<180) when adding this question.`, statusCode: 400 };
   }
-
   if (questionBody.points > 10) {
-    throw HTTPError(400, `The points ${questionBody.points} awarded are too high (<10).`);
+    return { error: `The points ${questionBody.points} awarded are too high (<10).`, statusCode: 400 };
   }
-
   if (questionBody.points < 1) {
-    throw HTTPError(400, `The points ${questionBody.points} awarded are too low (>1).`);
+    return { error: `The points ${questionBody.points} awarded are too low (>1).`, statusCode: 400 };
   }
 
   // Checks if answer is too long or short, if it has duplicates or if there are no correct answers
   let numCorrectAnswers = 0;
   for (const answer of questionBody.answers) {
     if (answer.answer.length > 30) {
-      throw HTTPError(400, `The answer "${answer.answer}" is too long (<30).`);
+      return { error: `The answer "${answer.answer}" is too long (<30).`, statusCode: 400 };
     }
-
     if (answer.answer.length < 1) {
-      throw HTTPError(400, `The answer "${answer.answer}" is too short (>1).`);
+      return { error: `The answer "${answer.answer}" is too short (>1).`, statusCode: 400 };
     }
     // Find if any answers are duplicates
     const numberOfDuplicates = questionBody.answers.reduce((accumulator: number, currentValue) => {
@@ -721,7 +708,7 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
     }, 0);
 
     if (numberOfDuplicates > 1) {
-      throw HTTPError(400, `The answer "${answer.answer}" has duplicates.`);
+      return { error: `The answer "${answer.answer}" has duplicates.`, statusCode: 400 };
     }
     if (answer.correct) {
       numCorrectAnswers++;
@@ -729,7 +716,7 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
   }
 
   if (numCorrectAnswers < 1) {
-    throw HTTPError(400, 'No answers are correct.');
+    return { error: 'No answers are correct.', statusCode: 400 };
   }
 
   const questionId = generateQuestionId(data.questions);
@@ -791,45 +778,36 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
   if (!validToken) {
-    throw HTTPError(401, 'This is not a valid user token.');
+    return { error: 'This is not a valid user token.', statusCode: 401 };
   }
-
   const user = data.users.find((user) => user.userId === validToken.userId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token.');
+    return { error: 'This is not a valid user token.', statusCode: 401 };
   }
-
   if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    throw HTTPError(403, `This quiz ${quizId} is not owned by this User!`);
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
-
   const validQuestionId = data.questions.find((question) => question.questionId === questionId);
   if (!validQuestionId) {
-    throw HTTPError(400, 'The question Id refers to an invalid question within this quiz.');
+    return { error: 'The question Id refers to an invalid question within this quiz.', statusCode: 400 };
   }
-
   if (!data.quizzes.some(quiz => quiz.quizId === quizId)) {
-    throw HTTPError(400, `The quiz Id ${quizId} is invalid!`);
+    return { error: `The quiz Id ${quizId} is invalid!`, statusCode: 400 };
   }
-
   if (questionBody.question.length < 5) {
-    throw HTTPError(400, 'The question is too short (>5).');
+    return { error: 'The question is too short (>5).', statusCode: 400 };
   }
-
   if (questionBody.question.length > 50) {
-    throw HTTPError(400, 'The question is too long (<50).');
+    return { error: 'The question is too long (<50).', statusCode: 400 };
   }
-
   if (questionBody.answers.length > 6) {
-    throw HTTPError(400, 'The question has too many answers (<6).');
+    return { error: 'The question has too many answers (<6).', statusCode: 400 };
   }
-
   if (questionBody.answers.length < 2) {
-    throw HTTPError(400, 'The question does not have enough answers (>2).');
+    return { error: 'The question does not have enough answers (>2).', statusCode: 400 };
   }
-
   if (questionBody.duration <= 0) {
-    throw HTTPError(400, 'The question duration is not a positive number.');
+    return { error: 'The question duration is not a positive number.', statusCode: 400 };
   }
 
   // Calculating quiz duration with new question duration
@@ -838,25 +816,21 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
   const newQuizDuration = otherQuestionsDuration + questionBody.duration;
 
   if (newQuizDuration > 180) {
-    throw HTTPError(400, 'Quiz duration exceeds 3 minutes.');
+    return { error: 'Quiz duration exceeds 3 minutes.', statusCode: 400 };
   }
-
   if (questionBody.points < 1) {
-    throw HTTPError(400, 'The points are less than 1 (>1).');
+    return { error: 'The points are less than 1 (>1).', statusCode: 400 };
   }
-
   if (questionBody.points > 10) {
-    throw HTTPError(400, 'The points are greater than 10 (<10).');
+    return { error: 'The points are greater than 10 (<10).', statusCode: 400 };
   }
-
   let flag = false;
   for (const index in questionBody.answers) {
     if (questionBody.answers[index].answer.length < 1) {
-      throw HTTPError(400, 'Answer length is less than 1 (>1).');
+      return { error: 'Answer length is less than 1 (>1).', statusCode: 400 };
     }
-
     if (questionBody.answers[index].answer.length > 30) {
-      throw HTTPError(400, 'Answer length is greater than 3 (<30).');
+      return { error: 'Answer length is greater than 3 (<30).', statusCode: 400 };
     }
     // Check for correct answer
     if (questionBody.answers[index].correct) {
@@ -865,14 +839,14 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
   }
 
   if (!flag) {
-    throw HTTPError(401, 'No correct answers.');
+    return { error: 'No correct answers.', statusCode: 401 };
   }
 
   // Check for duplicates
   for (let i = 0; i < questionBody.answers.length; i++) {
     for (let j = i + 1; j < questionBody.answers.length; j++) {
       if (questionBody.answers[i].answer === questionBody.answers[j].answer) {
-        throw HTTPError(400, 'Duplicate answers');
+        return { error: 'Duplicate answers', statusCode: 400 };
       }
     }
   }
@@ -920,36 +894,32 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
   if (!validToken) {
-    throw HTTPError(401, 'This is not a valid user token.');
+    return { error: 'This is not a valid user token.', statusCode: 401 };
   }
-
   const user = data.users.find((user) => user.userId === validToken.userId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token.');
+    return { error: 'This is not a valid user token.', statusCode: 401 };
   }
-
   if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    throw HTTPError(403, `This quiz ${quizId} is not owned by this User!`);
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
-
   const validQuestionId = data.questions.find((id) => id.questionId === questionId && id.quizId === quizId);
   if (!validQuestionId) {
-    throw HTTPError(400, 'This is not a valid question within this quiz.');
+    return { error: 'This is not a valid question within this quiz.', statusCode: 400 };
   }
-
   const currentData = data.quizzes[quizId].questions[questionId];
   const newQuizDuration = data.quizzes[quizId].duration - currentData.duration;
 
   // Find and return object matching questionId
   const question = data.quizzes[quizId].questions.find((question) => question.questionId === questionId);
   if (!question) {
-    throw HTTPError(400, 'This questionId does not exist.');
+    return { error: 'This questionId does not exist.', statusCode: 400 };
   }
   // Find index of the object in the array
   const questionIndex = data.quizzes[quizId].questions.indexOf(question);
   // Remove object at index
   if (questionIndex === -1) {
-    throw HTTPError(400, 'This is not a valid question within this quiz.');
+    return { error: 'This is not a valid question within this quiz.', statusCode: 400 };
   }
   data.quizzes[quizId].questions.splice(questionIndex, 1);
   // Find question token and delete
@@ -975,40 +945,33 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
 export const adminQuizQuestionMove = (quizId: number, questionId: number, token: string, newPosition: number): Record<string, never> | ErrorObject => {
   const data = getData();
   const validToken = data.tokens.find((item) => item.sessionId === token);
-
   if (!validToken) {
-    throw HTTPError(401, 'This is not a valid user token.');
+    return { error: 'This is not a valid user token.', statusCode: 401 };
   }
-
   const user = data.users.find((user) => user.userId === validToken.userId);
-
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token.');
+    return { error: 'This is not a valid user token.', statusCode: 401 };
   }
-
   if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    throw HTTPError(403, `This quiz ${quizId} is not owned by this User!`);
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (!quiz) {
-    throw HTTPError(400, `Given quizId ${quizId} is not valid`);
+    return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
   }
 
   const question = quiz.questions.find((q) => q.questionId === questionId);
-
   if (!question) {
-    throw HTTPError(400, 'The question Id is invalid');
+    return { error: 'The question Id is invalid', statusCode: 400 };
   }
-
   // Check if the new position is within bounds
   if (newPosition < 0 || newPosition >= quiz.questions.length) {
-    throw HTTPError(400, 'Invalid new position');
+    return { error: 'Invalid new position', statusCode: 400 };
   }
-
   // Move the question to the new position
   const currentIndex = quiz.questions.indexOf(question);
   if (currentIndex === newPosition) {
-    throw HTTPError(400, 'newPosition is the position of the current question');
+    return { error: 'newPosition is the position of the current question', statusCode: 400 };
   }
   quiz.questions.splice(currentIndex, 1);
   quiz.questions.splice(newPosition, 0, question);
@@ -1034,29 +997,24 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
 
 export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, token: string): adminQuizQuestionDuplicateReturn | ErrorObject => {
   const data = getData();
-
   const validToken = data.tokens.find((item) => item.sessionId === token);
   if (!validToken) {
-    throw HTTPError(401, `The token ${token} is invalid!`);
+    return { error: `The token ${token} is invalid!`, statusCode: 401 };
   }
-
   const user = data.users.find((user) => user.userId === validToken.userId);
   if (!user) {
-    throw HTTPError(401, 'This is not a valid user token.');
+    return { error: 'This is not a valid user token.', statusCode: 401 };
   }
-
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (!quiz) {
-    throw HTTPError(400, `Given quizId ${quizId} is not valid`);
+    return { error: `Given quizId ${quizId} is not valid`, statusCode: 400 };
   }
-
   const question = quiz.questions.find((question) => question.questionId === questionId);
   if (!question) {
-    throw HTTPError(400, `The question Id ${question} does not refer to a valid quiz!`);
+    return { error: `The question Id ${question} does not refer to a valid quiz!`, statusCode: 400 };
   }
-
   if (!user.ownedQuizzes.some(quiz => quiz === quizId)) {
-    throw HTTPError(403, `This quiz ${quizId} is not owned by this User!`);
+    return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
 
   // Find index of QuizQuestion to duplicate

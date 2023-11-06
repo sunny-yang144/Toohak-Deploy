@@ -6,6 +6,7 @@ import {
 } from '../test-helpers';
 
 import { v4 as uuidv4 } from 'uuid';
+import HTTPError from 'http-errors';
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
@@ -55,6 +56,7 @@ describe('Tests for adminAuthRegister', () => {
     requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const user2 = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     // Another user with the same email
+    expect(user2.body).toThrow(HTTPError[400]);
     expect(user2.body).toStrictEqual({ error: expect.any(String) }); // "This email is already in use"
     expect(user2.statusCode).toStrictEqual(400);
   });
@@ -62,6 +64,7 @@ describe('Tests for adminAuthRegister', () => {
   test('Error when a non-valid email is used', () => {
     // Does not satisfy the validator.isEmail function
     const user = requestAdminAuthRegister('helloworld@VeryLegitEmailscom', validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    expect(user.body).toThrowError(HTTPError[400]);
     expect(user.body).toStrictEqual({ error: expect.any(String) }); // "This is not a valid email"
     expect(user.statusCode).toStrictEqual(400);
   });
