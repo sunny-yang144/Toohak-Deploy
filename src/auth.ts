@@ -13,7 +13,7 @@ import { generateToken, getUserViaToken } from './other';
 import { UserScore, QuestionResult } from './quiz';
 // import { STATUS_CODES } from 'http';
 
-interface ErrorObject {
+export interface ErrorObject {
   error: string;
   statusCode: number;
 }
@@ -26,7 +26,7 @@ interface adminUserDetailsReturn {
     numFailedPasswordsSinceLastLogin: number,
   }
 }
-interface adminAuthRegisterReturn {
+export interface adminAuthRegisterReturn {
   token: string
 }
 interface adminAuthLoginReturn {
