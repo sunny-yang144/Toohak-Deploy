@@ -1,4 +1,4 @@
-//import HTTPError from 'http-errors';
+// import HTTPError from 'http-errors';
 import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours } from './dataStore';
 import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken } from './other';
 

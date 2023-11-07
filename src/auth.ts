@@ -1,5 +1,5 @@
 import validator from 'validator';
-//import HTTPError from 'http-errors';
+// import HTTPError from 'http-errors';
 import {
   colours,
   getData,
@@ -180,7 +180,7 @@ export const adminUserDetails = (token: string): adminUserDetailsReturn | ErrorO
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
-    return { error: 'This is not a valid user token', statusCode: 400 };
+    return { error: 'This is not a valid user token', statusCode: 401 };
   }
 
   return {
