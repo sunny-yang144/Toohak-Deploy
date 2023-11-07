@@ -389,7 +389,6 @@ export function requestAdminAuthLogoutV2 (token: string) {
   };
 }
 export function requestAdminUserDetailsV2 (token: string) {
-  throw HTTPError(401, 'Bruhbruh');
   const res = request(
     'GET',
     SERVER_URL + '/v2/admin/user/details',
@@ -400,8 +399,12 @@ export function requestAdminUserDetailsV2 (token: string) {
       qs: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminUserDetailsUpdateV2 (token: string, email: string, nameFirst: string, nameLast: string) {

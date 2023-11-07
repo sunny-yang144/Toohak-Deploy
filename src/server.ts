@@ -399,10 +399,9 @@ app.post('/v2/admin/auth/logout', (req: Request, res: Response) => {
   res.json(response);
 });
 
-app.get('v2/admin/user/details', (req: Request, res: Response) => {
+app.get('/v2/admin/user/details', (req: Request, res: Response) => {
   const token = req.headers.token as string;
-  const { email, nameFirst, nameLast } = req.body;
-  const response = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
+  const response = adminUserDetails(token);
   if ('error' in response) {
     return res.status(response.statusCode).json({
       error: response.error
