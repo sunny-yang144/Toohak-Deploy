@@ -30,7 +30,7 @@ import { expect } from '@jest/globals';
 import { v4 as uuidv4 } from 'uuid';
 import HTTPError from 'http-errors';
 
-// import { colours } from '../../dataStore';
+import { colours } from '../../dataStore';
 
 import { QuestionBody } from '../../dataStore';
 
@@ -210,7 +210,7 @@ describe.skip('Tests for getNewSessionQuiz', () => {
   };
 
   let question: {
-    body: {quizId: number},
+    body: {questionId: number},
   };
 
   beforeEach(() => {
@@ -234,11 +234,35 @@ describe.skip('Tests for getNewSessionQuiz', () => {
           timeLastEdited: expect.any(Number),
           description: validDetails.QUIZDESCRIPTION,
           numQuestions: 0,
-          questions: [],
-          duration: 0,
+          questions: [
+            {
+              questionId: question.body.questionId,
+              question: 'Who is the Monarch of England?',
+              duration: 4,
+              points: 5,
+              answers: [
+                {
+                  answerId: expect.any(Number),
+                  answer: 'Prince Charles',
+                  colour: expect.any(String),
+                  correct: true
+                },
+                {
+                  answerId: expect.any(Number),
+                  answer: 'Queen Elizabeth',
+                  colour: expect.any(String),
+                  correct: true
+                }
+              ]
+            }
+          ],
+          duration: 4,
         }
       }
     );
+    const colour1 = response.body.questions[0].answers[0].colour;
+    const coloursArray = Object.values(colours);
+    expect(coloursArray).toContain(colour1);
   });
 
   test('AutoStartNum is greater than 50', () => {
@@ -255,7 +279,7 @@ describe.skip('Tests for getNewSessionQuiz', () => {
   });
 
   test('Error when no questions are in quiz', () => {
-    requestAdminQuizQuestionDeleteV2(quiz.body.quizId, question.body.quizId, user.body.token);
+    requestAdminQuizQuestionDeleteV2(quiz.body.quizId, question.body.questionId, user.body.token);
     const response = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     expect(response).toThrow(HTTPError[400]);
   });
@@ -269,6 +293,100 @@ describe.skip('Tests for getNewSessionQuiz', () => {
   test('Token is not the owner of the quiz', () => {
     const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     const response = requestNewSessionQuiz(quiz.body.quizId, user2.body.token, 3);
+    expect(response).toThrow(HTTPError[403]);
+  });
+});
+
+describe.skip('Tests for getSessionStatus', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+
+  let question: {
+    body: {questionId: number},
+  };
+
+  let session: {
+    body: {sessionId: number},
+  };
+
+  beforeEach(() => {
+    user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+  });
+
+  test('Successful sees new session', () => {
+    const response = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
+    expect(response).toStrictEqual(
+      {
+        state: 'LOBBY',
+        atQuestion: 0,
+        players: [],
+        metadata: {
+          quizId: quiz.body.quizId,
+          name: validDetails.QUIZNAME,
+          timeCreated: expect.any(Number),
+          timeLastEdited: expect.any(Number),
+          description: validDetails.QUIZDESCRIPTION,
+          numQuestions: 0,
+          questions: [
+            {
+              questionId: question.body.questionId,
+              question: 'Who is the Monarch of England?',
+              duration: 4,
+              points: 5,
+              answers: [
+                {
+                  answerId: expect.any(Number),
+                  answer: 'Prince Charles',
+                  colour: expect.any(String),
+                  correct: true
+                },
+                {
+                  answerId: expect.any(Number),
+                  answer: 'Queen Elizabeth',
+                  colour: expect.any(String),
+                  correct: true
+                }
+              ]
+            }
+          ],
+          duration: 4,
+        }
+      }
+    );
+    const colour1 = response.body.questions[0].answers[0].colour;
+    const coloursArray = Object.values(colours);
+    expect(coloursArray).toContain(colour1);
+  });
+
+  test('SessionId does not refer to this quiz ', () => {
+    const quiz2 = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
+    const response = requestGetSessionStatus(quiz2.body.quizId, session.body.sessionId, user.body.token);
+    expect(response).toThrow(HTTPError[400]);
+  });
+
+  test('SessionId does not refer to this quiz ', () => {
+    const quiz2 = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
+    const response = requestGetSessionStatus(quiz2.body.quizId, session.body.sessionId, user.body.token);
+    expect(response).toThrow(HTTPError[400]);
+  });
+
+  test('Token is empty or invalid', () => {
+    const invalidId = uuidv4();
+    const response = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, invalidId);
+    expect(response).toThrow(HTTPError[401]);
+  });
+
+  test('Token is not the owner of the quiz', () => {
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const response = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user2.body.token);
     expect(response).toThrow(HTTPError[403]);
   });
 });
