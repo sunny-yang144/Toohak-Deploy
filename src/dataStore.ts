@@ -13,6 +13,22 @@ export enum colours {
   ORANGE = 'orange',
 }
 
+export type states =
+  'LOBBY' |
+  'QUESTION_COUNTDOWN' |
+  'QUESTION_CLOSE' |
+  'QUESTION_OPEN' |
+  'ANSWER_SHOW' |
+  'FINAL_RESULTS' |
+  'END';
+
+export type actions =
+  'NEXT_QUESTION' |
+  'SKIP_COUNTDOWN' |
+  'GO_TO_ANSWER' |
+  'GO_TO_FINAL_RESULTS' |
+  'END';
+
 export interface Token {
   sessionId: string;
   userId: number; // Associate a user from a inputted token.
@@ -54,6 +70,12 @@ export interface Question {
   points: number;
   answers: Answer[];
 }
+
+export interface Player {
+  playerId: number;
+  name: string;
+  score: number;
+}
 export interface Quiz {
   quizId: number;
   name: string;
@@ -65,6 +87,22 @@ export interface Quiz {
   duration: number;
   thumbnailUrl?: string;
 }
+
+export interface SessionQuestionResults {
+  questionId: number;
+  playersCorrectList: string[];
+  AnswersTimes: number[];
+}
+
+export interface Session {
+  sessionId: number;
+  quizId: number;
+  players: Player[];
+  atQuestion: number;
+  state: states;
+  questionResults: SessionQuestionResults[];
+}
+
 export interface AnswerBody {
   answer: string;
   correct: boolean;
@@ -92,6 +130,7 @@ export interface DataStore {
   tokens: Token[]; // Valid tokens, allows server to search existing tokens.
   questions: QuestionToken[]; // Easy identifiers of question, not to be confused
   answers: AnswerToken[]; // with token.
+  sessions: Session[];
 }
 
 //
@@ -108,6 +147,7 @@ let data: DataStore = {
   tokens: [],
   questions: [],
   answers: [],
+  sessions: [],
 };
 
 // Converts data into JSON and writes it into the dataStorage file

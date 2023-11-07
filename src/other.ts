@@ -8,6 +8,7 @@ export function clear (): Record<string, never> {
     tokens: [],
     questions: [],
     answers: [],
+    sessions: [],
   });
   return {};
 }
