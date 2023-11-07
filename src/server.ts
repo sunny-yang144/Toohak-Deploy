@@ -1,4 +1,5 @@
 import express, { json, Request, Response } from 'express';
+import HTTPError from 'http-errors';
 import { echo } from './newecho';
 import morgan from 'morgan';
 import config from './config.json';
@@ -388,93 +389,153 @@ app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request,
 /// /////////////////////////////////////////////////////////////////////////////////////
 
 app.post('/v2/admin/auth/logout', (req: Request, res: Response) => {
-  const token = req.headers.token as string;
-  res.json(adminAuthLogout(token));
+  const { token } = req.body;
+  const response = adminAuthLogout(token);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.get('v2/admin/user/details', (req: Request, res: Response) => {
-  const token = req.headers.token as string;
-  res.json(adminUserDetails(token));
+  const { token, email, nameFirst, nameLast } = req.body;
+  const response = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.put('/v2/admin/user/details', (req: Request, res: Response) => {
   const token = req.headers.token as string;
   const { email, nameFirst, nameLast } = req.body;
-  res.json(adminUserDetailsUpdate(token, email, nameFirst, nameLast));
+  const response = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.put('/v2/admin/user/password', (req: Request, res: Response) => {
   const token = req.headers.token as string;
   const { oldPassword, newPassword } = req.body;
-  res.json(adminUserPasswordUpdate(token, oldPassword, newPassword));
+  const response = adminUserPasswordUpdate(token, oldPassword, newPassword);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.get('/v2/admin/quiz/list', (req: Request, res: Response) => {
   const token = req.headers.token as string;
-  res.json(adminQuizList(token));
+  const response = adminQuizList(token);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.post('/v2/admin/quiz', (req: Request, res: Response) => {
   const token = req.headers.token as string;
   const { name, description } = req.body;
-  res.json(adminQuizCreate(token, name, description));
+  const response = adminQuizCreate(token, name, description);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.delete('/v2/admin/quiz/:quizid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const token = req.headers.token as string;
-  res.json(adminQuizRemove(token, quizId));
+  const response = adminQuizRemove(token, quizId);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.get('/v2/admin/quiz/:quizid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const token = req.headers.token as string;
-  res.json(adminQuizInfo(token, quizId));
+  const response = adminQuizInfo(token, quizId);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.put('/v2/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const token = req.headers.token as string;
   const { name } = req.body;
-  res.json(adminQuizNameUpdate(token, quizId, name));
+  const response = adminQuizNameUpdate(token, quizId, name);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.put('/v2/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   const token = req.headers.token as string;
   const quizId = parseInt(req.params.quizid);
   const { description } = req.body;
-  res.json(adminQuizDescriptionUpdate(token, quizId, description));
+  const response = adminQuizDescriptionUpdate(token, quizId, description);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.get('/v2/admin/quiz/trash', (req: Request, res: Response) => {
   const token = req.headers.token as string;
-  res.json(adminQuizTrash(token));
+  const response = adminQuizTrash(token);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.post('/v2/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const token = req.headers.token as string;
-  res.json(adminQuizRestore(token, quizId));
+  const response = adminQuizRestore(token, quizId);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.delete('/v2/admin/quiz/trash/empty', (req: Request, res: Response) => {
   const token = req.headers.token as string;
   const quizIds = JSON.parse(req.query.quizIds as string) as number[];
-  res.json(adminQuizTrashRemove(token, quizIds));
+  const response = adminQuizTrashRemove(token, quizIds);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.post('/v2/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const token = req.headers.token as string;
   const { userEmail } = req.body;
-  res.json(adminQuizTransfer(quizId, token, userEmail));
+  const response = adminQuizTransfer(quizId, token, userEmail);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.post('/v2/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const token = req.headers.token as string;
   const { questionBody } = req.body;
-  res.json(adminQuizQuestionCreate(quizId, token, questionBody));
+  const response = adminQuizQuestionCreate(quizId, token, questionBody);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.put('/v2/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
@@ -482,14 +543,22 @@ app.put('/v2/admin/quiz/:quizid/question/:questionid', (req: Request, res: Respo
   const questionId = parseInt(req.params.questionid);
   const token = req.headers.token as string;
   const { questionBody } = req.body;
-  res.json(adminQuizQuestionUpdate(quizId, questionId, token, questionBody));
+  const response = adminQuizQuestionUpdate(quizId, questionId, token, questionBody);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.delete('/v2/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const questionId = parseInt(req.params.questionid);
   const token = req.headers.token as string;
-  res.json(adminQuizQuestionDelete(quizId, questionId, token));
+  const response = adminQuizQuestionDelete(quizId, questionId, token);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.put('/v2/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
@@ -497,14 +566,22 @@ app.put('/v2/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: 
   const questionId = parseInt(req.params.questionid);
   const token = req.headers.token as string;
   const { newPosition } = req.body;
-  res.json(adminQuizQuestionMove(quizId, questionId, token, newPosition));
+  const response = adminQuizQuestionMove(quizId, questionId, token, newPosition);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const questionId = parseInt(req.params.questionid);
   const token = req.headers.token as string;
-  res.json(adminQuizQuestionDuplicate(quizId, questionId, token));
+  const response = adminQuizQuestionDuplicate(quizId, questionId, token);
+  if ('error' in response) {
+    throw HTTPError(response.statusCode, response.error);
+  }
+  res.json(response);
 });
 
 /// /////////////////////////////////////////////////////////////////////////////////////

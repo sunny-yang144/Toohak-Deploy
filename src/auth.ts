@@ -1,4 +1,5 @@
 import validator from 'validator';
+// import HTTPError from 'http-errors';
 import {
   colours,
   getData,
@@ -10,6 +11,7 @@ import {
 } from './dataStore';
 import { generateToken, getUserViaToken } from './other';
 import { UserScore, QuestionResult } from './quiz';
+// import { STATUS_CODES } from 'http';
 
 interface ErrorObject {
   error: string;
@@ -246,7 +248,7 @@ export const adminUserDetailsUpdate = (token: string, email: string, nameFirst: 
     return { error: 'This is not a valid first name', statusCode: 400 };
   }
   if (!pattern.test(nameLast)) {
-    return { error: 'This is not a valid last name', statusCode: 400 };
+    return { error: 'This is not a valid first name', statusCode: 400 };
   }
   const lastNameLength = nameLast.length;
   if ((lastNameLength < 2) || (lastNameLength > 20)) {
@@ -275,7 +277,6 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
-
   if (user.password !== oldPassword) {
     return { error: 'Incorrect old password', statusCode: 400 };
   }
@@ -308,12 +309,15 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
 // """""" MAYBE THIS SHOULD BE MOVED INTO a new folder such as players.ts """""" //
 
 export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoinReturn | ErrorObject => {
+  // throw HTTPError(400, 'Name of user entered is not unique');
+  // throw HTTPError(400, 'Session is not in lobby state');
   return {
     playerId: 5546
   };
 };
 
 export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
   return {
     state: 'LOBBY',
     numQuestions: 1,
@@ -322,6 +326,11 @@ export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn | E
 };
 
 export const currentQuestionInfoPlayer = (playerId: number, questionPosition: number): currentQuestionInfoPlayerReturn | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
+  // throw HTTPError(400, 'The question position is invalid for the session this player is in');
+  // throw HTTPError(400, 'The session is currently not on this question');
+  // throw HTTPError(400, 'The session is in lobby state');
+  // throw HTTPError(400, 'The session is in end state');
   return {
     questionId: 5546,
     question: 'Who is the Monarch of England?',
@@ -339,10 +348,21 @@ export const currentQuestionInfoPlayer = (playerId: number, questionPosition: nu
 };
 
 export const playerAnswers = (answerIds: number[], playerId: number, questionPosition: number): Record<string, never> | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
+  // throw HTTPError(400, 'The question position is invalid for the session this player is in');
+  // throw HTTPError(400, 'The session is not in QUESTION_OPEN state');
+  // throw HTTPError(400, 'The session is not up to this question yet');
+  // throw HTTPError(400, 'The answer IDs are invalid for this particular question');
+  // throw HTTPError(400, 'Duplicate answer IDs provided');
+  // throw HTTPError(400, 'Less than 1 answer ID was submitted');
   return {};
 };
 
 export const questionResults = (playerId: number, questionPostion: number): questionResultsReturn | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
+  // throw HTTPError(400, 'The question position is invalid for the session this player is in');
+  // throw HTTPError(400, 'The session is not in ANSWER_SHOW state');
+  // throw HTTPError(400, 'The session is not up to this question yet');
   return {
     questionId: 5546,
     playersCorrectList: [
@@ -354,6 +374,8 @@ export const questionResults = (playerId: number, questionPostion: number): ques
 };
 
 export const finalResults = (playerId: number): finalResultsReturn | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
+  // throw HTTPError(400, 'The session is not in FINAL_RESULTS state');
   return {
     usersRankedByScore: [
       {
@@ -375,6 +397,7 @@ export const finalResults = (playerId: number): finalResultsReturn | ErrorObject
 };
 
 export const allChatMessages = (playerId: number): allChatMessagesReturn | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
   return {
     messages: [
       {
@@ -388,5 +411,8 @@ export const allChatMessages = (playerId: number): allChatMessagesReturn | Error
 };
 
 export const sendChatMessages = (playerId: number, message: MessageBody): Record<string, never> | ErrorObject => {
+  // throw HTTPError(400, 'The player ID does not exist');
+  // throw HTTPError(400, 'Message body is less than 1 character');
+  // throw HTTPError(400, 'Message body is greater than 100 characters');
   return {};
 };
