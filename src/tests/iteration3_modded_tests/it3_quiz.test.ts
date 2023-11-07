@@ -272,3 +272,88 @@ describe.skip('Tests for getNewSessionQuiz', () => {
     expect(response).toThrow(HTTPError[403]);
   });
 });
+
+
+describe('Tests for updateSessionState', () => {
+  test('should transition from LOBBY to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
+    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
+    const session = createSession(1, players);
+    const updatedSession = transitionSessionState(session.sessionId, 'NEXT_QUESTION');
+    expect(updatedSession!.state).toBe('QUESTION_COUNTDOWN');
+  });
+
+  test('should transition from QUESTION_COUNTDOWN to QUESTION_OPEN on SKIP_COUNTDOWN', () => {
+    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
+    const session = createSession(1, players);
+    session.state = 'QUESTION_COUNTDOWN';
+    const updatedSession = transitionSessionState(session.sessionId, 'SKIP_COUNTDOWN');
+    expect(updatedSession!.state).toBe('QUESTION_OPEN');
+  });
+
+  test('should transition from QUESTION_OPEN to ANSWER_SHOW on GO_TO_ANSWER', () => {
+    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
+    const session = createSession(1, players);
+    session.state = 'QUESTION_OPEN';
+    const updatedSession = transitionSessionState(session.sessionId, 'GO_TO_ANSWER');
+    expect(updatedSession!.state).toBe('ANSWER_SHOW');
+  });
+
+  test('should transition from ANSWER_SHOW to QUESTION_COUNTDOWN on NEXT_QUESTION (if more questions exist)', () => {
+    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
+    const session = createSession(2, players);
+    session.state = 'ANSWER_SHOW';
+    session.atQuestion = 0;
+    const updatedSession = transitionSessionState(session.sessionId, 'NEXT_QUESTION');
+    expect(updatedSession!.state).toBe('QUESTION_COUNTDOWN');
+  });
+
+  test('should transition from ANSWER_SHOW to FINAL_RESULTS on NEXT_QUESTION (if no more questions exist)', () => {
+    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
+    const session = createSession(1, players);
+    session.state = 'ANSWER_SHOW';
+    session.atQuestion = 0;
+    const updatedSession = transitionSessionState(session.sessionId, 'NEXT_QUESTION');
+    expect(updatedSession!.state).toBe('FINAL_RESULTS');
+  });
+
+  test('should transition from FINAL_RESULTS to END on GO_TO_FINAL_RESULTS', () => {
+    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
+    const session = createSession(1, players);
+    session.state = 'FINAL_RESULTS';
+    const updatedSession = transitionSessionState(session.sessionId, 'GO_TO_FINAL_RESULTS');
+    expect(updatedSession!.state).toBe('END');
+  });
+
+  test('should not transition from LOBBY on GO_TO_ANSWER', () => {
+    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
+    const session = createSession(1, players);
+    session.state = 'LOBBY';
+    const updatedSession = transitionSessionState(session.sessionId, 'GO_TO_ANSWER');
+    expect(updatedSession!.state).toBe('LOBBY');
+  });
+
+  test('should not transition from LOBBY on SKIP_COUNTDOWN', () => {
+    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
+    const session = createSession(1, players);
+    session.state = 'LOBBY';
+    const updatedSession = transitionSessionState(session.sessionId, 'SKIP_COUNTDOWN');
+    expect(updatedSession!.state).toBe('LOBBY');
+  });
+
+  test('should not transition from QUESTION_OPEN on NEXT_QUESTION', () => {
+    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
+    const session = createSession(1, players);
+    session.state = 'QUESTION_OPEN';
+    const updatedSession = transitionSessionState(session.sessionId, 'NEXT_QUESTION');
+    expect(updatedSession!.state).toBe('QUESTION_OPEN');
+  });
+
+  test('should not transition from FINAL_RESULTS on NEXT_QUESTION', () => {
+    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
+    const session = createSession(1, players);
+    session.state = 'FINAL_RESULTS';
+    const updatedSession = transitionSessionState(session.sessionId, 'NEXT_QUESTION');
+    expect(updatedSession!.state).toBe('FINAL_RESULTS');
+  });
+});
+
