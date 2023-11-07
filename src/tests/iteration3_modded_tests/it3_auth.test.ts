@@ -59,7 +59,7 @@ describe.skip('Tests for adminAuthLogout', () => {
 });
 
 describe.skip('Tests for adminUserDetailsV2', () => {
-  let user: { 
+  let user: {
     body: { token: string },
     statusCode: number,
   };
@@ -67,16 +67,16 @@ describe.skip('Tests for adminUserDetailsV2', () => {
   beforeEach(() => {
     user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
   });
-  
+
   test('Successful accessing of user details', () => {
     const response = requestAdminUserDetailsV2(user.body.token);
     expect(response.body).toStrictEqual({
       user: {
-          userId: expect.any(Number),
-          name: 'Jack Rizzella',
-          email: 'helloworld@gmail.com',
-          numSuccessfulLogins: expect.any(Number),
-          numFailedPasswordsSinceLastLogin: expect.any(Number),
+        userId: expect.any(Number),
+        name: 'Jack Rizzella',
+        email: 'helloworld@gmail.com',
+        numSuccessfulLogins: expect.any(Number),
+        numFailedPasswordsSinceLastLogin: expect.any(Number),
       }
     });
   });
@@ -89,7 +89,7 @@ describe.skip('Tests for adminUserDetailsV2', () => {
 });
 
 describe.skip('Tests for adminUserUpdateDetailsV2', () => {
-  let user: { 
+  let user: {
     body: { token: string },
     statusCode: number,
   };
@@ -97,16 +97,16 @@ describe.skip('Tests for adminUserUpdateDetailsV2', () => {
   beforeEach(() => {
     user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
   });
-  
+
   test('Successful updating of user details', () => {
     const response = requestAdminUserDetailsUpdateV2(user.body.token, validDetails.EMAIL2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     expect(response.body).toStrictEqual({
       user: {
-          userId: expect.any(Number),
-          name: 'Jamie Oliver',
-          email: 'helloworld1@gmail.com',
-          numSuccessfulLogins: expect.any(Number),
-          numFailedPasswordsSinceLastLogin: expect.any(Number),
+        userId: expect.any(Number),
+        name: 'Jamie Oliver',
+        email: 'helloworld1@gmail.com',
+        numSuccessfulLogins: expect.any(Number),
+        numFailedPasswordsSinceLastLogin: expect.any(Number),
       }
     });
   });
@@ -119,7 +119,7 @@ describe.skip('Tests for adminUserUpdateDetailsV2', () => {
 });
 
 describe.skip('Tests for adminUserUpdateDetailsV2', () => {
-  let user: { 
+  let user: {
     body: { token: string },
     statusCode: number,
   };
@@ -127,16 +127,16 @@ describe.skip('Tests for adminUserUpdateDetailsV2', () => {
   beforeEach(() => {
     user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
   });
-  
+
   test('Successful updating of user details', () => {
     const response = requestAdminUserDetailsUpdateV2(user.body.token, validDetails.EMAIL2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     expect(response.body).toStrictEqual({
       user: {
-          userId: expect.any(Number),
-          name: 'Jamie Oliver',
-          email: 'helloworld1@gmail.com',
-          numSuccessfulLogins: expect.any(Number),
-          numFailedPasswordsSinceLastLogin: expect.any(Number),
+        userId: expect.any(Number),
+        name: 'Jamie Oliver',
+        email: 'helloworld1@gmail.com',
+        numSuccessfulLogins: expect.any(Number),
+        numFailedPasswordsSinceLastLogin: expect.any(Number),
       }
     });
   });
@@ -149,7 +149,7 @@ describe.skip('Tests for adminUserUpdateDetailsV2', () => {
 });
 
 describe.skip('Tests for adminUserPasswordUpdateV2', () => {
-  let user: { 
+  let user: {
     body: { token: string },
     statusCode: number,
   };
@@ -157,7 +157,7 @@ describe.skip('Tests for adminUserPasswordUpdateV2', () => {
   beforeEach(() => {
     user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
   });
-  
+
   test('Successful updating of password', () => {
     requestAdminUserPasswordUpdateV2(user.body.token, validDetails.PASSWORD, validDetails.PASSWORD2);
     const response = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);

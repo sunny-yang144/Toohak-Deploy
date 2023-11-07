@@ -236,22 +236,22 @@ describe.skip('Tests for getNewSessionQuiz', () => {
           numQuestions: 0,
           questions: [
             {
-              "questionId": question.body.questionId,
-              "question": "Who is the Monarch of England?",
-              "duration": 4,
-              "points": 5,
-              "answers": [
+              questionId: question.body.questionId,
+              question: 'Who is the Monarch of England?',
+              duration: 4,
+              points: 5,
+              answers: [
                 {
-                  "answerId": expect.any(Number),
-                  "answer": "Prince Charles",
-                  "colour": expect.any(String),
-                  "correct": true
+                  answerId: expect.any(Number),
+                  answer: 'Prince Charles',
+                  colour: expect.any(String),
+                  correct: true
                 },
                 {
-                  "answerId": expect.any(Number),
-                  "answer": "Queen Elizabeth",
-                  "colour": expect.any(String),
-                  "correct": true
+                  answerId: expect.any(Number),
+                  answer: 'Queen Elizabeth',
+                  colour: expect.any(String),
+                  correct: true
                 }
               ]
             }
@@ -322,7 +322,6 @@ describe.skip('Tests for getSessionStatus', () => {
   });
 
   test('Successful sees new session', () => {
-    
     const response = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
     expect(response).toStrictEqual(
       {
@@ -338,22 +337,22 @@ describe.skip('Tests for getSessionStatus', () => {
           numQuestions: 0,
           questions: [
             {
-              "questionId": question.body.questionId,
-              "question": "Who is the Monarch of England?",
-              "duration": 4,
-              "points": 5,
-              "answers": [
+              questionId: question.body.questionId,
+              question: 'Who is the Monarch of England?',
+              duration: 4,
+              points: 5,
+              answers: [
                 {
-                  "answerId": expect.any(Number),
-                  "answer": "Prince Charles",
-                  "colour": expect.any(String),
-                  "correct": true
+                  answerId: expect.any(Number),
+                  answer: 'Prince Charles',
+                  colour: expect.any(String),
+                  correct: true
                 },
                 {
-                  "answerId": expect.any(Number),
-                  "answer": "Queen Elizabeth",
-                  "colour": expect.any(String),
-                  "correct": true
+                  answerId: expect.any(Number),
+                  answer: 'Queen Elizabeth',
+                  colour: expect.any(String),
+                  correct: true
                 }
               ]
             }
