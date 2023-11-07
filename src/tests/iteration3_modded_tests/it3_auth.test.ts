@@ -1,10 +1,8 @@
 import {
   requestAdminAuthRegister,
-  // requestAdminAuthLogin,
-  requestAdminUserDetails,
-  // requestAdminUserDetailsUpdateV2,
-  // requestAdminUserDetailsUpdate,
-  // requestAdminUserPasswordUpdate,
+  requestAdminUserDetailsV2,
+  requestAdminUserDetailsUpdateV2,
+  requestAdminUserPasswordUpdateV2,
   requestAdminAuthLogoutV2,
   clear,
 } from '../test-helpers';
@@ -36,22 +34,20 @@ afterAll(() => {
   clear();
 });
 
-describe.skip('Tests for adminAuthLogout', () => {
-  test('Successful logout', () => {
+describe('Tests for adminAuthLogout', () => {
+  test.only('Successful logout', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     expect(user.body).toStrictEqual({ token: expect.any(String) });
     const logout = requestAdminAuthLogoutV2(user.body.token);
     expect(logout.body).toStrictEqual({});
-    expect(requestAdminUserDetails(user.body.token)).toThrow(HTTPError[401]);
+    expect(() => requestAdminUserDetailsV2(user.body.token)).toThrow(HTTPError[401]);
   });
 
-  test('Token is empty or invalid', () => {
+  test.only('Token is empty or invalid', () => {
     requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    const response1 = requestAdminAuthLogoutV2('');
-    expect(response1).toThrow(HTTPError[401]);
+    expect(() => requestAdminAuthLogoutV2('')).toThrow(HTTPError[401]);
 
     const invalidId = uuidv4();
-    const response2 = requestAdminAuthLogoutV2(invalidId);
-    expect(response2).toThrow(HTTPError[401]);
+    expect(() => requestAdminAuthLogoutV2(invalidId)).toThrow(HTTPError[401]);
   });
 });

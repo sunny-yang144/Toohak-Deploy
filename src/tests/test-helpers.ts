@@ -2,6 +2,7 @@ import request from 'sync-request-curl';
 import { port, url } from '../config.json';
 import { QuestionBody, actions } from '../dataStore';
 const SERVER_URL = `${url}:${port}`;
+import HTTPError from 'http-errors';
 
 export function requestAdminAuthRegister (email: string, password: string, nameFirst: string, nameLast: string) {
   const res = request(
@@ -379,11 +380,16 @@ export function requestAdminAuthLogoutV2 (token: string) {
       json: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminUserDetailsV2 (token: string) {
+  throw HTTPError(401, 'Bruhbruh');
   const res = request(
     'GET',
     SERVER_URL + '/v2/admin/user/details',
@@ -600,7 +606,7 @@ export function requestAdminQuizTransferV2 (token: string, userEmail: string, qu
 export function requestAdminQuizQuestionCreateV2 (quizId: number, token: string, questionBody: QuestionBody) {
   const res = request(
     'POST',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question`,
     {
       headers: {
         token,
@@ -618,7 +624,7 @@ export function requestAdminQuizQuestionCreateV2 (quizId: number, token: string,
 export function requestAdminQuizQuestionUpdateV2 (quizId: number, questionId: number, token: string, questionBody: QuestionBody) {
   const res = request(
     'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}`,
     {
       headers: {
         token,
@@ -636,7 +642,7 @@ export function requestAdminQuizQuestionUpdateV2 (quizId: number, questionId: nu
 export function requestAdminQuizQuestionDeleteV2 (quizId: number, questionId: number, token: string) {
   const res = request(
     'DELETE',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}`,
     {
       headers: {
         token,
@@ -651,7 +657,7 @@ export function requestAdminQuizQuestionDeleteV2 (quizId: number, questionId: nu
 export function requestAdminQuizQuestionMoveV2 (quizId: number, questionId: number, token: string, newPosition: number) {
   const res = request(
     'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}/move`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}/move`,
     {
       headers: {
         token,
@@ -669,7 +675,7 @@ export function requestAdminQuizQuestionMoveV2 (quizId: number, questionId: numb
 export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId: number, token: string) {
   const res = request(
     'POST',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}/duplicate`,
     {
       headers: {
         token,
@@ -688,7 +694,7 @@ export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId:
 export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUrl: string) {
   const res = request(
     'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/thumbnail`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/thumbnail`,
     {
       headers: {
         token,
@@ -706,7 +712,7 @@ export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUr
 export function requestViewSessionActivity (quizId: number, token: string) {
   const res = request(
     'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/sessions`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/sessions`,
     {
       headers: {
         token,
@@ -721,7 +727,7 @@ export function requestViewSessionActivity (quizId: number, token: string) {
 export function requestNewSessionQuiz (quizId: number, token: string, autoStartNum: number) {
   const res = request(
     'POST',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/start`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/session/start`,
     {
       headers: {
         token,
@@ -739,7 +745,7 @@ export function requestNewSessionQuiz (quizId: number, token: string, autoStartN
 export function requestUpdateSessionState (quizId: number, sessionId: number, token: string, action: actions) {
   const res = request(
     'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/session/${sessionId}`,
     {
       headers: {
         token,
@@ -757,7 +763,7 @@ export function requestUpdateSessionState (quizId: number, sessionId: number, to
 export function requestGetSessionStatus (quizId: number, sessionId: number, token: string) {
   const res = request(
     'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/session/${sessionId}`,
     {
       headers: {
         token,
