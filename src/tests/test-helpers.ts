@@ -1,6 +1,6 @@
 import request from 'sync-request-curl';
 import { port, url } from '../config.json';
-import { QuestionBody } from '../dataStore';
+import { QuestionBody, actions } from '../dataStore';
 const SERVER_URL = `${url}:${port}`;
 
 export function requestAdminAuthRegister (email: string, password: string, nameFirst: string, nameLast: string) {
@@ -682,7 +682,7 @@ export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId:
 }
 
 /// /////////////////////////////////////////////////////////////////////////////////////
-/// /////////////////////////////     ITERATION 2      //////////////////////////////////
+/// /////////////////////////////     ITERATION 3      //////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 
 export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUrl: string) {
@@ -718,9 +718,9 @@ export function requestViewSessionActivity (quizId: number, token: string) {
   };
 }
 
-export function requestNewSessionQuiz (quizId: number, token: string, autoStartNum: string) {
+export function requestNewSessionQuiz (quizId: number, token: string, autoStartNum: number) {
   const res = request(
-    'PUT',
+    'POST',
     SERVER_URL + `/v1/admin/quiz/${quizId}/session/start`,
     {
       headers: {
@@ -728,6 +728,39 @@ export function requestNewSessionQuiz (quizId: number, token: string, autoStartN
       },
       json: {
         autoStartNum,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+
+export function requestUpdateSessionState (quizId: number, sessionId: number, token: string, action: actions) {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
+    {
+      headers: {
+        token,
+      },
+      json: {
+        action,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+
+export function requestGetSessionStatus (quizId: number, sessionId: number, token: string) {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
+    {
+      headers: {
+        token,
       }
     }
   );

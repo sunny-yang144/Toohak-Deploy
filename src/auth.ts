@@ -11,7 +11,7 @@ import {
 import { generateToken, getUserViaToken } from './other';
 import { UserScore, QuestionResult } from './quiz';
 
-interface ErrorObject {
+export interface ErrorObject {
   error: string;
   statusCode: number;
 }

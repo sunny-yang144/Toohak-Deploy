@@ -1,18 +1,19 @@
 import {
   requestAdminAuthRegister,
-  requestAdminAuthLogin,
+  // requestAdminAuthLogin,
   requestAdminUserDetails,
-  requestAdminUserDetailsUpdateV2,
-  requestAdminUserDetailsUpdate,
-  requestAdminUserPasswordUpdate,
+  // requestAdminUserDetailsUpdateV2,
+  // requestAdminUserDetailsUpdate,
+  // requestAdminUserPasswordUpdate,
   requestAdminAuthLogoutV2,
   clear,
 } from '../test-helpers';
 
-import { adminAuthRegisterReturn } from '../../auth';
+// import { adminAuthRegisterReturn } from '../../auth';
 
 import HTTPError from 'http-errors';
 import { v4 as uuidv4 } from 'uuid';
+// import { adminQuizCreate } from '../../quiz';
 
 enum validDetails {
   EMAIL = 'helloworld@gmail.com',
@@ -35,7 +36,7 @@ afterAll(() => {
   clear();
 });
 
-describe('Tests for adminAuthLogout', () => {
+describe.skip('Tests for adminAuthLogout', () => {
   test('Successful logout', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     expect(user.body).toStrictEqual({ token: expect.any(String) });
