@@ -2,6 +2,7 @@ import request from 'sync-request-curl';
 import { port, url } from '../config.json';
 import { QuestionBody, actions } from '../dataStore';
 const SERVER_URL = `${url}:${port}`;
+import HTTPError from 'http-errors';
 
 export function requestAdminAuthRegister (email: string, password: string, nameFirst: string, nameLast: string) {
   const res = request(
@@ -379,8 +380,12 @@ export function requestAdminAuthLogoutV2 (token: string) {
       json: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminUserDetailsV2 (token: string) {
@@ -394,8 +399,12 @@ export function requestAdminUserDetailsV2 (token: string) {
       qs: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminUserDetailsUpdateV2 (token: string, email: string, nameFirst: string, nameLast: string) {
@@ -413,8 +422,12 @@ export function requestAdminUserDetailsUpdateV2 (token: string, email: string, n
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminUserPasswordUpdateV2 (token: string, oldPassword: string, newPassword: string) {
@@ -431,8 +444,12 @@ export function requestAdminUserPasswordUpdateV2 (token: string, oldPassword: st
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizListV2 (token: string) {
@@ -446,8 +463,12 @@ export function requestAdminQuizListV2 (token: string) {
       qs: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizCreateV2 (token: string, name: string, description: string) {
@@ -464,8 +485,12 @@ export function requestAdminQuizCreateV2 (token: string, name: string, descripti
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizRemoveV2 (token: string, quizId: number) {
@@ -479,8 +504,12 @@ export function requestAdminQuizRemoveV2 (token: string, quizId: number) {
       qs: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizInfoV2 (token: string, quizId: number) {
@@ -494,8 +523,12 @@ export function requestAdminQuizInfoV2 (token: string, quizId: number) {
       qs: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizNameUpdateV2 (token: string, quizId: number, name: string) {
@@ -511,8 +544,12 @@ export function requestAdminQuizNameUpdateV2 (token: string, quizId: number, nam
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizDescriptionUpdateV2 (token: string, quizId: number, description: string) {
@@ -528,8 +565,12 @@ export function requestAdminQuizDescriptionUpdateV2 (token: string, quizId: numb
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizTrashV2 (token: string) {
@@ -543,6 +584,10 @@ export function requestAdminQuizTrashV2 (token: string) {
       qs: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
     body: JSON.parse(res.body.toString()),
   };
@@ -558,8 +603,12 @@ export function requestAdminQuizTrashRestoreV2 (quizId: number, token: string) {
       json: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminTrashRemoveV2 (token: string, quizIds: number[]) {
@@ -575,8 +624,12 @@ export function requestAdminTrashRemoveV2 (token: string, quizIds: number[]) {
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizTransferV2 (token: string, userEmail: string, quizId: number) {
@@ -592,15 +645,19 @@ export function requestAdminQuizTransferV2 (token: string, userEmail: string, qu
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 
 export function requestAdminQuizQuestionCreateV2 (quizId: number, token: string, questionBody: QuestionBody) {
   const res = request(
     'POST',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question`,
     {
       headers: {
         token,
@@ -610,15 +667,19 @@ export function requestAdminQuizQuestionCreateV2 (quizId: number, token: string,
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 
 export function requestAdminQuizQuestionUpdateV2 (quizId: number, questionId: number, token: string, questionBody: QuestionBody) {
   const res = request(
     'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}`,
     {
       headers: {
         token,
@@ -628,30 +689,38 @@ export function requestAdminQuizQuestionUpdateV2 (quizId: number, questionId: nu
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 
 export function requestAdminQuizQuestionDeleteV2 (quizId: number, questionId: number, token: string) {
   const res = request(
     'DELETE',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}`,
     {
       headers: {
         token,
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 
 export function requestAdminQuizQuestionMoveV2 (quizId: number, questionId: number, token: string, newPosition: number) {
   const res = request(
     'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}/move`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}/move`,
     {
       headers: {
         token,
@@ -661,23 +730,31 @@ export function requestAdminQuizQuestionMoveV2 (quizId: number, questionId: numb
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 
 export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId: number, token: string) {
   const res = request(
     'POST',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}/duplicate`,
     {
       headers: {
         token,
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 
@@ -688,7 +765,7 @@ export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId:
 export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUrl: string) {
   const res = request(
     'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/thumbnail`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/thumbnail`,
     {
       headers: {
         token,
@@ -706,7 +783,7 @@ export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUr
 export function requestViewSessionActivity (quizId: number, token: string) {
   const res = request(
     'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/sessions`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/sessions`,
     {
       headers: {
         token,
@@ -721,7 +798,7 @@ export function requestViewSessionActivity (quizId: number, token: string) {
 export function requestNewSessionQuiz (quizId: number, token: string, autoStartNum: number) {
   const res = request(
     'POST',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/start`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/session/start`,
     {
       headers: {
         token,
@@ -739,7 +816,7 @@ export function requestNewSessionQuiz (quizId: number, token: string, autoStartN
 export function requestUpdateSessionState (quizId: number, sessionId: number, token: string, action: actions) {
   const res = request(
     'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/session/${sessionId}`,
     {
       headers: {
         token,
@@ -757,7 +834,7 @@ export function requestUpdateSessionState (quizId: number, sessionId: number, to
 export function requestGetSessionStatus (quizId: number, sessionId: number, token: string) {
   const res = request(
     'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/session/${sessionId}`,
     {
       headers: {
         token,
