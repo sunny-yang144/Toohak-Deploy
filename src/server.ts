@@ -444,7 +444,7 @@ app.get('/v2/admin/quiz/list', (req: Request, res: Response) => {
 // Need to define trash in front of /v2/admin/quiz:quizid
 app.get('/v2/admin/quiz/trash', (req: Request, res: Response) => {
   const token = req.headers.token as string;
-  console.log("NNNNNNNNNNNNNNNNNNN");
+  console.log('NNNNNNNNNNNNNNNNNNN');
   const response = adminQuizTrash(token);
 
   if ('error' in response) {

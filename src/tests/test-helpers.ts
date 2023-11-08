@@ -579,7 +579,7 @@ export function requestAdminQuizTrashV2 (token: string) {
     SERVER_URL + '/v2/admin/quiz/trash',
     {
       headers: {
-        token, 
+        token,
       },
       qs: {}
     }
