@@ -422,8 +422,12 @@ export function requestAdminUserDetailsUpdateV2 (token: string, email: string, n
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminUserPasswordUpdateV2 (token: string, oldPassword: string, newPassword: string) {
@@ -440,8 +444,12 @@ export function requestAdminUserPasswordUpdateV2 (token: string, oldPassword: st
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizListV2 (token: string) {
@@ -455,8 +463,12 @@ export function requestAdminQuizListV2 (token: string) {
       qs: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizCreateV2 (token: string, name: string, description: string) {
@@ -473,8 +485,12 @@ export function requestAdminQuizCreateV2 (token: string, name: string, descripti
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizRemoveV2 (token: string, quizId: number) {
@@ -488,8 +504,12 @@ export function requestAdminQuizRemoveV2 (token: string, quizId: number) {
       qs: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizInfoV2 (token: string, quizId: number) {
@@ -503,8 +523,12 @@ export function requestAdminQuizInfoV2 (token: string, quizId: number) {
       qs: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizNameUpdateV2 (token: string, quizId: number, name: string) {
@@ -520,8 +544,12 @@ export function requestAdminQuizNameUpdateV2 (token: string, quizId: number, nam
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizDescriptionUpdateV2 (token: string, quizId: number, description: string) {
@@ -537,8 +565,12 @@ export function requestAdminQuizDescriptionUpdateV2 (token: string, quizId: numb
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizTrashV2 (token: string) {
@@ -552,8 +584,12 @@ export function requestAdminQuizTrashV2 (token: string) {
       qs: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizTrashRestoreV2 (quizId: number, token: string) {
@@ -567,8 +603,12 @@ export function requestAdminQuizTrashRestoreV2 (quizId: number, token: string) {
       json: {}
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminTrashRemoveV2 (token: string, quizIds: number[]) {
@@ -584,8 +624,12 @@ export function requestAdminTrashRemoveV2 (token: string, quizIds: number[]) {
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 export function requestAdminQuizTransferV2 (token: string, userEmail: string, quizId: number) {
@@ -601,8 +645,12 @@ export function requestAdminQuizTransferV2 (token: string, userEmail: string, qu
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 
@@ -619,8 +667,12 @@ export function requestAdminQuizQuestionCreateV2 (quizId: number, token: string,
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 
@@ -637,8 +689,12 @@ export function requestAdminQuizQuestionUpdateV2 (quizId: number, questionId: nu
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 
@@ -652,8 +708,12 @@ export function requestAdminQuizQuestionDeleteV2 (quizId: number, questionId: nu
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 
@@ -670,8 +730,12 @@ export function requestAdminQuizQuestionMoveV2 (quizId: number, questionId: numb
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 
@@ -685,8 +749,12 @@ export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId:
       }
     }
   );
+  const ret = JSON.parse(res.body.toString());
+  if (res.statusCode !== 200) {
+    throw HTTPError(res.statusCode, ret.error);
+  }
   return {
-    body: JSON.parse(res.body.toString()),
+    body: ret,
   };
 }
 

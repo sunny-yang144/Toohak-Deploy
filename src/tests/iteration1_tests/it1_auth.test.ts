@@ -30,20 +30,6 @@ afterAll(() => {
 
 // You could also structure this to have error cases
 describe('Tests for adminAuthRegister', () => {
-  /**
-   *                          ERROR CASES:
-   * Email address is used by another user
-   * Email does not satisfy this: https://www.npmjs.com/package/validator (validator.isEmail function)
-   * NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes
-   * NameFirst is less than 2 characters or more than 20 characters
-   * NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes
-   * NameLast is less than 2 characters or more than 20 characters
-   * Password is less than 8 characters
-   * Password does not contain at least one number and at least one letter
-   *
-   * Return Object:
-   * { authUserId }
-   */
   test('Successful User Created when given valid parameters', () => {
     const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     expect(user.body).toStrictEqual({ token: expect.any(String) });
@@ -51,11 +37,9 @@ describe('Tests for adminAuthRegister', () => {
   });
 
   test('Error when given an email address is already used', () => {
-    // Created a user successfully
     requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const user2 = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
-    // Another user with the same email
-    expect(user2.body).toStrictEqual({ error: expect.any(String) }); // "This email is already in use"
+    expect(user2.body).toStrictEqual({ error: expect.any(String) });
     expect(user2.statusCode).toStrictEqual(400);
   });
 
