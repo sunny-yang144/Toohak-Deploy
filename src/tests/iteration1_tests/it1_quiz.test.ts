@@ -285,6 +285,7 @@ describe('Tests for adminQuizInfo', () => {
         numQuestions: expect.any(Number),
         questions: [], // Since we havent added any questions this should be empty
         duration: expect.any(Number),
+        thumbnailUrl: expect.any(String),
       }
     );
     expect(response.statusCode).toStrictEqual(200);
@@ -305,6 +306,7 @@ describe('Tests for adminQuizInfo', () => {
         numQuestions: expect.any(Number),
         questions: [], // Since we havent added any questions this should be empty
         duration: expect.any(Number),
+        thumbnailUrl: expect.any(String),
       }
     );
     expect(response1.statusCode).toStrictEqual(200);
@@ -320,6 +322,7 @@ describe('Tests for adminQuizInfo', () => {
         numQuestions: expect.any(Number),
         questions: [],
         duration: expect.any(Number),
+        thumbnailUrl: expect.any(String),
       }
     );
     expect(response2.statusCode).toStrictEqual(200);
