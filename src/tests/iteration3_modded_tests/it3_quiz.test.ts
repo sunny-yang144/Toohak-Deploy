@@ -275,26 +275,39 @@ describe.skip('Tests for getNewSessionQuiz', () => {
 
 
 describe('Tests for updateSessionState', () => {
-  test('should transition from LOBBY to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
-    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
-    const session = createSession(1, players);
-    const updatedSession = transitionSessionState(session.sessionId, 'NEXT_QUESTION');
-    expect(updatedSession!.state).toBe('QUESTION_COUNTDOWN');
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+
+  let question: {
+    body: {quizId: number},
+  };
+  let session;
+
+  beforeEach(() => {
+    user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+  });
+  test('LOBBY to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    expect(getSessionStatus().state).toBe('QUESTION_COUNTDOWN');
   });
 
   test('should transition from QUESTION_COUNTDOWN to QUESTION_OPEN on SKIP_COUNTDOWN', () => {
-    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
-    const session = createSession(1, players);
-    session.state = 'QUESTION_COUNTDOWN';
-    const updatedSession = transitionSessionState(session.sessionId, 'SKIP_COUNTDOWN');
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    const updatedSession2 = updateSessionState(session.sessionId, 'SKIP_COUNTDOWN');
     expect(updatedSession!.state).toBe('QUESTION_OPEN');
   });
 
   test('should transition from QUESTION_OPEN to ANSWER_SHOW on GO_TO_ANSWER', () => {
-    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
-    const session = createSession(1, players);
     session.state = 'QUESTION_OPEN';
-    const updatedSession = transitionSessionState(session.sessionId, 'GO_TO_ANSWER');
+    const updatedSession = updateSessionState(session.sessionId, 'GO_TO_ANSWER');
     expect(updatedSession!.state).toBe('ANSWER_SHOW');
   });
 
@@ -303,7 +316,7 @@ describe('Tests for updateSessionState', () => {
     const session = createSession(2, players);
     session.state = 'ANSWER_SHOW';
     session.atQuestion = 0;
-    const updatedSession = transitionSessionState(session.sessionId, 'NEXT_QUESTION');
+    const updatedSession = updateSessionState(session.sessionId, 'NEXT_QUESTION');
     expect(updatedSession!.state).toBe('QUESTION_COUNTDOWN');
   });
 
