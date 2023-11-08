@@ -296,77 +296,110 @@ describe('Tests for updateSessionState', () => {
   });
   test('LOBBY to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
     const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
-    expect(getSessionStatus().state).toBe('QUESTION_COUNTDOWN');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    expect(getSessions).toBe('QUESTION_COUNTDOWN');
   });
-
-  test('should transition from QUESTION_COUNTDOWN to QUESTION_OPEN on SKIP_COUNTDOWN', () => {
+  test('QUESTION_COUNTDOWN to END on END', () => {
     const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
-    const updatedSession2 = updateSessionState(session.sessionId, 'SKIP_COUNTDOWN');
-    expect(updatedSession!.state).toBe('QUESTION_OPEN');
+    const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'END');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    expect(getSessions).toBe('END');
   });
 
-  test('should transition from QUESTION_OPEN to ANSWER_SHOW on GO_TO_ANSWER', () => {
-    session.state = 'QUESTION_OPEN';
-    const updatedSession = updateSessionState(session.sessionId, 'GO_TO_ANSWER');
-    expect(updatedSession!.state).toBe('ANSWER_SHOW');
+  test('QUESTION_COUNTDOWN to QUESTION_OPEN on SKIP_COUNTDOWN', () => {
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    // we also need to consider the case where 3 seconds pass
+    expect(getSessions).toBe('QUESTION_OPEN');
   });
 
-  test('should transition from ANSWER_SHOW to QUESTION_COUNTDOWN on NEXT_QUESTION (if more questions exist)', () => {
-    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
-    const session = createSession(2, players);
-    session.state = 'ANSWER_SHOW';
-    session.atQuestion = 0;
-    const updatedSession = updateSessionState(session.sessionId, 'NEXT_QUESTION');
-    expect(updatedSession!.state).toBe('QUESTION_COUNTDOWN');
+  test('QUESTION_OPEN to END on END', () => {
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'END');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    expect(getSessions).toBe('END');
+  });
+  
+  test('QUESTION_OPEN to ANSWER_SHOW on GO_TO_ANSWER', () => {
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_ANSWER');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    expect(getSessions).toBe('ANSWER_SHOW');
   });
 
-  test('should transition from ANSWER_SHOW to FINAL_RESULTS on NEXT_QUESTION (if no more questions exist)', () => {
-    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
-    const session = createSession(1, players);
-    session.state = 'ANSWER_SHOW';
-    session.atQuestion = 0;
-    const updatedSession = transitionSessionState(session.sessionId, 'NEXT_QUESTION');
-    expect(updatedSession!.state).toBe('FINAL_RESULTS');
+  test('ANSWER_SHOW to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_ANSWER');
+    const updatedSession4 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'NEXT_QUESTION');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    expect(getSessions).toBe('QUESTION_COUNTDOWN');
   });
 
-  test('should transition from FINAL_RESULTS to END on GO_TO_FINAL_RESULTS', () => {
-    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
-    const session = createSession(1, players);
-    session.state = 'FINAL_RESULTS';
-    const updatedSession = transitionSessionState(session.sessionId, 'GO_TO_FINAL_RESULTS');
-    expect(updatedSession!.state).toBe('END');
+  test('QUESTION_OPEN to QUESTION_CLOSE on duration ending', () => {
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    // duration to be implemented
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    expect(getSessions).toBe('QUESTION_CLOSE');
   });
 
-  test('should not transition from LOBBY on GO_TO_ANSWER', () => {
-    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
-    const session = createSession(1, players);
-    session.state = 'LOBBY';
-    const updatedSession = transitionSessionState(session.sessionId, 'GO_TO_ANSWER');
-    expect(updatedSession!.state).toBe('LOBBY');
+  test('QUESTION_CLOSE to ANSWER_SHOW on GO_TO_ANSWER', () => {
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    // duration to be implemented
+    const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_ANSWER');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    expect(getSessions).toBe('ANSWER_SHOW');
   });
 
-  test('should not transition from LOBBY on SKIP_COUNTDOWN', () => {
-    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
-    const session = createSession(1, players);
-    session.state = 'LOBBY';
-    const updatedSession = transitionSessionState(session.sessionId, 'SKIP_COUNTDOWN');
-    expect(updatedSession!.state).toBe('LOBBY');
+  test('QUESTION_CLOSE to END on END', () => {
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    // duration to be implemented
+    const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'END');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    expect(getSessions).toBe('END');
+  });
+  test('QUESTION_CLOSE to FINAL_RESULTS on GO_TO_FINAL_RESULTS', () => {
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    // duration to be implemented
+    const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    expect(getSessions).toBe('FINAL_RESULTS');
+  });
+  test('FINAL_RESULTS to END on END', () => {
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    // duration to be implemented
+    const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'END');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    expect(getSessions).toBe('END');
   });
 
-  test('should not transition from QUESTION_OPEN on NEXT_QUESTION', () => {
-    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
-    const session = createSession(1, players);
-    session.state = 'QUESTION_OPEN';
-    const updatedSession = transitionSessionState(session.sessionId, 'NEXT_QUESTION');
-    expect(updatedSession!.state).toBe('QUESTION_OPEN');
+  test('ANSWER_SHOW to FINAL_RESULTS on GO_TO_FINAL_RESULTS', () => {
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    // duration to be implemented
+    const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_ANSWER');
+    const updatedSession4 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    expect(getSessions).toBe('FINAL_RESULTS');
   });
 
-  test('should not transition from FINAL_RESULTS on NEXT_QUESTION', () => {
-    const players: Player[] = [{ playerId: 1, name: 'Player 1', score: 0 }];
-    const session = createSession(1, players);
-    session.state = 'FINAL_RESULTS';
-    const updatedSession = transitionSessionState(session.sessionId, 'NEXT_QUESTION');
-    expect(updatedSession!.state).toBe('FINAL_RESULTS');
+  test('ANSWER_SHOW to END on END', () => {
+    const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
+    const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    // duration to be implemented
+    const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_ANSWER');
+    const updatedSession4 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'END');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
+    expect(getSessions).toBe('END');
   });
 });
 
