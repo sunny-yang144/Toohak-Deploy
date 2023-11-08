@@ -160,6 +160,7 @@ export const adminQuizCreate = (token: string, name: string, description: string
     numQuestions: 0,
     questions: [] as Question[],
     duration: 0,
+    thumbnailUrl: "",
   };
 
   user.ownedQuizzes.push(newQuiz.quizId);
@@ -205,8 +206,9 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
       numQuestions: quiz.numQuestions,
       questions: quiz.questions,
       duration: quiz.duration,
+      thumbnailUrl: quiz.thumbnailUrl,
     };
-    return quizInfo;
+    return quizInfo
   }
 };
 
