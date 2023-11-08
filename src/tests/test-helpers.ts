@@ -579,7 +579,7 @@ export function requestAdminQuizTrashV2 (token: string) {
     SERVER_URL + '/v2/admin/quiz/trash',
     {
       headers: {
-        token,
+        token, 
       },
       qs: {}
     }
@@ -589,7 +589,7 @@ export function requestAdminQuizTrashV2 (token: string) {
     throw HTTPError(res.statusCode, ret.error);
   }
   return {
-    body: ret,
+    body: JSON.parse(res.body.toString()),
   };
 }
 export function requestAdminQuizTrashRestoreV2 (quizId: number, token: string) {

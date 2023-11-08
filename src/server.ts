@@ -134,8 +134,7 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   }
   res.json(response);
 });
-
-// Defining trash before '/v1/admin/quiz/:quizid'
+// Need to define trash before /v1/admin/quiz/:quizid
 app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   const token = req.query.token as string;
 
@@ -148,7 +147,6 @@ app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   }
   res.json(response);
 });
-
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
 
@@ -443,6 +441,19 @@ app.get('/v2/admin/quiz/list', (req: Request, res: Response) => {
   }
   res.json(response);
 });
+// Need to define trash in front of /v2/admin/quiz:quizid
+app.get('/v2/admin/quiz/trash', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
+  console.log("NNNNNNNNNNNNNNNNNNN");
+  const response = adminQuizTrash(token);
+
+  if ('error' in response) {
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
+  }
+  res.json(response);
+});
 
 app.post('/v2/admin/quiz', (req: Request, res: Response) => {
   const token = req.headers.token as string;
@@ -498,17 +509,6 @@ app.put('/v2/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const { description } = req.body;
   const response = adminQuizDescriptionUpdate(token, quizId, description);
-  if ('error' in response) {
-    return res.status(response.statusCode).json({
-      error: response.error
-    });
-  }
-  res.json(response);
-});
-
-app.get('/v2/admin/quiz/trash', (req: Request, res: Response) => {
-  const token = req.headers.token as string;
-  const response = adminQuizTrash(token);
   if ('error' in response) {
     return res.status(response.statusCode).json({
       error: response.error
