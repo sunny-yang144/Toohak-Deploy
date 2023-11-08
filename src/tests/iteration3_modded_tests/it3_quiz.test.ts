@@ -210,7 +210,7 @@ describe.skip('Tests for getNewSessionQuiz', () => {
   };
 
   let question: {
-    body: {quizId: number},
+    body: {questionId: number},
   };
 
   beforeEach(() => {
@@ -284,9 +284,11 @@ describe('Tests for updateSessionState', () => {
   };
 
   let question: {
-    body: {quizId: number},
+    body: {questionId: number},
   };
-  let session;
+  let session: {
+    body: {sessionId: number}
+  };
 
   beforeEach(() => {
     user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
@@ -297,13 +299,13 @@ describe('Tests for updateSessionState', () => {
   test('LOBBY to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
     const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
-    expect(getSessions).toBe('QUESTION_COUNTDOWN');
+    expect(getSessions.body).toBe('QUESTION_COUNTDOWN');
   });
   test('QUESTION_COUNTDOWN to END on END', () => {
     const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
     const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'END');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
-    expect(getSessions).toBe('END');
+    expect(getSessions.body).toBe('END');
   });
 
   test('QUESTION_COUNTDOWN to QUESTION_OPEN on SKIP_COUNTDOWN', () => {
@@ -311,7 +313,7 @@ describe('Tests for updateSessionState', () => {
     const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
     // we also need to consider the case where 3 seconds pass
-    expect(getSessions).toBe('QUESTION_OPEN');
+    expect(getSessions.body).toBe('QUESTION_OPEN');
   });
 
   test('QUESTION_OPEN to END on END', () => {
@@ -319,7 +321,7 @@ describe('Tests for updateSessionState', () => {
     const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'END');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
-    expect(getSessions).toBe('END');
+    expect(getSessions.body).toBe('END');
   });
   
   test('QUESTION_OPEN to ANSWER_SHOW on GO_TO_ANSWER', () => {
@@ -327,7 +329,7 @@ describe('Tests for updateSessionState', () => {
     const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_ANSWER');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
-    expect(getSessions).toBe('ANSWER_SHOW');
+    expect(getSessions.body).toBe('ANSWER_SHOW');
   });
 
   test('ANSWER_SHOW to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
@@ -336,7 +338,7 @@ describe('Tests for updateSessionState', () => {
     const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_ANSWER');
     const updatedSession4 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'NEXT_QUESTION');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
-    expect(getSessions).toBe('QUESTION_COUNTDOWN');
+    expect(getSessions.body).toBe('QUESTION_COUNTDOWN');
   });
 
   test('QUESTION_OPEN to QUESTION_CLOSE on duration ending', () => {
@@ -344,7 +346,7 @@ describe('Tests for updateSessionState', () => {
     const updatedSession2 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     // duration to be implemented
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
-    expect(getSessions).toBe('QUESTION_CLOSE');
+    expect(getSessions.body).toBe('QUESTION_CLOSE');
   });
 
   test('QUESTION_CLOSE to ANSWER_SHOW on GO_TO_ANSWER', () => {
@@ -353,7 +355,7 @@ describe('Tests for updateSessionState', () => {
     // duration to be implemented
     const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_ANSWER');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
-    expect(getSessions).toBe('ANSWER_SHOW');
+    expect(getSessions.body).toBe('ANSWER_SHOW');
   });
 
   test('QUESTION_CLOSE to END on END', () => {
@@ -362,7 +364,7 @@ describe('Tests for updateSessionState', () => {
     // duration to be implemented
     const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'END');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
-    expect(getSessions).toBe('END');
+    expect(getSessions.body).toBe('END');
   });
   test('QUESTION_CLOSE to FINAL_RESULTS on GO_TO_FINAL_RESULTS', () => {
     const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
@@ -370,7 +372,7 @@ describe('Tests for updateSessionState', () => {
     // duration to be implemented
     const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
-    expect(getSessions).toBe('FINAL_RESULTS');
+    expect(getSessions.body).toBe('FINAL_RESULTS');
   });
   test('FINAL_RESULTS to END on END', () => {
     const updatedSession = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token,'NEXT_QUESTION');
@@ -379,7 +381,7 @@ describe('Tests for updateSessionState', () => {
     const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
     const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'END');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
-    expect(getSessions).toBe('END');
+    expect(getSessions.body).toBe('END');
   });
 
   test('ANSWER_SHOW to FINAL_RESULTS on GO_TO_FINAL_RESULTS', () => {
@@ -389,7 +391,7 @@ describe('Tests for updateSessionState', () => {
     const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_ANSWER');
     const updatedSession4 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
-    expect(getSessions).toBe('FINAL_RESULTS');
+    expect(getSessions.body).toBe('FINAL_RESULTS');
   });
 
   test('ANSWER_SHOW to END on END', () => {
@@ -399,7 +401,7 @@ describe('Tests for updateSessionState', () => {
     const updatedSession3 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'GO_TO_ANSWER');
     const updatedSession4 = requestUpdateSessionState(quiz.body.quizId, session.sessionId, user.body.token, 'END');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.sessionId, user.body.token).state;
-    expect(getSessions).toBe('END');
+    expect(getSessions.body).toBe('END');
   });
 });
 
