@@ -270,11 +270,11 @@ describe.skip('Tests for getQuizSessionResults', () => {
     body: {quizId: number},
   };
   beforeEach(() => {
-    user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    quiz = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
   });
   test('Session ID does not refer to a valid session within this quiz', () => {
-    const quiz2 = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
+    const quiz2 = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME2, VD.QUIZDESCRIPTION2);
     const session2 = requestNewSessionQuiz(quiz2.body.quizId, user.body.token, 3);
     const response = requestGetQuizSessionResults(quiz.body.quizId, session2.body.sessionId, user.body.token);
     requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
@@ -296,7 +296,7 @@ describe.skip('Tests for getQuizSessionResults', () => {
 
   test('Valid token, however user is unauthorised to view this session', () => {
     const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
     const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token);
     expect(response).toThrow(HTTPError[403]);
   });
