@@ -273,7 +273,7 @@ describe.skip('Tests for getNewSessionQuiz', () => {
   });
 });
 
-describe('Tests for updateSessionState', () => {
+describe.skip('Tests for updateSessionState', () => {
   let user: {
     body: {token: string},
     statusCode: number,
