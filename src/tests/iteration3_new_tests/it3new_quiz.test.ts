@@ -1,18 +1,5 @@
 import {
   requestAdminAuthRegister,
-  // requestAdminQuizList,
-  // requestAdminQuizCreate,
-  // requestAdminQuizInfo,
-  // requestAdminQuizRemove,
-  // requestAdminQuizTrash,
-  // requestAdminTrashRemove,
-  // requestAdminQuizTransfer,
-  // requestAdminQuizQuestionCreate,
-  // requestAdminQuizQuestionDelete,
-  // requestAdminQuizQuestionDuplicate,
-  // requestAdminQuizQuestionMove,
-  // requestAdminQuizQuestionUpdate,
-  // requestAdminQuizTrashRestore,
   requestAdminQuizQuestionDeleteV2,
   requestAdminQuizQuestionCreateV2,
   requestAdminQuizInfoV2,
@@ -31,11 +18,9 @@ import { expect } from '@jest/globals';
 import { v4 as uuidv4 } from 'uuid';
 import HTTPError from 'http-errors';
 
-// import { colours } from '../../dataStore';
-
 import { QuestionBody } from '../../dataStore';
 
-  enum validDetails {
+  enum VD {
     EMAIL = 'helloworld@gmail.com',
     PASSWORD = '1234UNSW',
     NAMEFIRST = 'Jack',
@@ -48,7 +33,7 @@ import { QuestionBody } from '../../dataStore';
     QUIZDESCRIPTION = 'About flags, countries and capitals!',
     QUIZNAME2 = 'Soccer Quiz',
     QUIZDESCRIPTION2 = 'GOOOAAAALLLL (Part 2)',
-    IMAGEURL = 'https://www.digiseller.ru/preview/859334/p1_3713459_42ca8c03.jpg'
+    IMAGEURL = 'https://cdn.sefinek.net/images/animals/cat/cat-story-25-1377426-min.jpg'
   }
 
 const sampleQuestion1: QuestionBody = {
@@ -64,7 +49,8 @@ const sampleQuestion1: QuestionBody = {
       answer: 'Queen Elizabeth',
       correct: true
     }
-  ]
+  ],
+  thumbnailUrl: VD.IMAGEURL,
 };
 
 // const sampleQuestion2: QuestionBody = {
@@ -80,7 +66,8 @@ const sampleQuestion1: QuestionBody = {
 //       answer: '6',
 //       correct: false
 //     }
-//   ]
+//   ],
+//   thumbnailUrl: VD.IMAGEURL,
 // };
 
 beforeEach(() => {
@@ -105,24 +92,24 @@ describe.skip('Tests for updateQuizThumbNail', () => {
   };
 
   beforeEach(() => {
-    user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    quiz = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
   });
 
   test('Successful change of thumbnail', () => {
-    requestUpdateQuizThumbNail(quiz.body.quizId, user.body.token, validDetails.IMAGEURL);
+    requestUpdateQuizThumbNail(quiz.body.quizId, user.body.token, VD.IMAGEURL);
     const quizInfo = requestAdminQuizInfoV2(user.body.token, quiz.body.quizId);
     expect(quizInfo.body).toStrictEqual(
       {
         quizId: quiz.body.quizId,
-        name: validDetails.QUIZNAME,
+        name: VD.QUIZNAME,
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
-        description: validDetails.QUIZDESCRIPTION,
+        description: VD.QUIZDESCRIPTION,
         numQuestions: 0,
         questions: [],
         duration: 0,
-        thumbnailUrl: validDetails.IMAGEURL,
+        thumbnailUrl: VD.IMAGEURL,
       }
     );
   });
@@ -137,13 +124,13 @@ describe.skip('Tests for updateQuizThumbNail', () => {
 
   test('Token is empty or invalid', () => {
     const invalidId = uuidv4();
-    const response = requestUpdateQuizThumbNail(quiz.body.quizId, invalidId, validDetails.IMAGEURL);
+    const response = requestUpdateQuizThumbNail(quiz.body.quizId, invalidId, VD.IMAGEURL);
     expect(response).toThrow(HTTPError[401]);
   });
 
   test('Token is not the owner of the quiz', () => {
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
-    const response = requestUpdateQuizThumbNail(quiz.body.quizId, user2.body.token, validDetails.IMAGEURL);
+    const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
+    const response = requestUpdateQuizThumbNail(quiz.body.quizId, user2.body.token, VD.IMAGEURL);
     expect(response).toThrow(HTTPError[403]);
   });
 });
@@ -170,8 +157,8 @@ describe.skip('Tests for viewSessionActivity', () => {
   };
 
   beforeEach(() => {
-    user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    quiz = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     session1 = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     session2 = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     session3 = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
@@ -195,7 +182,7 @@ describe.skip('Tests for viewSessionActivity', () => {
   });
 
   test('Token is not the owner of the quiz', () => {
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
     const response = requestViewSessionActivity(quiz.body.quizId, user2.body.token);
     expect(response).toThrow(HTTPError[403]);
   });
@@ -215,8 +202,8 @@ describe.skip('Tests for getNewSessionQuiz', () => {
   };
 
   beforeEach(() => {
-    user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    quiz = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
   });
 
@@ -230,10 +217,10 @@ describe.skip('Tests for getNewSessionQuiz', () => {
         players: [],
         metadata: {
           quizId: quiz.body.quizId,
-          name: validDetails.QUIZNAME,
+          name: VD.QUIZNAME,
           timeCreated: expect.any(Number),
           timeLastEdited: expect.any(Number),
-          description: validDetails.QUIZDESCRIPTION,
+          description: VD.QUIZDESCRIPTION,
           numQuestions: 0,
           questions: [],
           duration: 0,
@@ -268,7 +255,7 @@ describe.skip('Tests for getNewSessionQuiz', () => {
   });
 
   test('Token is not the owner of the quiz', () => {
-    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
     const response = requestNewSessionQuiz(quiz.body.quizId, user2.body.token, 3);
     expect(response).toThrow(HTTPError[403]);
   });

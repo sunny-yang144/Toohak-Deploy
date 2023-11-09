@@ -160,6 +160,7 @@ export const adminQuizCreate = (token: string, name: string, description: string
     numQuestions: 0,
     questions: [] as Question[],
     duration: 0,
+    thumbnailUrl: '',
   };
 
   user.ownedQuizzes.push(newQuiz.quizId);
@@ -205,6 +206,7 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
       numQuestions: quiz.numQuestions,
       questions: quiz.questions,
       duration: quiz.duration,
+      thumbnailUrl: quiz.thumbnailUrl,
     };
     return quizInfo;
   }
@@ -566,7 +568,7 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
  * @returns adminQuizQuestionCreateReturn | ErrorObject
  */
 
-export const adminQuizQuestionCreate = (quizId: number, token: string, questionBody: QuestionBody): adminQuizQuestionCreateReturn | ErrorObject => {
+export const adminQuizQuestionCreate = async (quizId: number, token: string, questionBody: QuestionBody): Promise<ErrorObject | adminQuizQuestionCreateReturn> => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -637,6 +639,19 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
     return { error: 'No answers are correct.', statusCode: 400 };
   }
 
+  if (questionBody.thumbnailUrl.length === 0) {
+    return { error: 'No thumbnail url provided', statusCode: 400 };
+  }
+  const isImage = require('is-image-header');
+  try {
+    const result = await isImage(questionBody.thumbnailUrl);
+    if (!result.isImage) {
+      return { error: 'This thumbnail is not a JPEG/PNG', statusCode: 400 };
+    }
+  } catch (error) {
+    return { error: 'This is not a valid URL', statusCode: 400 };
+  }
+
   const questionId = generateQuestionId(data.questions);
   const questionObject: Question = {
     questionId: questionId,
@@ -644,6 +659,7 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
     duration: questionBody.duration,
     points: questionBody.points,
     answers: [],
+    thumbnailUrl: questionBody.thumbnailUrl,
   };
 
   for (const answer of questionBody.answers) {
@@ -899,7 +915,7 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
  * @returns adminQuizQuestionDuplicateReturn | ErrorObject
  */
 
-export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, token: string): adminQuizQuestionDuplicateReturn | ErrorObject => {
+export const adminQuizQuestionDuplicate = async (quizId: number, questionId: number, token: string): Promise<ErrorObject | adminQuizQuestionDuplicateReturn> => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -920,7 +936,7 @@ export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, t
     // Find index of QuizQuestion to duplicate
     const questionIndex = quiz.questions.indexOf(question);
     // Create duplicate of question (will go to end of array)
-    const newQuestion = adminQuizQuestionCreate(quizId, token, question) as adminQuizQuestionCreateReturn;
+    const newQuestion = await adminQuizQuestionCreate(quizId, token, question) as unknown as adminQuizQuestionCreateReturn;
     // Move new question to directly after index of original quesiton
     adminQuizQuestionMove(quizId, newQuestion.questionId, token, questionIndex + 1);
 
