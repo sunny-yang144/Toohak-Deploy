@@ -9,7 +9,7 @@ import {
   Message,
   MessageBody,
 } from './dataStore';
-import { generateToken, getUserViaToken } from './other';
+import { generateToken, getUserViaToken, getHashOf } from './other';
 import { UserScore, QuestionResult } from './quiz';
 // import { STATUS_CODES } from 'http';
 
@@ -120,7 +120,7 @@ export const adminAuthRegister = (email: string, password: string, nameFirst: st
     email: email,
     nameFirst: nameFirst,
     nameLast: nameLast,
-    password: password,
+    password: getHashOf(password),
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
     ownedQuizzes: [],
@@ -153,7 +153,7 @@ export const adminAuthLogin = (email: string, password: string): adminAuthLoginR
   if (!user) {
     return { error: `The given email ${email} does not exist`, statusCode: 400 };
   }
-  if (user.password !== password) {
+  if (user.password !== getHashOf(password)) {
     user.numFailedPasswordsSinceLastLogin += 1;
     setData(data);
     return { error: 'Incorrect password', statusCode: 400 };
@@ -211,6 +211,7 @@ export const adminAuthLogout = (token: string): Record<string, never> | ErrorObj
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
   user.tokens = user.tokens.filter(t => t.sessionId !== token);
+  data.tokens = data.tokens.filter(t => t.sessionId !== token);
 
   setData(data);
   return {};
@@ -277,13 +278,13 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
   if (!user) {
     return { error: 'This is not a valid user token', statusCode: 401 };
   }
-  if (user.password !== oldPassword) {
+  if (user.password !== getHashOf(oldPassword)) {
     return { error: 'Incorrect old password', statusCode: 400 };
   }
   if (oldPassword === newPassword) {
     return { error: 'New password must be different from current password', statusCode: 400 };
   }
-  if (user.oldPasswords.some((item) => item === newPassword)) {
+  if (user.oldPasswords.some((item) => item === getHashOf(newPassword))) {
     return { error: 'New password must be different from a password used before', statusCode: 400 };
   }
   const passwordLength = newPassword.length;
@@ -296,8 +297,8 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
     return { error: 'This is not a valid password', statusCode: 400 };
   }
 
-  user.password = newPassword;
-  user.oldPasswords.push(oldPassword);
+  user.password = getHashOf(newPassword);
+  user.oldPasswords.push(getHashOf(oldPassword));
   setData(data);
   return {};
 };
