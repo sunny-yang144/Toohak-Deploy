@@ -1,4 +1,5 @@
 // import HTTPError from 'http-errors';
+import isImage from 'is-image-header';
 import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours } from './dataStore';
 import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken } from './other';
 
@@ -568,7 +569,15 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
  * @returns adminQuizQuestionCreateReturn | ErrorObject
  */
 
-export const adminQuizQuestionCreate = (quizId: number, token: string, questionBody: QuestionBody): adminQuizQuestionCreateReturn | ErrorObject => {
+
+function sleepSync(ms: number) {
+  const startTime = new Date().getTime();
+  while (new Date().getTime() - startTime < ms) {
+    // zzzZZ - comment needed so eslint doesn't complain
+  }
+}
+
+export const adminQuizQuestionCreate = async (quizId: number, token: string, questionBody: QuestionBody): Promise<ErrorObject | adminQuizQuestionCreateReturn> => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -639,6 +648,25 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
     return { error: 'No answers are correct.', statusCode: 400 };
   }
 
+  if (questionBody.thumbnailUrl.length === 0) {
+    return { error: 'No thumbnail url provided', statusCode: 400 };
+  }
+  console.log("bruh1")
+  const isImage = require('is-image-header');
+  try {
+    const result = await isImage(questionBody.thumbnailUrl);
+    if (!result.isImage) {
+      console.log(result)
+      return { error: 'This thumbnail is not a JPEG/PNG', statusCode: 400 };
+    } else {
+      console.log("bruh")
+    }
+  } catch (error) {
+    return { error: 'This is not a valid URL', statusCode: 400  };
+  }
+  
+  console.log("nrp");
+
   const questionId = generateQuestionId(data.questions);
   const questionObject: Question = {
     questionId: questionId,
@@ -646,6 +674,7 @@ export const adminQuizQuestionCreate = (quizId: number, token: string, questionB
     duration: questionBody.duration,
     points: questionBody.points,
     answers: [],
+    thumbnailUrl: questionBody.thumbnailUrl,
   };
 
   for (const answer of questionBody.answers) {
@@ -922,7 +951,7 @@ export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, t
     // Find index of QuizQuestion to duplicate
     const questionIndex = quiz.questions.indexOf(question);
     // Create duplicate of question (will go to end of array)
-    const newQuestion = adminQuizQuestionCreate(quizId, token, question) as adminQuizQuestionCreateReturn;
+    const newQuestion = adminQuizQuestionCreate(quizId, token, question) as unknown as adminQuizQuestionCreateReturn;
     // Move new question to directly after index of original quesiton
     adminQuizQuestionMove(quizId, newQuestion.questionId, token, questionIndex + 1);
 

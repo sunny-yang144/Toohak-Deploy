@@ -554,17 +554,24 @@ app.post('/v2/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   res.json(response);
 });
 
-app.post('/v2/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+app.post('/v2/admin/quiz/:quizid/question', async (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const token = req.headers.token as string;
   const { questionBody } = req.body;
-  const response = adminQuizQuestionCreate(quizId, token, questionBody);
-  if ('error' in response) {
-    return res.status(response.statusCode).json({
-      error: response.error
-    });
+  let response;
+  try {
+    response = await adminQuizQuestionCreate(quizId, token, questionBody);
+    // Handle success and send response
+    if ('error' in response) {
+      return res.status(response.statusCode).json({
+        error: response.error
+      });
+    }
+    res.status(200).json(response);
+  } catch (error) {
+    // Handle errors and send appropriate response
+    res.status(error.statusCode || 500).json({ error: error.message || 'Internal Server Error' });
   }
-  res.json(response);
 });
 
 app.put('/v2/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
