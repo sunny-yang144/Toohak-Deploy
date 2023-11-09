@@ -282,12 +282,10 @@ describe.skip('Tests for getQuizSessionResults', () => {
   let quiz: {
     body: {quizId: number},
   };
-  
   beforeEach(() => {
     user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    quiz = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);  
+    quiz = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
   });
-
   test('Session ID does not refer to a valid session within this quiz', () => {
     const quiz2 = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME2, validDetails.QUIZDESCRIPTION2);
     const session2 = requestNewSessionQuiz(quiz2.body.quizId, user.body.token, 3);
