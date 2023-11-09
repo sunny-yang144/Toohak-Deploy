@@ -1,5 +1,4 @@
 // import HTTPError from 'http-errors';
-import isImage from 'is-image-header';
 import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours } from './dataStore';
 import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken } from './other';
 
@@ -161,7 +160,7 @@ export const adminQuizCreate = (token: string, name: string, description: string
     numQuestions: 0,
     questions: [] as Question[],
     duration: 0,
-    thumbnailUrl: "",
+    thumbnailUrl: '',
   };
 
   user.ownedQuizzes.push(newQuiz.quizId);
@@ -209,7 +208,7 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
       duration: quiz.duration,
       thumbnailUrl: quiz.thumbnailUrl,
     };
-    return quizInfo
+    return quizInfo;
   }
 };
 
@@ -569,14 +568,6 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
  * @returns adminQuizQuestionCreateReturn | ErrorObject
  */
 
-
-function sleepSync(ms: number) {
-  const startTime = new Date().getTime();
-  while (new Date().getTime() - startTime < ms) {
-    // zzzZZ - comment needed so eslint doesn't complain
-  }
-}
-
 export const adminQuizQuestionCreate = async (quizId: number, token: string, questionBody: QuestionBody): Promise<ErrorObject | adminQuizQuestionCreateReturn> => {
   const data = getData();
   const user = getUserViaToken(token, data);
@@ -651,21 +642,15 @@ export const adminQuizQuestionCreate = async (quizId: number, token: string, que
   if (questionBody.thumbnailUrl.length === 0) {
     return { error: 'No thumbnail url provided', statusCode: 400 };
   }
-  console.log("bruh1")
   const isImage = require('is-image-header');
   try {
     const result = await isImage(questionBody.thumbnailUrl);
     if (!result.isImage) {
-      console.log(result)
       return { error: 'This thumbnail is not a JPEG/PNG', statusCode: 400 };
-    } else {
-      console.log("bruh")
     }
   } catch (error) {
-    return { error: 'This is not a valid URL', statusCode: 400  };
+    return { error: 'This is not a valid URL', statusCode: 400 };
   }
-  
-  console.log("nrp");
 
   const questionId = generateQuestionId(data.questions);
   const questionObject: Question = {
@@ -930,7 +915,7 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
  * @returns adminQuizQuestionDuplicateReturn | ErrorObject
  */
 
-export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, token: string): adminQuizQuestionDuplicateReturn | ErrorObject => {
+export const adminQuizQuestionDuplicate = async (quizId: number, questionId: number, token: string): Promise<ErrorObject | adminQuizQuestionDuplicateReturn> => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -951,7 +936,7 @@ export const adminQuizQuestionDuplicate = (quizId: number, questionId: number, t
     // Find index of QuizQuestion to duplicate
     const questionIndex = quiz.questions.indexOf(question);
     // Create duplicate of question (will go to end of array)
-    const newQuestion = adminQuizQuestionCreate(quizId, token, question) as unknown as adminQuizQuestionCreateReturn;
+    const newQuestion = await adminQuizQuestionCreate(quizId, token, question) as unknown as adminQuizQuestionCreateReturn;
     // Move new question to directly after index of original quesiton
     adminQuizQuestionMove(quizId, newQuestion.questionId, token, questionIndex + 1);
 

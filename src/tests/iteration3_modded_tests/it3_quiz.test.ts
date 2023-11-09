@@ -37,7 +37,7 @@ enum VD {
     QUIZDESCRIPTION = 'About flags, countries and capitals!',
     QUIZNAME2 = 'Soccer Quiz',
     QUIZDESCRIPTION2 = 'GOOOAAAALLLL (Part 2)',
-    IMAGEURL = 'https://www.digiseller.ru/preview/859334/p1_3713459_42ca8c03.jpg'
+    IMAGEURL = 'https://cdn.sefinek.net/images/animals/cat/cat-story-25-1377426-min.jpg'
 }
 
 const sampleQuestion1: QuestionBody = {
@@ -53,7 +53,8 @@ const sampleQuestion1: QuestionBody = {
       answer: 'Queen Elizabeth',
       correct: true
     }
-  ]
+  ],
+  thumbnailUrl: VD.IMAGEURL,
 };
 
 const sampleQuestion2: QuestionBody = {
@@ -69,7 +70,8 @@ const sampleQuestion2: QuestionBody = {
       answer: '6',
       correct: false
     }
-  ]
+  ],
+  thumbnailUrl: VD.IMAGEURL,
 };
 
 beforeEach(() => {
@@ -229,6 +231,7 @@ describe('Tests for adminQuizInfo', () => {
     expect(requestAdminQuizInfoV2(user.body.token, quiz.body.quizId).body).toStrictEqual(
       {
         quizId: quiz.body.quizId,
+        thumbnailUrl: '',
         name: expect.any(String),
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
@@ -247,6 +250,7 @@ describe('Tests for adminQuizInfo', () => {
     expect(requestAdminQuizInfoV2(user.body.token, quiz1.body.quizId).body).toStrictEqual(
       {
         quizId: quiz1.body.quizId,
+        thumbnailUrl: '',
         name: VD.QUIZNAME,
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
@@ -259,6 +263,7 @@ describe('Tests for adminQuizInfo', () => {
     expect(requestAdminQuizInfoV2(user.body.token, quiz2.body.quizId).body).toStrictEqual(
       {
         quizId: quiz2.body.quizId,
+        thumbnailUrl: '',
         name: VD.QUIZNAME2,
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
@@ -278,6 +283,7 @@ describe('Tests for adminQuizInfo', () => {
     expect(response.body).toStrictEqual(
       {
         quizId: quiz.body.quizId,
+        thumbnailUrl: '',
         name: VD.QUIZNAME,
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
@@ -304,6 +310,7 @@ describe('Tests for adminQuizInfo', () => {
                 correct: expect.any(Boolean),
               }
             ],
+            thumbnailUrl: VD.IMAGEURL,
           }
         ],
         duration: expect.any(Number),
@@ -599,6 +606,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
     expect(quizInfo.body).toStrictEqual(
       {
         quizId: quiz.body.quizId,
+        thumbnailUrl: '',
         name: VD.QUIZNAME,
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
@@ -624,6 +632,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
                 correct: expect.any(Boolean),
               }
             ],
+            thumbnailUrl: VD.IMAGEURL,
           },
           {
             questionId: question2.body.questionId,
@@ -644,6 +653,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
                 correct: expect.any(Boolean),
               }
             ],
+            thumbnailUrl: VD.IMAGEURL,
           }
         ],
         duration: expect.any(Number),
@@ -666,22 +676,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
   test('Quiz ID does not refer to a valid quiz', () => {
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
-    const question = {
-      question: 'What does KFC sell?',
-      duration: 4,
-      points: 5,
-    };
-    const answers = [
-      { answer: 'Chicken', correct: true },
-      { answer: 'Nuggets', correct: true },
-    ];
-    const questionBody = {
-      question: question.question,
-      duration: question.duration,
-      points: question.points,
-      answers: answers,
-    };
-    expect(() => requestAdminQuizQuestionCreateV2(-1, user.body.token, questionBody)).toThrow(HTTPError[400]);
+    expect(() => requestAdminQuizQuestionCreateV2(-1, user.body.token, sampleQuestion1)).toThrow(HTTPError[400]);
   });
 
   test('Question string is less than 5 characters in length or greater than 50 characters in length', () => {
@@ -701,6 +696,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
 
@@ -709,6 +705,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody2)).toThrow(HTTPError[400]);
   });
@@ -740,6 +737,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: answers2,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionCreateV2(quiz2.body.quizId, user.body.token, questionBody1)).toThrow(HTTPError[400]);
 
@@ -748,6 +746,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: answers3,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionCreateV2(quiz2.body.quizId, user.body.token, questionBody2)).toThrow(HTTPError[400]);
   });
@@ -769,6 +768,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: -1,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
   });
@@ -796,12 +796,14 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: question1.duration,
       points: question1.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     const questionBody2 = {
       question: question2.question,
       duration: question2.duration,
       points: question2.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
 
     requestAdminQuizQuestionCreateV2(quiz1.body.quizId, user.body.token, questionBody1);
@@ -825,12 +827,14 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: 0,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     const questionBody2 = {
       question: question.question,
       duration: question.duration,
       points: 11,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody1)).toThrow(HTTPError[400]);
     expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody2)).toThrow(HTTPError[400]);
@@ -853,6 +857,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: noCharacterAnswer,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody1)).toThrow(HTTPError[400]);
 
@@ -865,6 +870,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: manyCharacterAnswer,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody2)).toThrow(HTTPError[400]);
   });
@@ -886,6 +892,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: sameAnswers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
   });
@@ -907,6 +914,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: incorrectAnswersOnly,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
   });
@@ -928,6 +936,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, invalidId, questionBody)).toThrow(HTTPError[401]);
     expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, '', questionBody)).toThrow(HTTPError[401]);
@@ -950,9 +959,94 @@ describe('Tests for adminQuizQuestionCreate', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     const user1 = requestAdminAuthRegister('drizman123@gmail.com', VD.PASSWORD, 'Driz', 'Haj');
     expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user1.body.token, questionBody)).toThrow(HTTPError[403]);
+  });
+  test('Url is not a valid URL', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+      thumbnailUrl: '',
+    };
+    expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
+  });
+  test('Url is an empty string', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+      thumbnailUrl: 'https://www.mywalletisstuckinpeanutbutter.com/',
+    };
+    expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
+  });
+  test('Url is not a valid URL', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+      thumbnailUrl: '',
+    };
+    expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
+  });
+  test('Url is not an image', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+      thumbnailUrl: 'https://www.random.org/',
+    };
+    expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
   });
 });
 
@@ -974,6 +1068,7 @@ describe('Tests for adminQuizQuestionDelete', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     const quizQuestionId = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody);
     expect(requestAdminQuizQuestionDeleteV2(quiz.body.quizId, quizQuestionId.body.questionId, user.body.token).body).toStrictEqual({});
@@ -997,6 +1092,7 @@ describe('Tests for adminQuizQuestionDelete', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody);
     expect(() => requestAdminQuizQuestionDeleteV2(quiz.body.quizId, -666, user.body.token)).toThrow(HTTPError[400]);
@@ -1019,6 +1115,7 @@ describe('Tests for adminQuizQuestionDelete', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     const quizQuestionId = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody);
     expect(() => requestAdminQuizQuestionDeleteV2(quiz.body.quizId, quizQuestionId.body.questionId, '')).toThrow(HTTPError[401]);
@@ -1041,6 +1138,7 @@ describe('Tests for adminQuizQuestionDelete', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     const quizQuestionId = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody);
     expect(() => requestAdminQuizQuestionDeleteV2(quiz.body.quizId, quizQuestionId.body.questionId, '-666')).toThrow(HTTPError[401]);
@@ -1064,6 +1162,7 @@ describe('Tests for adminQuizQuestionDelete', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     const quizQuestionId = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody);
     expect(() => requestAdminQuizQuestionDeleteV2(quiz.body.quizId, quizQuestionId.body.questionId, user2.body.token)).toThrow(HTTPError[403]);
@@ -1088,6 +1187,7 @@ describe('Tests for adminQuizQuestionDuplicate', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     const quizQuestion = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody);
     expect(requestAdminQuizQuestionDuplicateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token).body).toStrictEqual(
@@ -1117,6 +1217,7 @@ describe('Tests for adminQuizQuestionDuplicate', () => {
               correct: expect.any(Boolean),
             }
           ],
+          thumbnailUrl: VD.IMAGEURL,
         },
         {
           questionId: expect.any(Number), // Should now be question 1's duplicate
@@ -1137,6 +1238,7 @@ describe('Tests for adminQuizQuestionDuplicate', () => {
               correct: expect.any(Boolean),
             }
           ],
+          thumbnailUrl: VD.IMAGEURL,
         },
       ]
     );
@@ -1202,12 +1304,14 @@ describe('Tests for adminQuizQuestionMove', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     const questionBody2 = {
       question: question2.question,
       duration: question2.duration,
       points: question2.points,
       answers: answers2,
+      thumbnailUrl: VD.IMAGEURL,
     };
       // Create quizQuestion for move (In same Quiz)
     const quizQuestion = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody);
@@ -1237,6 +1341,7 @@ describe('Tests for adminQuizQuestionMove', () => {
               correct: expect.any(Boolean),
             }
           ],
+          thumbnailUrl: VD.IMAGEURL,
         },
         {
           questionId: quizQuestion.body.questionId, // Should now be question 1
@@ -1257,6 +1362,7 @@ describe('Tests for adminQuizQuestionMove', () => {
               correct: expect.any(Boolean),
             }
           ],
+          thumbnailUrl: VD.IMAGEURL,
         },
       ]
     );
@@ -1354,12 +1460,14 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: question.duration,
       points: question.points,
       answers: answers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     const questionBody2 = {
       question: question2.question,
       duration: question2.duration,
       points: question2.points,
       answers: answers2,
+      thumbnailUrl: VD.IMAGEURL,
     };
       // Create quizQuestion to update
     const quizQuestion = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody);
@@ -1387,6 +1495,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
               correct: expect.any(Boolean),
             }
           ],
+          thumbnailUrl: VD.IMAGEURL,
         },
       ]
     );
@@ -1429,6 +1538,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: answers2,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token, questionBodyShort)).toThrow(HTTPError[400]);
   });
@@ -1451,6 +1561,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: answers2,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token, questionBodyLong)).toThrow(HTTPError[400]);
   });
@@ -1478,6 +1589,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: tooManyAnswers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token, questionBodyTooManyAnswers)).toThrow(HTTPError[400]);
   });
@@ -1499,6 +1611,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: tooFewAnswers,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token, questionBodyTooFewAnswers)).toThrow(HTTPError[400]);
   });
@@ -1521,6 +1634,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: -1,
       points: question2.points,
       answers: answers2,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token, questionBodyNegativeDuration)).toThrow(HTTPError[400]);
   });
@@ -1543,6 +1657,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: 200,
       points: question2.points,
       answers: answers2,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token, questionBodyExcessiveDuration)).toThrow(HTTPError[400]);
   });
@@ -1565,6 +1680,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: 0,
       answers: answers2,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token, questionBodyNoPoints)).toThrow(HTTPError[400]);
   });
@@ -1587,6 +1703,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: 11,
       answers: answers2,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token, questionBodyTooManyPoints)).toThrow(HTTPError[400]);
   });
@@ -1609,6 +1726,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: emptyAnswer,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token, questionBodyEmptyAnswer)).toThrow(HTTPError[400]);
   });
@@ -1631,6 +1749,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: longAnswer,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token, questionBodyLongAnswer)).toThrow(HTTPError[400]);
   });
@@ -1654,6 +1773,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: duplicateAnswer,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token, questionBodyDuplicateAnswer)).toThrow(HTTPError[400]);
   });
@@ -1676,6 +1796,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
       duration: question2.duration,
       points: question2.points,
       answers: noCorrectAnswer,
+      thumbnailUrl: VD.IMAGEURL,
     };
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user.body.token, questionBodyNoCorrectAnswer)).toThrow(HTTPError[400]);
   });
