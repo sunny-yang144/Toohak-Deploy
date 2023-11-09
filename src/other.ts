@@ -1,5 +1,6 @@
 import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken, Token, DataStore } from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 
 export function clear (): Record<string, never> {
   setData({
@@ -111,4 +112,8 @@ export function getRandomColour(): colours {
 
 export function getUserViaToken(token: string, data: DataStore): User {
   return data.users.find(u => u.tokens.some((t: Token) => t.sessionId === token));
+}
+
+export function getHashOf(plaintext: string) {
+  return crypto.createHash('sha256').update(plaintext).digest('hex');
 }
