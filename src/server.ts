@@ -307,23 +307,18 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   res.json(response);
 });
 
-app.post('/v1/admin/quiz/:quizid/question', async (req: Request, res: Response) => {
+app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const { token, questionBody } = req.body;
-  let response;
-  try {
-    response = await adminQuizQuestionCreate(quizId, token, questionBody);
-    // Handle success and send response
-    if ('error' in response) {
-      return res.status(response.statusCode).json({
-        error: response.error
-      });
-    }
-    res.status(200).json(response);
-  } catch (error) {
-    // Handle errors and send appropriate response
-    res.status(error.statusCode || 500).json({ error: error.message || 'Internal Server Error' });
+
+  const response = adminQuizQuestionCreate(quizId, token, questionBody);
+
+  if ('error' in response) {
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
+  res.json(response);
 });
 
 app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
@@ -371,24 +366,19 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: 
   res.json(response);
 });
 
-app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', async (req: Request, res: Response) => {
+app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const questionId = parseInt(req.params.questionid);
   const { token } = req.body;
-  let response;
-  try {
-    response = await adminQuizQuestionDuplicate(quizId, questionId, token);
-    // Handle success and send response
-    if ('error' in response) {
-      return res.status(response.statusCode).json({
-        error: response.error
-      });
-    }
-    res.status(200).json(response);
-  } catch (error) {
-    // Handle errors and send appropriate response
-    res.status(error.statusCode || 500).json({ error: error.message || 'Internal Server Error' });
+
+  const response = adminQuizQuestionDuplicate(quizId, questionId, token);
+
+  if ('error' in response) {
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
+  res.json(response);
 });
 
 /// /////////////////////////////////////////////////////////////////////////////////////
@@ -564,24 +554,17 @@ app.post('/v2/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   res.json(response);
 });
 
-app.post('/v2/admin/quiz/:quizid/question', async (req: Request, res: Response) => {
+app.post('/v2/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const token = req.headers.token as string;
   const { questionBody } = req.body;
-  let response;
-  try {
-    response = await adminQuizQuestionCreate(quizId, token, questionBody);
-    // Handle success and send response
-    if ('error' in response) {
-      return res.status(response.statusCode).json({
-        error: response.error
-      });
-    }
-    res.status(200).json(response);
-  } catch (error) {
-    // Handle errors and send appropriate response
-    res.status(error.statusCode || 500).json({ error: error.message || 'Internal Server Error' });
+  const response = adminQuizQuestionCreate(quizId, token, questionBody);
+  if ('error' in response) {
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
+  res.json(response);
 });
 
 app.put('/v2/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
@@ -625,24 +608,17 @@ app.put('/v2/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: 
   res.json(response);
 });
 
-app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate', async(req: Request, res: Response) => {
+app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const questionId = parseInt(req.params.questionid);
   const token = req.headers.token as string;
-  let response;
-  try {
-    response = await adminQuizQuestionDuplicate(quizId, questionId, token);
-    // Handle success and send response
-    if ('error' in response) {
-      return res.status(response.statusCode).json({
-        error: response.error
-      });
-    }
-    res.status(200).json(response);
-  } catch (error) {
-    // Handle errors and send appropriate response
-    res.status(error.statusCode || 500).json({ error: error.message || 'Internal Server Error' });
+  const response = adminQuizQuestionDuplicate(quizId, questionId, token);
+  if ('error' in response) {
+    return res.status(response.statusCode).json({
+      error: response.error
+    });
   }
+  res.json(response);
 });
 
 /// /////////////////////////////////////////////////////////////////////////////////////
