@@ -455,7 +455,7 @@ describe.skip('Tests for updateSessionState', () => {
   });
   test('Invalid Command from QUESTION_COUNTDOWN, NEXT_QUESTION', () => {
     // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    const respone = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    const response = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     expect(response).toThrow(HTTPError[400]);
   });
   test('Invalid Command from QUESTION_COUNTDOWN, GO_TO_ANSWER', () => {
