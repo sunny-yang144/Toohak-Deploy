@@ -340,7 +340,7 @@ describe.skip('Tests for updateSessionState', () => {
 
   test('QUESTION_COUNTDOWN to QUESTION_OPEN on SKIP_COUNTDOWN', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.sbody.essionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
     //setTimeout(expect(getSessions).toBe('QUESTION_OPEN'), 3000); // 3 seconds
   });
