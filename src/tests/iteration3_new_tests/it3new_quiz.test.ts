@@ -319,8 +319,8 @@ describe.skip('Tests for updateSessionState', () => {
   };
 
   beforeEach(() => {
-    user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
-    quiz = requestAdminQuizCreateV2(user.body.token, validDetails.QUIZNAME, validDetails.QUIZDESCRIPTION);
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
   });
   test('LOBBY to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
