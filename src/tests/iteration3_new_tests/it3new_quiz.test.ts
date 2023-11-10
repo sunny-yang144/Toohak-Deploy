@@ -18,7 +18,6 @@ import { expect } from '@jest/globals';
 import { v4 as uuidv4 } from 'uuid';
 import HTTPError from 'http-errors';
 
-
 import { QuestionBody } from '../../dataStore';
 
   enum VD {
@@ -263,9 +262,7 @@ describe.skip('Tests for getNewSessionQuiz', () => {
   });
 });
 
-
 describe.skip('Tests for getQuizSessionResults', () => {
-
   let user: {
     body: {token: string},
     statusCode: number,
