@@ -66,7 +66,7 @@ export interface Question {
   questionId: number;
   question: string;
   duration: number;
-  thumbnailUrl?: string;
+  thumbnailUrl: string;
   points: number;
   answers: Answer[];
 }
@@ -96,7 +96,7 @@ export interface SessionQuestionResults {
 
 export interface Session {
   sessionId: number;
-  quizId: number;
+  quiz: Quiz;
   players: Player[];
   atQuestion: number;
   state: states;
@@ -112,6 +112,7 @@ export interface QuestionBody {
   duration: number;
   points: number;
   answers: AnswerBody[];
+  thumbnailUrl: string;
 }
 export interface QuestionToken {
   questionId: number;
