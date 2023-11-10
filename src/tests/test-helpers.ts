@@ -765,7 +765,7 @@ export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId:
 export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUrl: string) {
   const res = request(
     'PUT',
-    SERVER_URL + `/v2/admin/quiz/${quizId}/thumbnail`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/thumbnail`,
     {
       headers: {
         token,
@@ -783,7 +783,7 @@ export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUr
 export function requestViewSessionActivity (quizId: number, token: string) {
   const res = request(
     'GET',
-    SERVER_URL + `/v2/admin/quiz/${quizId}/sessions`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/sessions`,
     {
       headers: {
         token,
@@ -798,7 +798,7 @@ export function requestViewSessionActivity (quizId: number, token: string) {
 export function requestNewSessionQuiz (quizId: number, token: string, autoStartNum: number) {
   const res = request(
     'POST',
-    SERVER_URL + `/v2/admin/quiz/${quizId}/session/start`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/start`,
     {
       headers: {
         token,
@@ -816,7 +816,7 @@ export function requestNewSessionQuiz (quizId: number, token: string, autoStartN
 export function requestUpdateSessionState (quizId: number, sessionId: number, token: string, action: actions) {
   const res = request(
     'PUT',
-    SERVER_URL + `/v2/admin/quiz/${quizId}/session/${sessionId}`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
     {
       headers: {
         token,
@@ -834,7 +834,7 @@ export function requestUpdateSessionState (quizId: number, sessionId: number, to
 export function requestGetSessionStatus (quizId: number, sessionId: number, token: string) {
   const res = request(
     'GET',
-    SERVER_URL + `/v2/admin/quiz/${quizId}/session/${sessionId}`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
     {
       headers: {
         token,
@@ -849,7 +849,7 @@ export function requestGetSessionStatus (quizId: number, sessionId: number, toke
 export function requestGetQuizSessionResults (quizId: number, sessionId: number, token: string) {
   const res = request(
     'GET',
-    SERVER_URL + `/v2/admin/quiz/${quizId}/session/${sessionId}/results`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
     {
       headers: {
         token,

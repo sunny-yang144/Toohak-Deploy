@@ -82,7 +82,7 @@ afterAll(() => {
 /// ///////////////////////////     NEW ITERATION 3      ////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 
-describe.skip('Tests for updateQuizThumbNail', () => {
+describe.only('Tests for updateQuizThumbNail', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -96,7 +96,7 @@ describe.skip('Tests for updateQuizThumbNail', () => {
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
   });
 
-  test('Successful change of thumbnail', () => {
+  test.only('Successful change of thumbnail', () => {
     requestUpdateQuizThumbNail(quiz.body.quizId, user.body.token, VD.IMAGEURL);
     const quizInfo = requestAdminQuizInfoV2(user.body.token, quiz.body.quizId);
     expect(quizInfo.body).toStrictEqual(
@@ -122,7 +122,7 @@ describe.skip('Tests for updateQuizThumbNail', () => {
     expect(response).toThrow(HTTPError[400]);
   });
 
-  test('Token is empty or invalid', () => {
+  test.only('Token is empty or invalid', () => {
     const invalidId = uuidv4();
     const response = requestUpdateQuizThumbNail(quiz.body.quizId, invalidId, VD.IMAGEURL);
     expect(response).toThrow(HTTPError[401]);

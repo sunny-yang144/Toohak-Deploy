@@ -1,6 +1,8 @@
 // import HTTPError from 'http-errors';
 import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours } from './dataStore';
 import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken } from './other';
+import isImage from 'is-image-header';
+import HTTPError from 'http-errors';
 
 type EmptyObject = Record<string, never>;
 
@@ -642,7 +644,6 @@ export const adminQuizQuestionCreate = async (quizId: number, token: string, que
   if (questionBody.thumbnailUrl.length === 0) {
     return { error: 'No thumbnail url provided', statusCode: 400 };
   }
-  const isImage = require('is-image-header');
   try {
     const result = await isImage(questionBody.thumbnailUrl);
     if (!result.isImage) {
@@ -954,12 +955,27 @@ export const adminQuizQuestionDuplicate = async (quizId: number, questionId: num
 /// /////////////////////////////// ITERATION 3 NEW ///////////////////////////////////////////////
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
-export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: string): Record<string, never> | ErrorObject => {
-  // throw HTTPError(400, 'imgUrl when fetched does not return a valid file');
-  // throw HTTPError(400, 'imgUrl when fetched is not a JPG or PNG image');
-  // throw HTTPError(401, 'Token is empty');
-  // throw HTTPError(401, 'Token is invalid');
-  // throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
+export const updateQuizThumbNail = async (quizId: number, token: string, imgUrl: string): Promise<EmptyObject | ErrorObject> => {
+  const data = getData();
+  const user = getUserViaToken(token, data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Quiz is not owned by this user')
+    }
+  }
+  try {
+    const result = await isImage(imgUrl);
+    if (!result.isImage) {
+      throw HTTPError(400, 'This thumbnail is not a JPEG/PNG');
+    } 
+  } catch (error) {
+    throw HTTPError(400, 'This is not a valid URL');
+  }
+  const quiz = data.quizzes.find((q: Quiz) => q.quizId === quizId);
+  quiz.thumbnailUrl = imgUrl;
   return {};
 };
 
