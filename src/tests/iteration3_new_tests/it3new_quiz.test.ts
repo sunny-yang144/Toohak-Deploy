@@ -474,7 +474,7 @@ describe.skip('Tests for updateSessionState', () => {
     // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    const reponse = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    const response = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     expect(response).toThrow(HTTPError[400]);
   });
   test('Invalid Command from QUESTION_OPEN, GO_TO_FINAL_RESULTS', () => {
@@ -488,7 +488,7 @@ describe.skip('Tests for updateSessionState', () => {
     // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    const reponse = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    const response = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     expect(response).toThrow(HTTPError[400]);
   });
   test('Invalid Command from QUESTION_CLOSE, SKIP_COUNTDOWN', () => {
@@ -508,7 +508,7 @@ describe.skip('Tests for updateSessionState', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    const reponse = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    const response = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     expect(response).toThrow(HTTPError[400]);
   });
   test('Invalid Command from ANSWER_SHOW, GO_TO_ANSWER', () => {
@@ -540,7 +540,7 @@ describe.skip('Tests for updateSessionState', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     //setTimeout(requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS'), 20000);
-    const repsonse = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    const response = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     expect(response).toThrow(HTTPError[400]);
   });
 });
