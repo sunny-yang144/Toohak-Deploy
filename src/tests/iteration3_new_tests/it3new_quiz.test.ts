@@ -304,7 +304,7 @@ describe.skip('Tests for getQuizSessionResults', () => {
   });
 });
 describe.skip('Tests for updateSessionState', () => {
-  //////////////////note: I HAVE NO IDEA HOW TO GET THE TIME STUFF TO WORK SO I COMMENTED IT OUT////////
+  //  ////////////////note: I HAVE NO IDEA HOW TO GET THE TIME STUFF TO WORK SO I COMMENTED IT OUT////////
   let user: {
     body: {token: string},
     statusCode: number,
@@ -341,8 +341,8 @@ describe.skip('Tests for updateSessionState', () => {
   test('QUESTION_COUNTDOWN to QUESTION_OPEN on SKIP_COUNTDOWN', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    //  const getSessions = 
-    requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    //  const getSessions =
+    //  requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
     //  setTimeout(expect(getSessions).toBe('QUESTION_OPEN'), 3000); // 3 seconds
   });
 
@@ -374,8 +374,8 @@ describe.skip('Tests for updateSessionState', () => {
   test('QUESTION_OPEN to QUESTION_CLOSE on duration ending', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    //  const getSessions = 
-    requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    //  const getSessions =
+    //  requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
     //  setTimeout(expect(getSessions).toBe('QUESTION_CLOSE'), 20000);
   });
 
