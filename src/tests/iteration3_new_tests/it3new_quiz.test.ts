@@ -445,7 +445,7 @@ describe.skip('Tests for updateSessionState', () => {
   });
   test('Invalid Command from LOBBY, GO_TO_FINAL_RESULT', () => {
     // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    const response = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULT');
+    const response = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
     expect(response).toThrow(HTTPError[400]);
   });
   test('Invalid Command from LOBBY, NEXT_QUESTION', () => {
