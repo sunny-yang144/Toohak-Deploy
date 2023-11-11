@@ -1,4 +1,4 @@
-import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken, Token, DataStore, Session } from './dataStore';
+import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken, Token, DataStore, Session, actions, states } from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import request from 'sync-request-curl';
@@ -152,3 +152,64 @@ export function isImageSync(url: string) {
     throw HTTPError(400, 'imgUrl when fetch is not a JPG or PNG image');
   }
 }
+
+export function isValidAction(action: string, state: states) {
+  if (!(['NEXT_QUESTION', 'SKIP_COUNTDOWN', 'GO_TO_ANSWER', 'GO_TO_FINAL_RESULTS', 'END'] as const).includes(action as actions)) {
+    throw HTTPError(400, 'Action provided is not a valid Action');
+  }
+  let validActions: actions[];
+  if (state === 'LOBBY') {
+    validActions = ['NEXT_QUESTION', 'END'];
+  } else if (state === 'QUESTION_COUNTDOWN') {
+    validActions = ['SKIP_COUNTDOWN', 'END'];
+  } else if (state === 'QUESTION_OPEN') {
+    validActions = ['GO_TO_ANSWER', 'END'];
+  } else if (state === 'QUESTION_CLOSE') {
+    validActions = ['NEXT_QUESTION', 'GO_TO_ANSWER', 'GO_TO_FINAL_RESULTS', 'END'];
+  } else if (state === 'ANSWER_SHOW') {
+    validActions = ['NEXT_QUESTION', 'GO_TO_FINAL_RESULTS', 'END'];
+  } else if (state === 'FINAL_RESULTS') {
+    validActions = ['END'];
+  } else if (state === 'END') {
+    validActions = [];
+  }
+  if (!validActions.includes(action as actions)) {
+    throw HTTPError(400, 'Action cannot be applied to current state');
+  };
+}
+
+export function moveStates(session: Session, action: actions)  {
+  isValidAction(action, session.state);
+  if (action === 'END') {
+    session.state = 'END';
+    clearTimeout(session.qnTimeout);
+  } else if (action === 'NEXT_QUESTION') {
+    session.state = 'QUESTION_COUNTDOWN';
+    session.atQuestion++;
+  } else if (action === 'SKIP_COUNTDOWN') {
+    session.state = 'QUESTION_OPEN';
+    clearTimeout(session.qnTimeout);
+  } else if (action === 'GO_TO_ANSWER') {
+    session.state = 'ANSWER_SHOW';
+    clearTimeout(session.qnTimeout);
+  } else if (action === 'GO_TO_FINAL_RESULTS') {
+    session.state = 'FINAL_RESULTS';
+  }
+
+  // Making the assumption that a quiz can only have one timeout at a time.
+  if (session.state === 'QUESTION_OPEN') {
+    const qnNum = session.atQuestion;
+    const qnDuration = session.quiz.questions[qnNum].duration;
+    const timeout = setTimeout(() => {
+      session.state = 'QUESTION_CLOSE';
+    }, qnDuration * 1000);
+    session.qnTimeout = timeout;
+  }
+  if (session.state == 'QUESTION_COUNTDOWN') {
+    const timeout = setTimeout(() => {
+      session.state = 'QUESTION_CLOSE';
+    }, 3 * 1000);
+    session.qnTimeout = timeout;
+  }
+} 
+

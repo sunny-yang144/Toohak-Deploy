@@ -769,26 +769,24 @@ export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId:
 /// /////////////////////////////     ITERATION 3      //////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 // Used from lab08_quiz.
-type ResponseBody = Record<string, unknown>;
 const requestHelper = (
   method: HttpVerb,
   path: string,
   payload: Payload,
   headers: IncomingHttpHeaders = {}
-): ResponseBody => {
+) => {
   let qs = {};
   let json = {};
   if (['GET', 'DELETE'].includes(method.toUpperCase())) {
     qs = payload;
   } else {
-    // PUT/POST
     json = payload;
   }
 
   const url = SERVER_URL + path;
   const res = request(method, url, { qs, json, headers, timeout: TIMEOUT_MS });
 
-  let responseBody: ResponseBody;
+  let responseBody;
   try {
     responseBody = JSON.parse(res.body.toString());
   } catch (err: unknown) {

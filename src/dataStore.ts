@@ -102,6 +102,7 @@ export interface Session {
   state: states;
   questionResults: SessionQuestionResults[];
   autoStartNum: number;
+  qnTimeout?: NodeJS.Timeout;
 }
 
 export interface AnswerBody {

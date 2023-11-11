@@ -165,8 +165,7 @@ describe.skip('Tests for viewSessionActivity', () => {
   });
 
   test('Successful view of active and inactive sessions', () => {
-    const response = requestViewSessionActivity(quiz.body.quizId, user.body.token);
-    expect(response).toStrictEqual(
+    expect(requestViewSessionActivity(quiz.body.quizId, user.body.token).body).toStrictEqual(
       {
         activeSessions: [session1.body.sessionId, session2.body.sessionId],
         inactiveSessions: [session3.body.sessionId]
@@ -175,14 +174,12 @@ describe.skip('Tests for viewSessionActivity', () => {
   });
 
   test('Token is empty or invalid', () => {
-    const response = requestViewSessionActivity(quiz.body.quizId, invalidId);
-    expect(response).toThrow(HTTPError[401]);
+    expect(() => requestViewSessionActivity(quiz.body.quizId, invalidId)).toThrow(HTTPError[401]);
   });
 
   test('Token is not the owner of the quiz', () => {
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
-    const response = requestViewSessionActivity(quiz.body.quizId, user2.body.token);
-    expect(response).toThrow(HTTPError[403]);
+    expect(() => requestViewSessionActivity(quiz.body.quizId, user2.body.token)).toThrow(HTTPError[403]);
   });
 });
 
