@@ -10,6 +10,7 @@ import {
   requestUpdateSessionState,
   requestGetSessionStatus,
   requestGetQuizSessionResults,
+  requestGetQuizSessionResultsCSV,
   clear,
 } from '../test-helpers';
 
@@ -275,6 +276,13 @@ describe.skip('Tests for getQuizSessionResults', () => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
   });
+
+  test('Successful retrieval of quiz results', () => {
+    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+
+  });
+
   test('Session ID does not refer to a valid session within this quiz', () => {
     const quiz2 = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME2, VD.QUIZDESCRIPTION2);
     const session2 = requestNewSessionQuiz(quiz2.body.quizId, user.body.token, 3);
@@ -545,4 +553,57 @@ describe.skip('Tests for updateSessionState', () => {
     const response = requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     expect(response).toThrow(HTTPError[400]);
   });
+});
+
+describe.skip('Tests for getQuizSessionResultsCSV', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+  });
+
+  test('Successful retrieval and display of final results', () => {
+    // Player,question1score,question1rank,question2score,question2rank
+    // check if its a csv file
+    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const response = requestGetQuizSessionResultsCSV(quiz.body.quizId, session.body.sessionId, user.body.token);
+    expect(response).toStrictEqual();
+    // check the if its the correct data types in the file
+  });
+
+  test('Session ID does not refer to a valid session within this quiz', () => {
+    const quiz2 = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME2, VD.QUIZDESCRIPTION2);
+    const session2 = requestNewSessionQuiz(quiz2.body.quizId, user.body.token, 3);
+    const response = requestGetQuizSessionResults(quiz.body.quizId, session2.body.sessionId, user.body.token);
+    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    expect(response).toThrow(HTTPError[400]);
+  });
+
+  test('Session is not in FINAL_RESULTS state', () => {
+    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(response).toThrow(HTTPError[400]);
+  });
+
+  test('Token is empty or invalid', () => {
+    const invalidId = uuidv4();
+    const response = requestNewSessionQuiz(quiz.body.quizId, invalidId, 3);
+    expect(response).toThrow(HTTPError[401]);
+  });
+
+  test('Valid token, however user is unauthorised to view this session', () => {
+    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
+    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token);
+    expect(response).toThrow(HTTPError[403]);
+  });
+
 });
