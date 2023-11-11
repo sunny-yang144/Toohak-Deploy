@@ -117,3 +117,7 @@ export function getUserViaToken(token: string, data: DataStore): User {
 export function getHashOf(plaintext: string) {
   return crypto.createHash('sha256').update(plaintext).digest('hex');
 }
+
+export function checkCSV (url: string) {
+  return url.endsWith('.csv');
+}
