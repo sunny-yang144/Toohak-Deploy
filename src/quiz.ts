@@ -1,6 +1,6 @@
 // import HTTPError from 'http-errors';
-import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours, states } from './dataStore';
-import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken, isImageSync } from './other';
+import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours, Session, actions } from './dataStore';
+import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken, isImageSync, isValidAction, moveStates } from './other';
 import isImage from 'is-image-header';
 import HTTPError from 'http-errors';
 
@@ -999,7 +999,7 @@ export const viewSessionActivity = (token: string, quizId: number): viewSessionA
   return quizSessions;
 };
 
-export const newSessionQuiz = (quizId: number, token: string, autoStartNum: number): newSessionQuizReturn | EmptyObject => {
+export const newSessionQuiz = (quizId: number, token: string, autoStartNum: number): newSessionQuizReturn | ErrorObject => {
   // throw HTTPError(400, 'autoStartNum is a number greater than 50');
   // throw HTTPError(400, 'A maximum of 10 sessions that are not in END state currently exist');
   // throw HTTPError(400, 'The quiz does not have any questions in it');
@@ -1011,13 +1011,22 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
   };
 };
 
-export const updateSessionState = (quizId: number, sessionId: number, token: string, action: string): Record<string, never> | ErrorObject => {
-  // throw HTTPError(400, 'Session ID does not refer to a valid session qithin this quiz');
-  // throw HTTPError(400, 'Action provided is not a valid Action enum');
-  // throw HTTPError(400, 'Action enum cannot be applied in the current state);
-  // throw HTTPError(401, 'Token is empty');
-  // throw HTTPError(401, 'Token is invalid');
-  // throw HTTPError(403, 'Valid token is provided, but user is not authorised to modify this sesion');
+export const updateSessionState = (quizId: number, sessionId: number, token: string, action: string): EmptyObject | ErrorObject => {
+  const data = getData();
+  const user = getUserViaToken(token, data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Quiz/Session cannot be modified by this user. ');
+    }
+  }
+  const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
+  if (session === undefined || session.quiz.quizId !== quizId) {
+    throw HTTPError(400, 'Session ID does not refer to a valid session within this quiz or is invalid');
+  }
+  moveStates(session, action as actions);
   return {};
 };
 

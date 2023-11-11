@@ -101,6 +101,7 @@ export interface Session {
   atQuestion: number;
   state: states;
   questionResults: SessionQuestionResults[];
+  qnTimeout: NodeJS.Timeout;
 }
 
 export interface AnswerBody {
