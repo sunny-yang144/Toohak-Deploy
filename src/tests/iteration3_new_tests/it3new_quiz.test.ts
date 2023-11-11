@@ -546,3 +546,46 @@ describe.skip('Tests for updateSessionState', () => {
     expect(response).toThrow(HTTPError[400]);
   });
 });
+describe.skip('Tests for guestPlayerJoin', () => {
+  // 
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let session: {
+    body: {sessionId: number}
+  };
+
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+  });
+  test('Guest Join Successful', () => {
+    const response = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+    expect(response).toBe(number);
+  });
+
+  test('Session is not in FINAL_RESULTS state', () => {
+    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(response).toThrow(HTTPError[400]);
+  });
+
+  test('Token is empty or invalid', () => {
+    const invalidId = uuidv4();
+    const response = requestNewSessionQuiz(quiz.body.quizId, invalidId, 3);
+    expect(response).toThrow(HTTPError[401]);
+  });
+
+  test('Valid token, however user is unauthorised to view this session', () => {
+    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
+    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token);
+    expect(response).toThrow(HTTPError[403]);
+  });
+});
