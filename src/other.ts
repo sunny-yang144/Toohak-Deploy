@@ -120,6 +120,10 @@ export function getHashOf(plaintext: string) {
   return crypto.createHash('sha256').update(plaintext).digest('hex');
 }
 
+export function checkCSV (url: string) {
+  return url.endsWith('.csv');
+}
+
 export function isImageSync(url: string) {
   const response = request('GET', url);
   if (response.statusCode >= 400) {
