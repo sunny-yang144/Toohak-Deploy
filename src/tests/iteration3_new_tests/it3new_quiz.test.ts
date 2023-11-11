@@ -134,7 +134,7 @@ describe('Tests for updateQuizThumbNail', () => {
   });
 });
 
-describe.skip('Tests for viewSessionActivity', () => {
+describe.only('Tests for viewSessionActivity', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -175,7 +175,6 @@ describe.skip('Tests for viewSessionActivity', () => {
   });
 
   test('Token is empty or invalid', () => {
-    const invalidId = uuidv4();
     const response = requestViewSessionActivity(quiz.body.quizId, invalidId);
     expect(response).toThrow(HTTPError[401]);
   });

@@ -829,18 +829,7 @@ export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUr
 }
 
 export function requestViewSessionActivity (quizId: number, token: string) {
-  const res = request(
-    'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/sessions`,
-    {
-      headers: {
-        token,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-  };
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, {}, { token });
 }
 
 export function requestNewSessionQuiz (quizId: number, token: string, autoStartNum: number) {

@@ -1,5 +1,5 @@
 // import HTTPError from 'http-errors';
-import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours } from './dataStore';
+import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours, states } from './dataStore';
 import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken, isImageSync } from './other';
 import isImage from 'is-image-header';
 import HTTPError from 'http-errors';
@@ -973,21 +973,30 @@ export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: strin
 };
 
 export const viewSessionActivity = (token: string, quizId: number): viewSessionActivityReturn | ErrorObject => {
-  // throw HTTPError(401, 'Token is empty');
-  // throw HTTPError(401, 'Token is invalid');
-  // throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
-  return {
-    activeSessions: [
-      247,
-      566,
-      629,
-      923
-    ],
-    inactiveSessions: [
-      422,
-      817
-    ]
-  };
+  const data = getData();
+  const user = getUserViaToken(token,data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Quiz is not owned by this user');
+    }
+  }
+  const quizSessions: viewSessionActivityReturn = {
+    activeSessions: [],
+    inactiveSessions: [],
+  }
+  for (const session of data.sessions) {
+    if (session.quiz.quizId === quizId) {
+      if (session.state === 'END') {
+        quizSessions.inactiveSessions.push(session.sessionId);
+      } else {
+        quizSessions.activeSessions.push(session.sessionId);
+      }
+    }
+  }
+  return quizSessions;
 };
 
 export const newSessionQuiz = (quizId: number, token: string, autoStartNum: number): newSessionQuizReturn | EmptyObject => {
