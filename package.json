@@ -2,6 +2,8 @@
     "scripts": {
         "test": "jest",
         "tsc": "tsc --project tsconfig.json",
+        "lint": "eslint src/**/*.{ts,js}",
+        "lint-fix": "eslint --fix src/**/*.{ts,js}",
         "lint-all": "eslint '**/*.{js,ts}'",
         "lint-fix-all": "eslint --fix '**/*.{ts,js}'",
         "start": "ts-node-dev -T src/server.ts",
