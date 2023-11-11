@@ -20,21 +20,23 @@ import HTTPError from 'http-errors';
 
 import { QuestionBody } from '../../dataStore';
 
-  enum VD {
-    EMAIL = 'helloworld@gmail.com',
-    PASSWORD = '1234UNSW',
-    NAMEFIRST = 'Jack',
-    NAMELAST = 'Rizzella',
-    EMAIL2 = 'helloworld1@gmail.com',
-    PASSWORD2 = '4321UNSW',
-    NAMEFIRST2 = 'Jamie',
-    NAMELAST2 = 'Oliver',
-    QUIZNAME = 'World Quiz',
-    QUIZDESCRIPTION = 'About flags, countries and capitals!',
-    QUIZNAME2 = 'Soccer Quiz',
-    QUIZDESCRIPTION2 = 'GOOOAAAALLLL (Part 2)',
-    IMAGEURL = 'https://cdn.sefinek.net/images/animals/cat/cat-story-25-1377426-min.jpg'
-  }
+enum VD {
+  EMAIL = 'helloworld@gmail.com',
+  PASSWORD = '1234UNSW',
+  NAMEFIRST = 'Jack',
+  NAMELAST = 'Rizzella',
+  EMAIL2 = 'helloworld1@gmail.com',
+  PASSWORD2 = '4321UNSW',
+  NAMEFIRST2 = 'Jamie',
+  NAMELAST2 = 'Oliver',
+  QUIZNAME = 'World Quiz',
+  QUIZDESCRIPTION = 'About flags, countries and capitals!',
+  QUIZNAME2 = 'Soccer Quiz',
+  QUIZDESCRIPTION2 = 'GOOOAAAALLLL (Part 2)',
+  IMAGEURL = 'https://cdn.sefinek.net/images/animals/cat/cat-story-25-1377426-min.jpg'
+}
+
+const invalidId = uuidv4();
 
 const sampleQuestion1: QuestionBody = {
   question: 'Who is the Monarch of England?',
@@ -96,8 +98,8 @@ describe.only('Tests for updateQuizThumbNail', () => {
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
   });
 
-  test.only('Successful change of thumbnail', () => {
-    requestUpdateQuizThumbNail(quiz.body.quizId, user.body.token, VD.IMAGEURL);
+  test('Successful change of thumbnail', () => {
+    expect(requestUpdateQuizThumbNail(quiz.body.quizId, user.body.token, VD.IMAGEURL)).toStrictEqual({});
     const quizInfo = requestAdminQuizInfoV2(user.body.token, quiz.body.quizId);
     expect(quizInfo.body).toStrictEqual(
       {
@@ -118,20 +120,16 @@ describe.only('Tests for updateQuizThumbNail', () => {
     { imgUrl: 'http://google.com/some/image/path.jpg' }, // URL does not exist
     { imgUrl: 'https://www.winnings.com.au/' }, // URL is not a JPG or PNG
   ])('Errors for invalid URLs', ({ imgUrl }) => {
-    const response = requestUpdateQuizThumbNail(quiz.body.quizId, user.body.token, imgUrl);
-    expect(response).toThrow(HTTPError[400]);
+    expect(() => requestUpdateQuizThumbNail(quiz.body.quizId, user.body.token, imgUrl)).toThrow(HTTPError[400]);
   });
 
-  test.only('Token is empty or invalid', () => {
-    const invalidId = uuidv4();
-    const response = requestUpdateQuizThumbNail(quiz.body.quizId, invalidId, VD.IMAGEURL);
-    expect(response).toThrow(HTTPError[401]);
+  test('Token is empty or invalid', () => {
+    expect(() => requestUpdateQuizThumbNail(quiz.body.quizId, invalidId, VD.IMAGEURL)).toThrow(HTTPError[401]);
   });
 
   test('Token is not the owner of the quiz', () => {
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
-    const response = requestUpdateQuizThumbNail(quiz.body.quizId, user2.body.token, VD.IMAGEURL);
-    expect(response).toThrow(HTTPError[403]);
+    expect(() => requestUpdateQuizThumbNail(quiz.body.quizId, user2.body.token, VD.IMAGEURL)).toThrow(HTTPError[403]);
   });
 });
 

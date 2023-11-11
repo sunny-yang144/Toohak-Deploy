@@ -1,6 +1,6 @@
 // import HTTPError from 'http-errors';
 import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours } from './dataStore';
-import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken } from './other';
+import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken, isImageSync } from './other';
 import isImage from 'is-image-header';
 import HTTPError from 'http-errors';
 
@@ -955,7 +955,7 @@ export const adminQuizQuestionDuplicate = async (quizId: number, questionId: num
 /// /////////////////////////////// ITERATION 3 NEW ///////////////////////////////////////////////
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
-export const updateQuizThumbNail = async (quizId: number, token: string, imgUrl: string): Promise<EmptyObject | ErrorObject> => {
+export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: string): EmptyObject | ErrorObject => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -966,14 +966,7 @@ export const updateQuizThumbNail = async (quizId: number, token: string, imgUrl:
       throw HTTPError(403, 'Quiz is not owned by this user')
     }
   }
-  try {
-    const result = await isImage(imgUrl);
-    if (!result.isImage) {
-      throw HTTPError(400, 'This thumbnail is not a JPEG/PNG');
-    } 
-  } catch (error) {
-    throw HTTPError(400, 'This is not a valid URL');
-  }
+  isImageSync(imgUrl);
   const quiz = data.quizzes.find((q: Quiz) => q.quizId === quizId);
   quiz.thumbnailUrl = imgUrl;
   return {};

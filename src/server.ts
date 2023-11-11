@@ -650,11 +650,11 @@ app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate', async(req: Req
 /// ////////////////////////////     ITERATION 3 NEW      ///////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 
-app.put('/v1/admin/quiz/:quizid/thumbnail', async(req: Request, res: Response) => {
+app.put('/v1/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const token = req.headers.token as string;
   const { imgUrl } = req.body;
-  res.json(await updateQuizThumbNail(quizId, token, imgUrl));
+  res.json(updateQuizThumbNail(quizId, token, imgUrl));
 });
 
 app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {

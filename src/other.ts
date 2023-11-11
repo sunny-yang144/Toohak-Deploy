@@ -1,6 +1,8 @@
 import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken, Token, DataStore } from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
+import request from 'sync-request-curl';
+import HTTPError from 'http-errors';
 
 export function clear (): Record<string, never> {
   setData({
@@ -116,4 +118,16 @@ export function getUserViaToken(token: string, data: DataStore): User {
 
 export function getHashOf(plaintext: string) {
   return crypto.createHash('sha256').update(plaintext).digest('hex');
+}
+
+export function isImageSync(url: string) {
+  const response = request('GET', url);
+  if (response.statusCode >= 400) {
+    throw HTTPError(400, "imgUrl when fetched does not return a valid file");
+  } 
+  if (response.headers['content-type'] == 'image/jpeg' || response.headers['content-type'] == 'image/png') {
+    return true;
+  } else {
+    throw HTTPError(400, "imgUrl when fetch is not a JPG or PNG image");
+  }
 }
