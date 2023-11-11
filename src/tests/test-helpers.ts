@@ -8,9 +8,8 @@ import { IncomingHttpHeaders } from 'http';
 const TIMEOUT_MS = 10000;
 
 interface Payload {
-  [key: string]: any;
+  [key: string]: unknown;
 }
-
 
 export function requestAdminAuthRegister (email: string, password: string, nameFirst: string, nameLast: string) {
   const res = request(
@@ -770,12 +769,13 @@ export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId:
 /// /////////////////////////////     ITERATION 3      //////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 // Used from lab08_quiz.
+type ResponseBody = Record<string, unknown>;
 const requestHelper = (
   method: HttpVerb,
   path: string,
   payload: Payload,
   headers: IncomingHttpHeaders = {}
-): any => {
+): ResponseBody => {
   let qs = {};
   let json = {};
   if (['GET', 'DELETE'].includes(method.toUpperCase())) {
@@ -788,16 +788,16 @@ const requestHelper = (
   const url = SERVER_URL + path;
   const res = request(method, url, { qs, json, headers, timeout: TIMEOUT_MS });
 
-  let responseBody: any;
+  let responseBody: ResponseBody;
   try {
     responseBody = JSON.parse(res.body.toString());
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (res.statusCode === 200) {
       throw HTTPError(500,
         `Non-jsonifiable body despite code 200: '${res.body}'.\nCheck that you are not doing res.json(undefined) instead of res.json({}), e.g. in '/clear'`
       );
     }
-    responseBody = { error: `Failed to parse JSON: '${err.message}'` };
+    responseBody = { error: 'Failed to parse JSON' };
   }
 
   const errorMessage = `[${res.statusCode}] ` + responseBody?.error || responseBody || 'No message specified!';
@@ -811,7 +811,7 @@ const requestHelper = (
     case 401: // UNAUTHORIZED
       throw HTTPError(res.statusCode, errorMessage);
     case 403:
-      throw HTTPError(res.statusCode, errorMessage)
+      throw HTTPError(res.statusCode, errorMessage);
     case 404: // NOT_FOUND
       throw HTTPError(res.statusCode, `Cannot find '${url}' [${method}]\nReason: ${errorMessage}\n\nHint: Check that your server.ts have the correct path AND method`);
     case 500: // INTERNAL_SERVER_ERROR
@@ -827,23 +827,6 @@ const requestHelper = (
 export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUrl: string) {
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/thumbnail`, { imgUrl }, { token });
 }
-// export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUrl: string) {
-//   const res = request(
-//     'PUT',
-//     SERVER_URL + `/v1/admin/quiz/${quizId}/thumbnail`,
-//     {
-//       headers: {
-//         token,
-//       },
-//       json: {
-//         imgUrl,
-//       }
-//     }
-//   );
-//   return {
-//     body: JSON.parse(res.body.toString()),
-//   };
-// }
 
 export function requestViewSessionActivity (quizId: number, token: string) {
   const res = request(

@@ -123,11 +123,11 @@ export function getHashOf(plaintext: string) {
 export function isImageSync(url: string) {
   const response = request('GET', url);
   if (response.statusCode >= 400) {
-    throw HTTPError(400, "imgUrl when fetched does not return a valid file");
-  } 
-  if (response.headers['content-type'] == 'image/jpeg' || response.headers['content-type'] == 'image/png') {
+    throw HTTPError(400, 'imgUrl when fetched does not return a valid file');
+  }
+  if (response.headers['content-type'] === 'image/jpeg' || response.headers['content-type'] === 'image/png') {
     return true;
   } else {
-    throw HTTPError(400, "imgUrl when fetch is not a JPG or PNG image");
+    throw HTTPError(400, 'imgUrl when fetch is not a JPG or PNG image');
   }
 }

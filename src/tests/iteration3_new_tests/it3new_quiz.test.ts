@@ -84,7 +84,7 @@ afterAll(() => {
 /// ///////////////////////////     NEW ITERATION 3      ////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 
-describe.only('Tests for updateQuizThumbNail', () => {
+describe('Tests for updateQuizThumbNail', () => {
   let user: {
     body: {token: string},
     statusCode: number,

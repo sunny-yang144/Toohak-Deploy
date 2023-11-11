@@ -963,7 +963,7 @@ export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: strin
   }
   if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
     if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
-      throw HTTPError(403, 'Quiz is not owned by this user')
+      throw HTTPError(403, 'Quiz is not owned by this user');
     }
   }
   isImageSync(imgUrl);

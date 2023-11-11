@@ -52,7 +52,6 @@ import {
 
 import { clear } from './other';
 import { setData, dataStoreFile } from './dataStore';
-import HTTPError from 'http-errors';
 
 // Set up web app
 const app = express();
