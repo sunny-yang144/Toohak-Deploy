@@ -101,6 +101,7 @@ export interface Session {
   atQuestion: number;
   state: states;
   questionResults: SessionQuestionResults[];
+  autoStartNum: number;
 }
 
 export interface AnswerBody {

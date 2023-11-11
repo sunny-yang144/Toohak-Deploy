@@ -1,6 +1,6 @@
 // import HTTPError from 'http-errors';
-import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours, states } from './dataStore';
-import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken, isImageSync } from './other';
+import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours, states, Session } from './dataStore';
+import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken, isImageSync, generateSessionId } from './other';
 import isImage from 'is-image-header';
 import HTTPError from 'http-errors';
 
@@ -1006,8 +1006,51 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
   // throw HTTPError(401, 'Token is empty');
   // throw HTTPError(401, 'Token is invalid');
   // throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
+  const data = getData();
+  const quiz = data.quizzes.find((q: Quiz) => q.quizId === quizId);
+
+  const user = getUserViaToken(token,data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
+    }
+  }
+
+  if (autoStartNum > 50) {
+    throw HTTPError(400, 'autoStartNum is a number greater than 50');
+  }
+
+  if (data.sessions.reduce((accumulator, currentSession) => {
+    if (currentSession.quiz.quizId === quiz.quizId && currentSession.state !== "END") {
+      return accumulator + 1;
+    }
+  }, 0) > 10) {
+    throw HTTPError(400, 'A maximum of 10 sessions that are not in END state currently exist');
+  }
+
+  if (quiz.questions.length === 0) {
+    throw HTTPError(400, 'The quiz does not have any questions in it');
+  }
+  
+  const newSessionId = generateSessionId(data.sessions);
+  const sessionObject: Session = {
+    sessionId: newSessionId,
+    quiz: quiz,
+    players: [],
+    atQuestion: 0,
+    state: "LOBBY",
+    questionResults: [],
+    autoStartNum: autoStartNum,
+  }
+
+  data.sessions.push(sessionObject);
+
   return {
-    sessionId: 5546
+    sessionId: newSessionId,
   };
 };
 

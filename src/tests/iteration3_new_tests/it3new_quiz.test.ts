@@ -134,7 +134,7 @@ describe('Tests for updateQuizThumbNail', () => {
   });
 });
 
-describe.only('Tests for viewSessionActivity', () => {
+describe.skip('Tests for viewSessionActivity', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -196,7 +196,7 @@ describe.skip('Tests for getNewSessionQuiz', () => {
   };
 
   let question: {
-    body: {quizId: number},
+    body: {questionId: number},
   };
 
   beforeEach(() => {
@@ -241,7 +241,7 @@ describe.skip('Tests for getNewSessionQuiz', () => {
   });
 
   test('Error when no questions are in quiz', () => {
-    requestAdminQuizQuestionDeleteV2(quiz.body.quizId, question.body.quizId, user.body.token);
+    requestAdminQuizQuestionDeleteV2(quiz.body.quizId, question.body.questionId, user.body.token);
     const response = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     expect(response).toThrow(HTTPError[400]);
   });

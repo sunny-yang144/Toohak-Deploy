@@ -1,4 +1,4 @@
-import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken, Token, DataStore } from './dataStore';
+import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken, Token, DataStore, Session } from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import request from 'sync-request-curl';
@@ -32,6 +32,27 @@ export function generateQuizId (idArray: Quiz[]) {
   for (const quiz of idArray) {
     if (quiz.quizId > max) {
       max = quiz.quizId;
+    }
+  }
+  return max + 1;
+}
+
+/**
+ * @param { Quiz[] } idArray
+ *
+ * Takes in an array, finds the highest quizId then returns a number higher
+ * than all current quizIds in the dataStore
+ *
+ * @returns { Number } Max + 1
+ */
+export function generateSessionId (idArray: Session[]) {
+  if (idArray.length === 0) {
+    return 0;
+  }
+  let max = idArray[0].sessionId;
+  for (const session of idArray) {
+    if (session.sessionId > max) {
+      max = session.sessionId;
     }
   }
   return max + 1;

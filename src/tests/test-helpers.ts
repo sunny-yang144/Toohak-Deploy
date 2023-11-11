@@ -833,21 +833,7 @@ export function requestViewSessionActivity (quizId: number, token: string) {
 }
 
 export function requestNewSessionQuiz (quizId: number, token: string, autoStartNum: number) {
-  const res = request(
-    'POST',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/start`,
-    {
-      headers: {
-        token,
-      },
-      json: {
-        autoStartNum,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-  };
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/session/start`, { autoStartNum }, { token });
 }
 
 export function requestUpdateSessionState (quizId: number, sessionId: number, token: string, action: actions) {
