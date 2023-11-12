@@ -825,24 +825,7 @@ const requestHelper = (
 };
 
 export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUrl: string) {
-  const res = request(
-    'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/thumbnail`,
-    {
-      headers: {
-        token,
-      },
-      json: {
-        imgUrl,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-  };
-=======
   return requestHelper('PUT', `/v1/admin/quiz/${quizId}/thumbnail`, { imgUrl }, { token });
->>>>>>> src/tests/test-helpers.ts
 }
 
 export function requestViewSessionActivity (quizId: number, token: string) {
@@ -915,8 +898,6 @@ export function requestGetQuizSessionResults (quizId: number, sessionId: number,
   const res = request(
     'GET',
     SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
-<<<<<<< src/tests/test-helpers.ts
-=======
     {
       headers: {
         token,
@@ -931,8 +912,7 @@ export function requestGetQuizSessionResults (quizId: number, sessionId: number,
 export function requestGetQuizSessionResultsCSV (quizId: number, sessionId: number, token: string) {
   const res = request(
     'GET',
-    SERVER_URL + `/v2/admin/quiz/${quizId}/session/${sessionId}/results`,
->>>>>>> src/tests/test-helpers.ts
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
     {
       headers: {
         token,
@@ -943,31 +923,21 @@ export function requestGetQuizSessionResultsCSV (quizId: number, sessionId: numb
     body: JSON.parse(res.body.toString()),
   };
 }
-<<<<<<< src/tests/test-helpers.ts
-export function requestGetQuizSessionResults (quizId: number, sessionId: number, token: string) {
-  const res = request(
-    'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
-    {
-      headers: {
-        token,
-=======
 export function requestGuestPlayerJoin (sessionId: number, name: string) {
   const res = request(
     'POST',
-    SERVER_URL + '/v2/player/join',
+    SERVER_URL + '/v1/player/join',
     {
       json: {
         name,
->>>>>>> src/tests/test-helpers.ts
       }
     }
   );
   return {
     body: JSON.parse(res.body.toString()),
   };
-<<<<<<< src/tests/test-helpers.ts
-}export function requestGetGuestPlayerStatus (playerId: number) {
+}
+export function requestGetGuestPlayerStatus (playerId: number) {
   const res = request(
     'GET',
     SERVER_URL + `/v1/player/${playerid}`,
@@ -977,6 +947,4 @@ export function requestGuestPlayerJoin (sessionId: number, name: string) {
   return {
     body: JSON.parse(res.body.toString()),
   };
-=======
->>>>>>> src/tests/test-helpers.ts
 }
