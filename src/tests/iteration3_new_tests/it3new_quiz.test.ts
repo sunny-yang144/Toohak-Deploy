@@ -572,7 +572,7 @@ describe.skip('Tests for updateSessionState', () => {
 });
 
 describe.skip('Tests for guestPlayerJoin', () => {
-    let user: {
+  let user: {
     body: {token: string},
     statusCode: number,
   };
@@ -600,7 +600,7 @@ describe.skip('Tests for guestPlayerJoin', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
   });
-
+});
 describe.skip('Tests for getQuizSessionResultsCSV', () => {
   let user: {
     body: {token: string},
@@ -609,16 +609,11 @@ describe.skip('Tests for getQuizSessionResultsCSV', () => {
   let quiz: {
     body: {quizId: number},
   };
-  let session: {
-    body: {sessionId: number}
-  };
 
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
-    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
   });
-  
 
   test('Successful retrieval of final results in a CSV file', () => {
     const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
