@@ -938,13 +938,5 @@ export function requestGuestPlayerJoin (sessionId: number, name: string) {
   };
 }
 export function requestGetGuestPlayerStatus (playerId: number) {
-  const res = request(
-    'GET',
-    SERVER_URL + `/v1/player/${playerId}`,
-    {
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-  };
+  return requestHelper('GET', `/v1/player/${playerId}`, {});
 }
