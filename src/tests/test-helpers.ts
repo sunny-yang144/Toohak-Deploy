@@ -835,21 +835,7 @@ export function requestNewSessionQuiz (quizId: number, token: string, autoStartN
 }
 
 export function requestUpdateSessionState (quizId: number, sessionId: number, token: string, action: actions) {
-  const res = request(
-    'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
-    {
-      headers: {
-        token,
-      },
-      json: {
-        action,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-  };
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/session/${sessionId}`, { action }, { token });
 }
 
 export function requestGetSessionStatus (quizId: number, sessionId: number, token: string) {

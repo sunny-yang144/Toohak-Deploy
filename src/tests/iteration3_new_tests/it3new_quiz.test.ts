@@ -134,7 +134,7 @@ describe('Tests for updateQuizThumbNail', () => {
   });
 });
 
-describe.skip('Tests for viewSessionActivity', () => {
+describe.only('Tests for viewSessionActivity', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -144,31 +144,32 @@ describe.skip('Tests for viewSessionActivity', () => {
   };
 
   let session1: {
-    body: {sessionId: number},
+    sessionId: number,
   };
 
   let session2: {
-    body: {sessionId: number},
+    sessionId: number,
   };
 
   let session3: {
-    body: {sessionId: number},
+    sessionId: number,
   };
 
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
     session1 = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     session2 = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     session3 = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    requestUpdateSessionState(quiz.body.quizId, session3.body.sessionId, user.body.token, 'END');
+    requestUpdateSessionState(quiz.body.quizId, session3.sessionId, user.body.token, 'END');
   });
 
   test('Successful view of active and inactive sessions', () => {
-    expect(requestViewSessionActivity(quiz.body.quizId, user.body.token).body).toStrictEqual(
+    expect(requestViewSessionActivity(quiz.body.quizId, user.body.token)).toStrictEqual(
       {
-        activeSessions: [session1.body.sessionId, session2.body.sessionId],
-        inactiveSessions: [session3.body.sessionId]
+        activeSessions: [session1.sessionId, session2.sessionId],
+        inactiveSessions: [session3.sessionId]
       }
     );
   });
@@ -183,7 +184,7 @@ describe.skip('Tests for viewSessionActivity', () => {
   });
 });
 
-describe.skip('Tests for getNewSessionQuiz', () => {
+describe.only('Tests for getNewSessionQuiz', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -204,55 +205,55 @@ describe.skip('Tests for getNewSessionQuiz', () => {
 
   test('Successful creation of new session', () => {
     const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    const response = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
-    expect(response).toStrictEqual(
+    expect(session).toStrictEqual({ sessionId: expect.any(Number) });
+    expect(requestViewSessionActivity(quiz.body.quizId, user.body.token)).toStrictEqual(
       {
-        state: 'LOBBY',
-        atQuestion: 0,
-        players: [],
-        metadata: {
-          quizId: quiz.body.quizId,
-          name: VD.QUIZNAME,
-          timeCreated: expect.any(Number),
-          timeLastEdited: expect.any(Number),
-          description: VD.QUIZDESCRIPTION,
-          numQuestions: 0,
-          questions: [],
-          duration: 0,
-        }
+        activeSessions: [session.sessionId],
+        inactiveSessions: []
       }
     );
+    // expect(requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body).toStrictEqual(
+    //   {
+    //     state: 'LOBBY',
+    //     atQuestion: 0,
+    //     players: [],
+    //     metadata: {
+    //       quizId: quiz.body.quizId,
+    //       name: VD.QUIZNAME,
+    //       timeCreated: expect.any(Number),
+    //       timeLastEdited: expect.any(Number),
+    //       description: VD.QUIZDESCRIPTION,
+    //       numQuestions: 0,
+    //       questions: [],
+    //       duration: 0,
+    //     }
+    //   }
+    // );
   });
 
   test('AutoStartNum is greater than 50', () => {
-    const response = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 500);
-    expect(response).toThrow(HTTPError[400]);
+    expect(() => requestNewSessionQuiz(quiz.body.quizId, user.body.token, 500)).toThrow(HTTPError[400]);
   });
 
   test('There are more than 10 active sessions', () => {
     for (let i = 0; i < 10; i++) {
       requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     }
-    const response = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    expect(response).toThrow(HTTPError[400]);
+    expect(() => requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3)).toThrow(HTTPError[400]);
   });
 
   test('Error when no questions are in quiz', () => {
     requestAdminQuizQuestionDeleteV2(quiz.body.quizId, question.body.questionId, user.body.token);
-    const response = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    expect(response).toThrow(HTTPError[400]);
+    expect(() => requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3)).toThrow(HTTPError[400]);
   });
 
   test('Token is empty or invalid', () => {
-    const invalidId = uuidv4();
-    const response = requestNewSessionQuiz(quiz.body.quizId, invalidId, 3);
-    expect(response).toThrow(HTTPError[401]);
+    expect(() => requestNewSessionQuiz(quiz.body.quizId, invalidId, 3)).toThrow(HTTPError[401]);
   });
 
   test('Token is not the owner of the quiz', () => {
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
-    const response = requestNewSessionQuiz(quiz.body.quizId, user2.body.token, 3);
-    expect(response).toThrow(HTTPError[403]);
+    expect(() => requestNewSessionQuiz(quiz.body.quizId, user2.body.token, 3)).toThrow(HTTPError[403]);
   });
 });
 

@@ -1021,7 +1021,7 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
     if (currentSession.quiz.quizId === quiz.quizId && currentSession.state !== "END") {
       return accumulator + 1;
     }
-  }, 0) > 10) {
+  }, 0) >= 10) {
     throw HTTPError(400, 'A maximum of 10 sessions that are not in END state currently exist');
   }
 
