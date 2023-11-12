@@ -923,3 +923,17 @@ export function requestGetQuizSessionResultsCSV (quizId: number, sessionId: numb
     body: JSON.parse(res.body.toString()),
   };
 }
+export function requestGuestPlayerJoin (sessionId: number, name: string) {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v2/player/join',
+    {
+      json: {
+        name,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
