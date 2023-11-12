@@ -1,8 +1,15 @@
-import request from 'sync-request-curl';
+import request, { HttpVerb } from 'sync-request-curl';
 import { port, url } from '../config.json';
 import { QuestionBody, actions } from '../dataStore';
 const SERVER_URL = `${url}:${port}`;
 import HTTPError from 'http-errors';
+import { IncomingHttpHeaders } from 'http';
+
+const TIMEOUT_MS = 10000;
+
+interface Payload {
+  [key: string]: unknown;
+}
 
 export function requestAdminAuthRegister (email: string, password: string, nameFirst: string, nameLast: string) {
   const res = request(
@@ -761,6 +768,61 @@ export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId:
 /// /////////////////////////////////////////////////////////////////////////////////////
 /// /////////////////////////////     ITERATION 3      //////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
+// Used from lab08_quiz.
+type ResponseBody = Record<string, unknown>;
+const requestHelper = (
+  method: HttpVerb,
+  path: string,
+  payload: Payload,
+  headers: IncomingHttpHeaders = {}
+): ResponseBody => {
+  let qs = {};
+  let json = {};
+  if (['GET', 'DELETE'].includes(method.toUpperCase())) {
+    qs = payload;
+  } else {
+    // PUT/POST
+    json = payload;
+  }
+
+  const url = SERVER_URL + path;
+  const res = request(method, url, { qs, json, headers, timeout: TIMEOUT_MS });
+
+  let responseBody: ResponseBody;
+  try {
+    responseBody = JSON.parse(res.body.toString());
+  } catch (err: unknown) {
+    if (res.statusCode === 200) {
+      throw HTTPError(500,
+        `Non-jsonifiable body despite code 200: '${res.body}'.\nCheck that you are not doing res.json(undefined) instead of res.json({}), e.g. in '/clear'`
+      );
+    }
+    responseBody = { error: 'Failed to parse JSON' };
+  }
+
+  const errorMessage = `[${res.statusCode}] ` + responseBody?.error || responseBody || 'No message specified!';
+
+  // NOTE: the error is rethrown in the test below. This is useful becasuse the
+  // test suite will halt (stop) if there's an error, rather than carry on and
+  // potentially failing on a different expect statement without useful outputs
+  switch (res.statusCode) {
+    case 400: // BAD_REQUEST
+      throw HTTPError(res.statusCode, errorMessage);
+    case 401: // UNAUTHORIZED
+      throw HTTPError(res.statusCode, errorMessage);
+    case 403:
+      throw HTTPError(res.statusCode, errorMessage);
+    case 404: // NOT_FOUND
+      throw HTTPError(res.statusCode, `Cannot find '${url}' [${method}]\nReason: ${errorMessage}\n\nHint: Check that your server.ts have the correct path AND method`);
+    case 500: // INTERNAL_SERVER_ERROR
+      throw HTTPError(res.statusCode, errorMessage + '\n\nHint: Your server crashed. Check the server log!\n');
+    default:
+      if (res.statusCode !== 200) {
+        throw HTTPError(res.statusCode, errorMessage + `\n\nSorry, no idea! Look up the status code ${res.statusCode} online!\n`);
+      }
+  }
+  return responseBody;
+};
 
 export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUrl: string) {
   const res = request(
@@ -778,6 +840,9 @@ export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUr
   return {
     body: JSON.parse(res.body.toString()),
   };
+=======
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/thumbnail`, { imgUrl }, { token });
+>>>>>>> src/tests/test-helpers.ts
 }
 
 export function requestViewSessionActivity (quizId: number, token: string) {
@@ -850,6 +915,8 @@ export function requestGetQuizSessionResults (quizId: number, sessionId: number,
   const res = request(
     'GET',
     SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
+<<<<<<< src/tests/test-helpers.ts
+=======
     {
       headers: {
         token,
@@ -860,10 +927,12 @@ export function requestGetQuizSessionResults (quizId: number, sessionId: number,
     body: JSON.parse(res.body.toString()),
   };
 }
-export function requestGetQuizSessionResults (quizId: number, sessionId: number, token: string) {
+
+export function requestGetQuizSessionResultsCSV (quizId: number, sessionId: number, token: string) {
   const res = request(
     'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
+    SERVER_URL + `/v2/admin/quiz/${quizId}/session/${sessionId}/results`,
+>>>>>>> src/tests/test-helpers.ts
     {
       headers: {
         token,
@@ -873,6 +942,31 @@ export function requestGetQuizSessionResults (quizId: number, sessionId: number,
   return {
     body: JSON.parse(res.body.toString()),
   };
+}
+<<<<<<< src/tests/test-helpers.ts
+export function requestGetQuizSessionResults (quizId: number, sessionId: number, token: string) {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
+    {
+      headers: {
+        token,
+=======
+export function requestGuestPlayerJoin (sessionId: number, name: string) {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v2/player/join',
+    {
+      json: {
+        name,
+>>>>>>> src/tests/test-helpers.ts
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+<<<<<<< src/tests/test-helpers.ts
 }export function requestGetGuestPlayerStatus (playerId: number) {
   const res = request(
     'GET',
@@ -883,4 +977,6 @@ export function requestGetQuizSessionResults (quizId: number, sessionId: number,
   return {
     body: JSON.parse(res.body.toString()),
   };
+=======
+>>>>>>> src/tests/test-helpers.ts
 }
