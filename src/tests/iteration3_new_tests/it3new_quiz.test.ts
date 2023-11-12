@@ -10,6 +10,7 @@ import {
   requestUpdateSessionState,
   requestGetSessionStatus,
   requestGetQuizSessionResults,
+  requestGuestPlayerJoin,
   clear,
 } from '../test-helpers';
 
@@ -33,7 +34,8 @@ import { QuestionBody } from '../../dataStore';
     QUIZDESCRIPTION = 'About flags, countries and capitals!',
     QUIZNAME2 = 'Soccer Quiz',
     QUIZDESCRIPTION2 = 'GOOOAAAALLLL (Part 2)',
-    IMAGEURL = 'https://cdn.sefinek.net/images/animals/cat/cat-story-25-1377426-min.jpg'
+    IMAGEURL = 'https://cdn.sefinek.net/images/animals/cat/cat-story-25-1377426-min.jpg',
+    GUESTNAME = 'Charlie Wonka',
   }
 
 const sampleQuestion1: QuestionBody = {
@@ -547,7 +549,6 @@ describe.skip('Tests for updateSessionState', () => {
   });
 });
 describe.skip('Tests for guestPlayerJoin', () => {
-  // 
   let user: {
     body: {token: string},
     statusCode: number,
@@ -565,7 +566,7 @@ describe.skip('Tests for guestPlayerJoin', () => {
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
   });
   test('Guest Join Successful', () => {
-    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(number);
+    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
   });
   //  Not sure whether it should be VD.FIRSTNAME VD.LASTNAME or it's supposed to be usernames.
   test('Guest Name Already Exists', () => {
@@ -574,6 +575,6 @@ describe.skip('Tests for guestPlayerJoin', () => {
 
   test('Session is not in LOBBY State', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(number);
+    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
   });
 });

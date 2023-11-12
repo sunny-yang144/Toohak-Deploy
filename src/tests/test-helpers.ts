@@ -860,3 +860,17 @@ export function requestGetQuizSessionResults (quizId: number, sessionId: number,
     body: JSON.parse(res.body.toString()),
   };
 }
+export function requestGuestPlayerJoin (sessionId: number, name: string) {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v2/player/join',
+    {
+      json: {
+        name,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
