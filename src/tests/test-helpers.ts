@@ -912,7 +912,7 @@ export function requestGetQuizSessionResults (quizId: number, sessionId: number,
 export function requestGetQuizSessionResultsCSV (quizId: number, sessionId: number, token: string) {
   const res = request(
     'GET',
-    SERVER_URL + `/v2/admin/quiz/${quizId}/session/${sessionId}/results`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
     {
       headers: {
         token,
@@ -926,7 +926,7 @@ export function requestGetQuizSessionResultsCSV (quizId: number, sessionId: numb
 export function requestGuestPlayerJoin (sessionId: number, name: string) {
   const res = request(
     'POST',
-    SERVER_URL + '/v2/player/join',
+    SERVER_URL + '/v1/player/join',
     {
       json: {
         name,
@@ -936,4 +936,7 @@ export function requestGuestPlayerJoin (sessionId: number, name: string) {
   return {
     body: JSON.parse(res.body.toString()),
   };
+}
+export function requestGetGuestPlayerStatus (playerId: number) {
+  return requestHelper('GET', `/v1/player/${playerId}`, {});
 }
