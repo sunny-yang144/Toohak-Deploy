@@ -670,15 +670,15 @@ describe.skip('Tests for guestPlayerStatus', () => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME)
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
   });
 
   test('Guest Status Successful', () => {
     expect(requestGetGuestPlayerStatus(player.body.playerId).body).toBe(
       {
-        "state": "LOBBY",
-        "numQuestions": 0,
-        "atQuestion": 0
+        state: 'LOBBY',
+        numQuestions: 0,
+        atQuestion: 0
         //  I'm not sure what the numQuestion and atQuestion numbers should be
       }
     );

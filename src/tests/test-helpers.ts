@@ -940,7 +940,7 @@ export function requestGuestPlayerJoin (sessionId: number, name: string) {
 export function requestGetGuestPlayerStatus (playerId: number) {
   const res = request(
     'GET',
-    SERVER_URL + `/v1/player/${playerid}`,
+    SERVER_URL + `/v1/player/${playerId}`,
     {
     }
   );
