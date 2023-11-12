@@ -144,15 +144,15 @@ describe.only('Tests for viewSessionActivity', () => {
   };
 
   let session1: {
-    sessionId: number,
+    body: {sessionId: number},
   };
 
   let session2: {
-    sessionId: number,
+    body: {sessionId: number},
   };
 
   let session3: {
-    sessionId: number,
+    body: {sessionId: number},
   };
 
   beforeEach(() => {
@@ -162,14 +162,14 @@ describe.only('Tests for viewSessionActivity', () => {
     session1 = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     session2 = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     session3 = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    requestUpdateSessionState(quiz.body.quizId, session3.sessionId, user.body.token, 'END');
+    requestUpdateSessionState(quiz.body.quizId, session3.body.sessionId, user.body.token, 'END');
   });
 
   test('Successful view of active and inactive sessions', () => {
-    expect(requestViewSessionActivity(quiz.body.quizId, user.body.token)).toStrictEqual(
+    expect(requestViewSessionActivity(quiz.body.quizId, user.body.token).body).toStrictEqual(
       {
-        activeSessions: [session1.sessionId, session2.sessionId],
-        inactiveSessions: [session3.sessionId]
+        activeSessions: [session1.body.sessionId, session2.body.sessionId],
+        inactiveSessions: [session3.body.sessionId]
       }
     );
   });
@@ -205,10 +205,10 @@ describe.only('Tests for getNewSessionQuiz', () => {
 
   test('Successful creation of new session', () => {
     const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    expect(session).toStrictEqual({ sessionId: expect.any(Number) });
-    expect(requestViewSessionActivity(quiz.body.quizId, user.body.token)).toStrictEqual(
+    expect(session.body).toStrictEqual({ sessionId: expect.any(Number) });
+    expect(requestViewSessionActivity(quiz.body.quizId, user.body.token).body).toStrictEqual(
       {
-        activeSessions: [session.sessionId],
+        activeSessions: [session.body.sessionId],
         inactiveSessions: []
       }
     );

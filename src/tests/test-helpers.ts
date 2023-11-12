@@ -769,6 +769,7 @@ export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId:
 /// /////////////////////////////     ITERATION 3      //////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 // Used from lab08_quiz.
+type ResponseBody = Record<string, unknown>;
 const requestHelper = (
   method: HttpVerb,
   path: string,
@@ -819,7 +820,9 @@ const requestHelper = (
         throw HTTPError(res.statusCode, errorMessage + `\n\nSorry, no idea! Look up the status code ${res.statusCode} online!\n`);
       }
   }
-  return responseBody;
+  return {
+    body: responseBody,
+  }
 };
 
 export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUrl: string) {
