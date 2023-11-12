@@ -565,27 +565,15 @@ describe.skip('Tests for guestPlayerJoin', () => {
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
   });
   test('Guest Join Successful', () => {
-    const response = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
-    expect(response).toBe(number);
+    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(number);
+  });
+  //  Not sure whether it should be VD.FIRSTNAME VD.LASTNAME or it's supposed to be usernames.
+  test('Guest Name Already Exists', () => {
+    expect(requestGuestPlayerJoin(session.body.sessionId, `${VD.NAMEFIRST} ${VD.NAMELAST}`).body).toThrow(HTTPError[400]);
   });
 
-  test('Session is not in FINAL_RESULTS state', () => {
-    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
+  test('Session is not in LOBBY State', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    expect(response).toThrow(HTTPError[400]);
-  });
-
-  test('Token is empty or invalid', () => {
-    const invalidId = uuidv4();
-    const response = requestNewSessionQuiz(quiz.body.quizId, invalidId, 3);
-    expect(response).toThrow(HTTPError[401]);
-  });
-
-  test('Valid token, however user is unauthorised to view this session', () => {
-    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
-    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token);
-    expect(response).toThrow(HTTPError[403]);
+    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(number);
   });
 });
