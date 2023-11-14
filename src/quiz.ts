@@ -1111,20 +1111,22 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
     throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
   }
   
-  const sessionResult: getQuizSessionResultsReturn = {
+  const SesResult: getQuizSessionResultsReturn = {
     usersRankedByScore: [],
     questionResults: []
   };
   
-  for (let i = 0; i < sessionResult.questionResults.length; i++) {
-    sessionResult.questionResults[i].questionId = session.questionResults[i].questionId;
-    sessionResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
-    sessionResult.questionResults[i].averageAnswerTime = calculateRoundedAverage(session.questionResults[i].AnswersTimes);
-    sessionResult.questionResults[i].percentCorrect = Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100);
+  for (let i = 0; i < SesResult.questionResults.length; i++) {
+    SesResult.questionResults[i].questionId = session.questionResults[i].questionId;
+    SesResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
+    SesResult.questionResults[i].averageAnswerTime = calculateRoundedAverage(session.questionResults[i].AnswersTimes);
+    SesResult.questionResults[i].percentCorrect = Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100);
   }
 
-
-  return { error: 'bruh', statusCode: 400 };
+  const unsortedScores: UserScore[] = session.players.map((p: Player) => ({ name: p.name, score: p.score }));
+  SesResult.usersRankedByScore = unsortedScores.sort((a, b) => b.score - a.score);
+  
+  return SesResult;
 };
 
 export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, token: string): getQuizSessionResultsCSVReturn | ErrorObject => {
