@@ -941,16 +941,5 @@ export function requestGetGuestPlayerStatus (playerId: number) {
   return requestHelper('GET', `/v1/player/${playerId}`, {});
 }
 export function requestFinalResults (playerId: number) {
-  const res = request(
-    'GET',
-    SERVER_URL + `/v1/player/${playerId}/results`,
-    {
-      headers: {
-        token,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-  };
+  return requestHelper('GET', `/v1/player/${playerId}/results`, {});
 }
