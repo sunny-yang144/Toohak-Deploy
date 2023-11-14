@@ -842,18 +842,7 @@ export function requestUpdateSessionState (quizId: number, sessionId: number, to
 }
 
 export function requestGetSessionStatus (quizId: number, sessionId: number, token: string) {
-  const res = request(
-    'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
-    {
-      headers: {
-        token,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-  };
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}`, {}, { token });
 }
 
 export function requestGetQuizSessionResults (quizId: number, sessionId: number, token: string) {
