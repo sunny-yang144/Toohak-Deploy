@@ -769,7 +769,7 @@ export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId:
 /// /////////////////////////////     ITERATION 3      //////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 // Used from lab08_quiz.
-type ResponseBody = Record<string, unknown>;
+// type ResponseBody = Record<string, unknown>;
 const requestHelper = (
   method: HttpVerb,
   path: string,
@@ -822,7 +822,7 @@ const requestHelper = (
   }
   return {
     body: responseBody,
-  }
+  };
 };
 
 export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUrl: string) {

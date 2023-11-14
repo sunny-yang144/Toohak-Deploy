@@ -272,16 +272,13 @@ describe.skip('Tests for getQuizSessionResults', () => {
   let quiz: {
     body: {quizId: number},
   };
-  let question: {
-    body: {questionId: number},
-  };
 
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
-    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
   });
-  
+
   test('Session ID does not refer to a valid session within this quiz', () => {
     const quiz2 = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME2, VD.QUIZDESCRIPTION2);
     requestAdminQuizQuestionCreateV2(quiz2.body.quizId, user.body.token, sampleQuestion2);
@@ -346,17 +343,17 @@ describe.only('Tests for getSessionStatus', () => {
           numQuestions: 1,
           questions: [
             {
-              "questionId": expect.any(Number),
-              "question": "Who is the Monarch of England?",
-              "duration": 4,
-              "thumbnailUrl": VD.IMAGEURL,
-              "points": 5,
-              "answers": [
+              questionId: expect.any(Number),
+              question: 'Who is the Monarch of England?',
+              duration: 4,
+              thumbnailUrl: VD.IMAGEURL,
+              points: 5,
+              answers: [
                 {
-                  "answerId": expect.any(Number),
-                  "answer": "Prince Charles",
-                  "colour": expect.any(String),
-                  "correct": true
+                  answerId: expect.any(Number),
+                  answer: 'Prince Charles',
+                  colour: expect.any(String),
+                  correct: true
                 },
                 {
                   answerId: expect.any(Number),
@@ -367,7 +364,7 @@ describe.only('Tests for getSessionStatus', () => {
               ]
             }
           ],
-          thumbnailUrl: "",
+          thumbnailUrl: '',
           duration: 4,
         }
       }

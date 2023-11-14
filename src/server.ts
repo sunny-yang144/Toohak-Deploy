@@ -1,4 +1,4 @@
-import express, { json, Request, Response } from 'express'
+import express, { json, Request, Response } from 'express';
 import { echo } from './newecho';
 import morgan from 'morgan';
 import config from './config.json';
@@ -89,7 +89,7 @@ app.get('/echo', (req: Request, res: Response) => {
 app.use('/csv/uploads', express.static(path.join(__dirname, 'files')));
 
 // ========================================================================= //
-// 
+//
 // ========================================================================= //
 
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {

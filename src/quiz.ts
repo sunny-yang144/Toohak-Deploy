@@ -1,28 +1,28 @@
-import { 
-  getData, 
-  setData, 
-  Question, 
-  QuestionBody, 
-  Quiz, 
-  Answer, 
-  AnswerToken, 
-  QuestionToken, 
-  colours, 
-  Session, 
-  actions, 
-  Player 
+import {
+  getData,
+  setData,
+  Question,
+  QuestionBody,
+  Quiz,
+  Answer,
+  AnswerToken,
+  QuestionToken,
+  // colours,
+  Session,
+  actions,
+  Player
 } from './dataStore';
-import { 
-  generateQuizId, 
-  generateQuestionId, 
-  generateAnswerId, 
-  getRandomColour, 
-  getUserViaToken, 
-  isImageSync, 
-  moveStates, 
-  generateSessionId, 
-  calculateRoundedAverage, 
-  arraytoCSV 
+import {
+  generateQuizId,
+  generateQuestionId,
+  generateAnswerId,
+  getRandomColour,
+  getUserViaToken,
+  isImageSync,
+  moveStates,
+  generateSessionId,
+  calculateRoundedAverage,
+  arraytoCSV
 } from './other';
 import isImage from 'is-image-header';
 import HTTPError from 'http-errors';
@@ -1005,7 +1005,7 @@ export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: strin
 
 export const viewSessionActivity = (token: string, quizId: number): viewSessionActivityReturn | ErrorObject => {
   const data = getData();
-  const user = getUserViaToken(token,data);
+  const user = getUserViaToken(token, data);
   if (!user) {
     throw HTTPError(401, 'Empty or invalid user token');
   }
@@ -1017,7 +1017,7 @@ export const viewSessionActivity = (token: string, quizId: number): viewSessionA
   const quizSessions: viewSessionActivityReturn = {
     activeSessions: [],
     inactiveSessions: [],
-  }
+  };
   for (const session of data.sessions) {
     if (session.quiz.quizId === quizId) {
       if (session.state === 'END') {
@@ -1034,7 +1034,7 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
   const data = getData();
   const quiz = data.quizzes.find((q: Quiz) => q.quizId === quizId);
 
-  const user = getUserViaToken(token,data);
+  const user = getUserViaToken(token, data);
   if (!user) {
     throw HTTPError(401, 'Empty or invalid user token');
   }
@@ -1049,28 +1049,32 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
     throw HTTPError(400, 'autoStartNum is a number greater than 50');
   }
 
-  if (data.sessions.reduce((accumulator, currentSession) => {
-    if (currentSession.quiz.quizId === quiz.quizId && currentSession.state !== "END") {
-      return accumulator + 1;
-    }
-  }, 0) >= 10) {
+  if (
+    data.sessions.reduce((accumulator, currentSession) => {
+      if (currentSession.quiz.quizId === quiz.quizId && currentSession.state !== 'END') {
+        return accumulator + 1;
+      } else {
+        return accumulator; // Return the accumulator if the condition isn't met
+      }
+    }, 0) >= 10
+  ) {
     throw HTTPError(400, 'A maximum of 10 sessions that are not in END state currently exist');
   }
 
   if (quiz.questions.length === 0) {
     throw HTTPError(400, 'The quiz does not have any questions in it');
   }
-  
+
   const newSessionId = generateSessionId(data.sessions);
   const sessionObject: Session = {
     sessionId: newSessionId,
     quiz: quiz,
     players: [],
     atQuestion: 0,
-    state: "LOBBY",
+    state: 'LOBBY',
     questionResults: [],
     autoStartNum: autoStartNum,
-  }
+  };
 
   data.sessions.push(sessionObject);
 
@@ -1100,7 +1104,7 @@ export const updateSessionState = (quizId: number, sessionId: number, token: str
 
 export const getSessionStatus = (quizId: number, sessionId: number, token: string): getSessionStatusReturn | ErrorObject => {
   const data = getData();
-  const user = getUserViaToken(token,data);
+  const user = getUserViaToken(token, data);
   if (!user) {
     throw HTTPError(401, 'Empty or invalid user token');
   }
@@ -1126,7 +1130,7 @@ export const getSessionStatus = (quizId: number, sessionId: number, token: strin
 
 export const getQuizSessionResults = (quizId: number, sessionId: number, token: string): getQuizSessionResultsReturn | ErrorObject => {
   const data = getData();
-  const user = getUserViaToken(token,data);
+  const user = getUserViaToken(token, data);
   if (!user) {
     throw HTTPError(401, 'Empty or invalid user token');
   }
@@ -1139,15 +1143,15 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
   if (session === undefined || session.quiz.quizId !== quizId) {
     throw HTTPError(400, 'Session ID does not refer to a valid session within this quiz or is invalid');
   }
-  if (session.state != 'FINAL_RESULTS') {
+  if (session.state !== 'FINAL_RESULTS') {
     throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
   }
-  
+
   const SesResult: getQuizSessionResultsReturn = {
     usersRankedByScore: [],
     questionResults: []
   };
-  
+
   for (let i = 0; i < SesResult.questionResults.length; i++) {
     SesResult.questionResults[i].questionId = session.questionResults[i].questionId;
     SesResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
@@ -1163,7 +1167,7 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
 
 export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, token: string): getQuizSessionResultsCSVReturn | ErrorObject => {
   const data = getData();
-  const user = getUserViaToken(token,data);
+  const user = getUserViaToken(token, data);
   if (!user) {
     throw HTTPError(401, 'Empty or invalid user token');
   }
@@ -1176,10 +1180,10 @@ export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, toke
   if (session === undefined || session.quiz.quizId !== quizId) {
     throw HTTPError(400, 'Session ID does not refer to a valid session within this quiz or is invalid');
   }
-  if (session.state != 'FINAL_RESULTS') {
+  if (session.state !== 'FINAL_RESULTS') {
     throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
   }
-  
+
   // Create and convert array into CSV
   const resArray: string[][] = [];
   resArray[0][0] = 'Player';
@@ -1194,8 +1198,8 @@ export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, toke
       name: player.name,
       questionScore: [...player.questionResults.questionScore],
       questionRank: [...player.questionResults.questionRank],
-    }
-    playerResults.push(result)
+    };
+    playerResults.push(result);
   }
   const sortedPlayerResults = playerResults.slice().sort((a, b) => a.name.localeCompare(b.name));
 
@@ -1208,13 +1212,13 @@ export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, toke
         resArray[i][j] = sortedPlayerResults[i].questionScore[j].toString();
       }
       if (j % 2 === 0) {
-        resArray[i][j] = sortedPlayerResults[i].questionRank[j].toString()
+        resArray[i][j] = sortedPlayerResults[i].questionRank[j].toString();
       }
     }
   }
 
   const csv = arraytoCSV(resArray);
-  const filename = `csv-${Date.now()}.csv`
+  const filename = `csv-${Date.now()}.csv`;
   const filepath = path.join(__dirname, 'src', 'csv_files', filename);
   fs.writeFileSync(filepath, csv);
 

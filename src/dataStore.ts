@@ -34,6 +34,10 @@ export interface Token {
   userId: number; // Associate a user from a inputted token.
 }
 
+export interface NodeJS {
+  Timeout: number;
+}
+
 export interface User {
   userId: number;
   email: string;

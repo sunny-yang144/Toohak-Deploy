@@ -1,6 +1,6 @@
 import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken, Token, DataStore, Session, actions, states } from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
-import { createObjectCsvWriter } from 'csv-writer';
+// import { createObjectCsvWriter } from 'csv-writer';
 import crypto from 'crypto';
 import request from 'sync-request-curl';
 import HTTPError from 'http-errors';
@@ -176,10 +176,10 @@ export function isValidAction(action: string, state: states) {
   }
   if (!validActions.includes(action as actions)) {
     throw HTTPError(400, 'Action cannot be applied to current state');
-  };
+  }
 }
 
-export function moveStates(session: Session, action: actions)  {
+export function moveStates(session: Session, action: actions) {
   isValidAction(action, session.state);
   if (action === 'END') {
     session.state = 'END';
@@ -205,13 +205,13 @@ export function moveStates(session: Session, action: actions)  {
     }, qnDuration * 1000);
     session.qnTimeout = timeout;
   }
-  if (session.state == 'QUESTION_COUNTDOWN') {
+  if (session.state === 'QUESTION_COUNTDOWN') {
     const timeout = setTimeout(() => {
       session.state = 'QUESTION_OPEN';
     }, 3 * 1000);
     session.qnTimeout = timeout;
   }
-} 
+}
 
 export function calculateRoundedAverage(numbers: number[]) {
   if (numbers.length === 0) {
