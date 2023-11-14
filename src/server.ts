@@ -1,4 +1,4 @@
-import express, { json, Request, Response } from 'express';
+import express, { json, Request, Response } from 'express'
 import { echo } from './newecho';
 import morgan from 'morgan';
 import config from './config.json';
@@ -81,6 +81,15 @@ app.get('/echo', (req: Request, res: Response) => {
 
 // ========================================================================= //
 // SERVER ROUTES
+// ========================================================================= //
+
+// ========================================================================= //
+// Middle ware to use for serving CSV files given a url.
+// ========================================================================= //
+app.use('/csv/uploads', express.static(path.join(__dirname, 'files')));
+
+// ========================================================================= //
+// 
 // ========================================================================= //
 
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {

@@ -1,5 +1,6 @@
 import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken, Token, DataStore, Session, actions, states } from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
+import { createObjectCsvWriter } from 'csv-writer';
 import crypto from 'crypto';
 import request from 'sync-request-curl';
 import HTTPError from 'http-errors';
@@ -225,4 +226,10 @@ export function calculateRoundedAverage(numbers: number[]) {
   const average = sum / numbers.length;
 
   return Math.round(average);
+}
+
+// Takes in a 2d array an converts into CSV
+export function arraytoCSV(array: string[][]) {
+  const csv = array.map(row => row.join(',')).join('\n');
+  return csv;
 }

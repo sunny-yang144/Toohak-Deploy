@@ -1,8 +1,34 @@
-import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours, Session, actions, Player } from './dataStore';
-import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken, isImageSync, moveStates, generateSessionId, calculateRoundedAverage } from './other';
+import { 
+  getData, 
+  setData, 
+  Question, 
+  QuestionBody, 
+  Quiz, 
+  Answer, 
+  AnswerToken, 
+  QuestionToken, 
+  colours, 
+  Session, 
+  actions, 
+  Player 
+} from './dataStore';
+import { 
+  generateQuizId, 
+  generateQuestionId, 
+  generateAnswerId, 
+  getRandomColour, 
+  getUserViaToken, 
+  isImageSync, 
+  moveStates, 
+  generateSessionId, 
+  calculateRoundedAverage, 
+  arraytoCSV 
+} from './other';
 import isImage from 'is-image-header';
 import HTTPError from 'http-errors';
-import { playerAnswers } from './auth';
+import * as fs from 'fs';
+import path from 'path';
+import { port, url } from './config.json';
 
 type EmptyObject = Record<string, never>;
 
@@ -74,6 +100,12 @@ interface getQuizSessionResultsReturn {
 
 interface getQuizSessionResultsCSVReturn {
   url: string;
+}
+
+interface playerResults {
+  name: string;
+  questionScore: number[];
+  questionRank: number[];
 }
 
 /**
@@ -1125,17 +1157,68 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
 
   const unsortedScores: UserScore[] = session.players.map((p: Player) => ({ name: p.name, score: p.score }));
   SesResult.usersRankedByScore = unsortedScores.sort((a, b) => b.score - a.score);
-  
+
   return SesResult;
 };
 
 export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, token: string): getQuizSessionResultsCSVReturn | ErrorObject => {
-  // throw HTTPError(400, 'Session ID does not refer to a valid session qithin this quiz');
-  // throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
-  // throw HTTPError(401, 'Token is empty');
-  // throw HTTPError(401, 'Token is invalid');
-  // throw HTTPError(403, 'Valid token is provided, but user is not authorised to view this sesion');
+  const data = getData();
+  const user = getUserViaToken(token,data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Quiz/Session cannot be modified by this user. ');
+    }
+  }
+  const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
+  if (session === undefined || session.quiz.quizId !== quizId) {
+    throw HTTPError(400, 'Session ID does not refer to a valid session within this quiz or is invalid');
+  }
+  if (session.state != 'FINAL_RESULTS') {
+    throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
+  }
+  
+  // Create and convert array into CSV
+  const resArray: string[][] = [];
+  resArray[0][0] = 'Player';
+  // Establishes a header e.g. Player, question1score, question1rank...
+  for (let i = 0; i < 2 * session.questionResults.length; i += 2) {
+    resArray[0][i + 1] = `question${i + 1}score`;
+    resArray[0][i + 2] = `question${i + 1}rank`;
+  }
+  const playerResults: playerResults[] = [];
+  for (const player of session.players) {
+    const result: playerResults = {
+      name: player.name,
+      questionScore: [...player.questionResults.questionScore],
+      questionRank: [...player.questionResults.questionRank],
+    }
+    playerResults.push(result)
+  }
+  const sortedPlayerResults = playerResults.slice().sort((a, b) => a.name.localeCompare(b.name));
+
+  for (let i = 0; i < sortedPlayerResults.length; i++) {
+    for (let j = 0; j < 2 * session.questionResults.length + 1; j++) {
+      if (j === 0) {
+        resArray[i][j] = sortedPlayerResults[i].name;
+      }
+      if (j % 2 === 1) {
+        resArray[i][j] = sortedPlayerResults[i].questionScore[j].toString();
+      }
+      if (j % 2 === 0) {
+        resArray[i][j] = sortedPlayerResults[i].questionRank[j].toString()
+      }
+    }
+  }
+
+  const csv = arraytoCSV(resArray);
+  const filename = `csv-${Date.now()}.csv`
+  const filepath = path.join(__dirname, 'src', 'csv_files', filename);
+  fs.writeFileSync(filepath, csv);
+
   return {
-    url: 'http://google.com/some/image/path.csv'
+    url: `${url}:${port}/csv/uploads/${filename}`,
   };
 };

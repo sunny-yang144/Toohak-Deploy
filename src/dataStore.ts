@@ -75,6 +75,7 @@ export interface Player {
   playerId: number;
   name: string;
   score: number;
+  questionResults: PlayerQuestionResults
 }
 export interface Quiz {
   quizId: number;
@@ -86,6 +87,11 @@ export interface Quiz {
   questions: Question[];
   duration: number;
   thumbnailUrl?: string;
+}
+
+export interface PlayerQuestionResults {
+  questionScore: number[];
+  questionRank: number[];
 }
 
 export interface SessionQuestionResults {
