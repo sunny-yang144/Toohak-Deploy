@@ -275,34 +275,38 @@ describe.skip('Tests for getQuizSessionResults', () => {
   let quiz: {
     body: {quizId: number},
   };
+  let question: {
+    body: {quizId: number},
+  }
 
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
   });
 
   test('Successful retrieval of quiz results', () => {
     const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    // const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
+    const quizResults = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
-    // Whoever writes this function, please uncomment the response, and
-    // alter the code below to fit its return.
-    // expect(response).toStrictEqual( {
-    //   usersRankedByScore: [
-    //     name: 'Jack',
-    //     score: 0,
-    //   ],
-    //   questionResults: [
-    //     {
-    //       questionId: question,
-    //       playersCorrectList: [
-    //         
-    //       ],
-    //       averageAnswerTime: 0,
-    //       percentCorrect: 0,
-    //     }
-    //   ]
-    // });
+    expect(quizResults).toStrictEqual( {
+      usersRankedByScore: [
+        {
+          name: 'Jack',
+          score: 0,
+        }
+      ],
+      questionResults: [
+        {
+          questionId: question,
+          playersCorrectList: [
+            
+          ],
+          averageAnswerTime: 0,
+          percentCorrect: 0,
+        }
+      ]
+    });
   });
 
   test('Session ID does not refer to a valid session within this quiz', () => {
@@ -796,18 +800,18 @@ describe.skip('Tests for finalResults', () => {
 
   test('Successful retrieval of final results', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
-    const response = requestFinalResults(player.body.playerId);
-    expect(response).toStrictEqual( {
+    const finalResults = requestFinalResults(player.body.playerId);
+    expect(finalResults).toStrictEqual( {
       usersRankedByScore: [
-        name: 'Jack',
-        score: 0,
+        {
+          name: 'Jack',
+          score: 0,
+        }
       ],
       questionResults: [
         {
           questionId: question,
-          playersCorrectList: [
-
-          ],
+          playersCorrectList: [],
           averageAnswerTime: 0,
           percentCorrect: 0,
         }
