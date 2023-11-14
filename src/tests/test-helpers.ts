@@ -859,3 +859,35 @@ export function requestGetQuizSessionResults (quizId: number, sessionId: number,
     body: JSON.parse(res.body.toString()),
   };
 }
+
+export function requestGetQuizSessionResultsCSV (quizId: number, sessionId: number, token: string) {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
+    {
+      headers: {
+        token,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestGuestPlayerJoin (sessionId: number, name: string) {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v1/player/join',
+    {
+      json: {
+        name,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
+}
+export function requestGetGuestPlayerStatus (playerId: number) {
+  return requestHelper('GET', `/v1/player/${playerId}`, {});
+}
