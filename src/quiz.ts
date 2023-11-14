@@ -1,7 +1,8 @@
 import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours, Session, actions, Player } from './dataStore';
-import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken, isImageSync, moveStates, generateSessionId } from './other';
+import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken, isImageSync, moveStates, generateSessionId, calculateRoundedAverage } from './other';
 import isImage from 'is-image-header';
 import HTTPError from 'http-errors';
+import { playerAnswers } from './auth';
 
 type EmptyObject = Record<string, never>;
 
@@ -1092,29 +1093,38 @@ export const getSessionStatus = (quizId: number, sessionId: number, token: strin
 };
 
 export const getQuizSessionResults = (quizId: number, sessionId: number, token: string): getQuizSessionResultsReturn | ErrorObject => {
-  // throw HTTPError(400, 'Session ID does not refer to a valid session qithin this quiz');
-  // throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
-  // throw HTTPError(401, 'Token is empty');
-  // throw HTTPError(401, 'Token is invalid');
-  // throw HTTPError(403, 'Valid token is provided, but user is not authorised to view this sesion');
-  return {
-    usersRankedByScore: [
-      {
-        name: 'Hayden',
-        score: 45
-      }
-    ],
-    questionResults: [
-      {
-        questionId: 5546,
-        playersCorrectList: [
-          'Hayden'
-        ],
-        averageAnswerTime: 45,
-        percentCorrect: 54
-      }
-    ]
+  const data = getData();
+  const user = getUserViaToken(token,data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Quiz/Session cannot be modified by this user. ');
+    }
+  }
+  const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
+  if (session === undefined || session.quiz.quizId !== quizId) {
+    throw HTTPError(400, 'Session ID does not refer to a valid session within this quiz or is invalid');
+  }
+  if (session.state != 'FINAL_RESULTS') {
+    throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
+  }
+  
+  const sessionResult: getQuizSessionResultsReturn = {
+    usersRankedByScore: [],
+    questionResults: []
   };
+  
+  for (let i = 0; i < sessionResult.questionResults.length; i++) {
+    sessionResult.questionResults[i].questionId = session.questionResults[i].questionId;
+    sessionResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
+    sessionResult.questionResults[i].averageAnswerTime = calculateRoundedAverage(session.questionResults[i].AnswersTimes);
+    sessionResult.questionResults[i].percentCorrect = Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100);
+  }
+
+
+  return { error: 'bruh', statusCode: 400 };
 };
 
 export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, token: string): getQuizSessionResultsCSVReturn | ErrorObject => {

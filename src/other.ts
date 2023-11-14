@@ -213,3 +213,16 @@ export function moveStates(session: Session, action: actions)  {
   }
 } 
 
+export function calculateRoundedAverage(numbers: number[]) {
+  if (numbers.length === 0) {
+    return 0; // Avoid division by zero for an empty array
+  }
+
+  const sum = numbers.reduce((accumulator, currentValue) => {
+    return accumulator + currentValue;
+  }, 0);
+
+  const average = sum / numbers.length;
+
+  return Math.round(average);
+}
