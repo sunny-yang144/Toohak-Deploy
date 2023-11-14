@@ -1,8 +1,34 @@
-// import HTTPError from 'http-errors';
-import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours } from './dataStore';
-import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken, isImageSync } from './other';
+import {
+  getData,
+  setData,
+  Question,
+  QuestionBody,
+  Quiz,
+  Answer,
+  AnswerToken,
+  QuestionToken,
+  // colours,
+  Session,
+  actions,
+  Player
+} from './dataStore';
+import {
+  generateQuizId,
+  generateQuestionId,
+  generateAnswerId,
+  getRandomColour,
+  getUserViaToken,
+  isImageSync,
+  moveStates,
+  generateSessionId,
+  calculateRoundedAverage,
+  arraytoCSV
+} from './other';
 import isImage from 'is-image-header';
 import HTTPError from 'http-errors';
+import * as fs from 'fs';
+import path from 'path';
+import { port, url } from './config.json';
 
 type EmptyObject = Record<string, never>;
 
@@ -74,6 +100,12 @@ interface getQuizSessionResultsReturn {
 
 interface getQuizSessionResultsCSVReturn {
   url: string;
+}
+
+interface playerResults {
+  name: string;
+  questionScore: number[];
+  questionRank: number[];
 }
 
 /**
@@ -152,9 +184,8 @@ export const adminQuizCreate = (token: string, name: string, description: string
   const currentTime = new Date();
   const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
   const quizId = generateQuizId(data.quizzes);
-  const newQuiz = {
+  const newQuiz: Quiz = {
     quizId: quizId,
-    ownerId: user.userId,
     name: name,
     description: description,
     timeCreated: unixtimeSeconds,
@@ -973,119 +1004,225 @@ export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: strin
 };
 
 export const viewSessionActivity = (token: string, quizId: number): viewSessionActivityReturn | ErrorObject => {
-  // throw HTTPError(401, 'Token is empty');
-  // throw HTTPError(401, 'Token is invalid');
-  // throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
+  const data = getData();
+  const user = getUserViaToken(token, data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Quiz is not owned by this user');
+    }
+  }
+  const quizSessions: viewSessionActivityReturn = {
+    activeSessions: [],
+    inactiveSessions: [],
+  };
+  for (const session of data.sessions) {
+    if (session.quiz.quizId === quizId) {
+      if (session.state === 'END') {
+        quizSessions.inactiveSessions.push(session.sessionId);
+      } else {
+        quizSessions.activeSessions.push(session.sessionId);
+      }
+    }
+  }
+  return quizSessions;
+};
+
+export const newSessionQuiz = (quizId: number, token: string, autoStartNum: number): newSessionQuizReturn | ErrorObject => {
+  const data = getData();
+  const quiz = data.quizzes.find((q: Quiz) => q.quizId === quizId);
+
+  const user = getUserViaToken(token, data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
+    }
+  }
+
+  if (autoStartNum > 50) {
+    throw HTTPError(400, 'autoStartNum is a number greater than 50');
+  }
+
+  if (
+    data.sessions.reduce((accumulator, currentSession) => {
+      if (currentSession.quiz.quizId === quiz.quizId && currentSession.state !== 'END') {
+        return accumulator + 1;
+      } else {
+        return accumulator; // Return the accumulator if the condition isn't met
+      }
+    }, 0) >= 10
+  ) {
+    throw HTTPError(400, 'A maximum of 10 sessions that are not in END state currently exist');
+  }
+
+  if (quiz.questions.length === 0) {
+    throw HTTPError(400, 'The quiz does not have any questions in it');
+  }
+
+  const newSessionId = generateSessionId(data.sessions);
+  const sessionObject: Session = {
+    sessionId: newSessionId,
+    quiz: quiz,
+    players: [],
+    atQuestion: 0,
+    state: 'LOBBY',
+    questionResults: [],
+    autoStartNum: autoStartNum,
+  };
+
+  data.sessions.push(sessionObject);
+
   return {
-    activeSessions: [
-      247,
-      566,
-      629,
-      923
-    ],
-    inactiveSessions: [
-      422,
-      817
-    ]
+    sessionId: newSessionId,
   };
 };
 
-export const newSessionQuiz = (quizId: number, token: string, autoStartNum: number): newSessionQuizReturn | EmptyObject => {
-  // throw HTTPError(400, 'autoStartNum is a number greater than 50');
-  // throw HTTPError(400, 'A maximum of 10 sessions that are not in END state currently exist');
-  // throw HTTPError(400, 'The quiz does not have any questions in it');
-  // throw HTTPError(401, 'Token is empty');
-  // throw HTTPError(401, 'Token is invalid');
-  // throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
-  return {
-    sessionId: 5546
-  };
-};
-
-export const updateSessionState = (quizId: number, sessionId: number, token: string, action: string): Record<string, never> | ErrorObject => {
-  // throw HTTPError(400, 'Session ID does not refer to a valid session qithin this quiz');
-  // throw HTTPError(400, 'Action provided is not a valid Action enum');
-  // throw HTTPError(400, 'Action enum cannot be applied in the current state);
-  // throw HTTPError(401, 'Token is empty');
-  // throw HTTPError(401, 'Token is invalid');
-  // throw HTTPError(403, 'Valid token is provided, but user is not authorised to modify this sesion');
+export const updateSessionState = (quizId: number, sessionId: number, token: string, action: string): EmptyObject | ErrorObject => {
+  const data = getData();
+  const user = getUserViaToken(token, data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Quiz/Session cannot be modified by this user. ');
+    }
+  }
+  const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
+  if (session === undefined || session.quiz.quizId !== quizId) {
+    throw HTTPError(400, 'Session ID does not refer to a valid session within this quiz or is invalid');
+  }
+  moveStates(session, action as actions);
   return {};
 };
 
 export const getSessionStatus = (quizId: number, sessionId: number, token: string): getSessionStatusReturn | ErrorObject => {
-  // throw HTTPError(400, 'Session ID does not refer to a valid session qithin this quiz');
-  // throw HTTPError(401, 'Token is empty');
-  // throw HTTPError(401, 'Token is invalid');
-  // throw HTTPError(403, 'Valid token is provided, but user is not authorised to view this sesion');
-  return {
-    state: 'LOBBY',
-    atQuestion: 3,
-    players: [
-      'Hayden'
-    ],
-    metadata: {
-      quizId: 5546,
-      name: 'This is the name of the quiz',
-      timeCreated: 1683019484,
-      timeLastEdited: 1683019484,
-      description: 'This quiz is so we can have a lot of fun',
-      numQuestions: 1,
-      questions: [
-        {
-          questionId: 5546,
-          question: 'Who is the Monarch of England?',
-          duration: 4,
-          thumbnailUrl: 'http://google.com/some/image/path.jpg',
-          points: 5,
-          answers: [
-            {
-              answerId: 2384,
-              answer: 'Prince Charles',
-              colour: colours.RED,
-              correct: true
-            }
-          ]
-        }
-      ],
-      duration: 44,
-      thumbnailUrl: 'http://google.com/some/image/path.jpg'
+  const data = getData();
+  const user = getUserViaToken(token, data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Quiz/Session cannot be modified by this user. ');
     }
+  }
+  const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
+  if (session === undefined || session.quiz.quizId !== quizId) {
+    throw HTTPError(400, 'Session ID does not refer to a valid session within this quiz or is invalid');
+  }
+
+  const sessionPlayers = session.players.map((p: Player) => p.name);
+  console.log(session.quiz);
+  return {
+    state: session.state,
+    atQuestion: session.atQuestion,
+    players: sessionPlayers,
+    metadata: session.quiz
   };
 };
 
 export const getQuizSessionResults = (quizId: number, sessionId: number, token: string): getQuizSessionResultsReturn | ErrorObject => {
-  // throw HTTPError(400, 'Session ID does not refer to a valid session qithin this quiz');
-  // throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
-  // throw HTTPError(401, 'Token is empty');
-  // throw HTTPError(401, 'Token is invalid');
-  // throw HTTPError(403, 'Valid token is provided, but user is not authorised to view this sesion');
-  return {
-    usersRankedByScore: [
-      {
-        name: 'Hayden',
-        score: 45
-      }
-    ],
-    questionResults: [
-      {
-        questionId: 5546,
-        playersCorrectList: [
-          'Hayden'
-        ],
-        averageAnswerTime: 45,
-        percentCorrect: 54
-      }
-    ]
+  const data = getData();
+  const user = getUserViaToken(token, data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Quiz/Session cannot be modified by this user. ');
+    }
+  }
+  const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
+  if (session === undefined || session.quiz.quizId !== quizId) {
+    throw HTTPError(400, 'Session ID does not refer to a valid session within this quiz or is invalid');
+  }
+  if (session.state !== 'FINAL_RESULTS') {
+    throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
+  }
+
+  const SesResult: getQuizSessionResultsReturn = {
+    usersRankedByScore: [],
+    questionResults: []
   };
+
+  for (let i = 0; i < SesResult.questionResults.length; i++) {
+    SesResult.questionResults[i].questionId = session.questionResults[i].questionId;
+    SesResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
+    SesResult.questionResults[i].averageAnswerTime = calculateRoundedAverage(session.questionResults[i].AnswersTimes);
+    SesResult.questionResults[i].percentCorrect = Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100);
+  }
+
+  const unsortedScores: UserScore[] = session.players.map((p: Player) => ({ name: p.name, score: p.score }));
+  SesResult.usersRankedByScore = unsortedScores.sort((a, b) => b.score - a.score);
+
+  return SesResult;
 };
 
 export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, token: string): getQuizSessionResultsCSVReturn | ErrorObject => {
-  // throw HTTPError(400, 'Session ID does not refer to a valid session qithin this quiz');
-  // throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
-  // throw HTTPError(401, 'Token is empty');
-  // throw HTTPError(401, 'Token is invalid');
-  // throw HTTPError(403, 'Valid token is provided, but user is not authorised to view this sesion');
+  const data = getData();
+  const user = getUserViaToken(token, data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Quiz/Session cannot be modified by this user. ');
+    }
+  }
+  const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
+  if (session === undefined || session.quiz.quizId !== quizId) {
+    throw HTTPError(400, 'Session ID does not refer to a valid session within this quiz or is invalid');
+  }
+  if (session.state !== 'FINAL_RESULTS') {
+    throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
+  }
+
+  // Create and convert array into CSV
+  const resArray: string[][] = [];
+  resArray[0][0] = 'Player';
+  // Establishes a header e.g. Player, question1score, question1rank...
+  for (let i = 0; i < 2 * session.questionResults.length; i += 2) {
+    resArray[0][i + 1] = `question${i + 1}score`;
+    resArray[0][i + 2] = `question${i + 1}rank`;
+  }
+  const playerResults: playerResults[] = [];
+  for (const player of session.players) {
+    const result: playerResults = {
+      name: player.name,
+      questionScore: [...player.questionResults.questionScore],
+      questionRank: [...player.questionResults.questionRank],
+    };
+    playerResults.push(result);
+  }
+  const sortedPlayerResults = playerResults.slice().sort((a, b) => a.name.localeCompare(b.name));
+
+  for (let i = 0; i < sortedPlayerResults.length; i++) {
+    for (let j = 0; j < 2 * session.questionResults.length + 1; j++) {
+      if (j === 0) {
+        resArray[i][j] = sortedPlayerResults[i].name;
+      }
+      if (j % 2 === 1) {
+        resArray[i][j] = sortedPlayerResults[i].questionScore[j].toString();
+      }
+      if (j % 2 === 0) {
+        resArray[i][j] = sortedPlayerResults[i].questionRank[j].toString();
+      }
+    }
+  }
+
+  const csv = arraytoCSV(resArray);
+  const filename = `csv-${Date.now()}.csv`;
+  const filepath = path.join(__dirname, 'src', 'csv_files', filename);
+  fs.writeFileSync(filepath, csv);
+
   return {
-    url: 'http://google.com/some/image/path.csv'
+    url: `${url}:${port}/csv/uploads/${filename}`,
   };
 };
