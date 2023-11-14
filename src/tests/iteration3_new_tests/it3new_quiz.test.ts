@@ -336,9 +336,12 @@ describe.skip('Tests for updateSessionState', () => {
   test('QUESTION_COUNTDOWN to QUESTION_OPEN on SKIP_COUNTDOWN', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    //  const getSessions =
-    //  requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    //  setTimeout(expect(getSessions).toBe('QUESTION_OPEN'), 3000); // 3 seconds
+    // Need to write getSessionStatus
+  });
+
+  test('QUESTION_COUNTDOWN to QUESTION_OPEN automatically after 3 seconds', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
   });
 
   test('QUESTION_OPEN to END on END', () => {
@@ -369,9 +372,6 @@ describe.skip('Tests for updateSessionState', () => {
   test('QUESTION_OPEN to QUESTION_CLOSE on duration ending', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    //  const getSessions =
-    //  requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    //  setTimeout(expect(getSessions).toBe('QUESTION_CLOSE'), 20000);
   });
 
   test('QUESTION_CLOSE to ANSWER_SHOW on GO_TO_ANSWER', () => {

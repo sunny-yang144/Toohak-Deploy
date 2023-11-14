@@ -1,4 +1,4 @@
-import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours, Session, actions } from './dataStore';
+import { getData, setData, Question, QuestionBody, Quiz, Answer, AnswerToken, QuestionToken, colours, Session, actions, Player } from './dataStore';
 import { generateQuizId, generateQuestionId, generateAnswerId, getRandomColour, getUserViaToken, isImageSync, moveStates, generateSessionId } from './other';
 import isImage from 'is-image-header';
 import HTTPError from 'http-errors';
@@ -1067,43 +1067,27 @@ export const updateSessionState = (quizId: number, sessionId: number, token: str
 };
 
 export const getSessionStatus = (quizId: number, sessionId: number, token: string): getSessionStatusReturn | ErrorObject => {
-  // throw HTTPError(400, 'Session ID does not refer to a valid session qithin this quiz');
-  // throw HTTPError(401, 'Token is empty');
-  // throw HTTPError(401, 'Token is invalid');
-  // throw HTTPError(403, 'Valid token is provided, but user is not authorised to view this sesion');
-  return {
-    state: 'LOBBY',
-    atQuestion: 3,
-    players: [
-      'Hayden'
-    ],
-    metadata: {
-      quizId: 5546,
-      name: 'This is the name of the quiz',
-      timeCreated: 1683019484,
-      timeLastEdited: 1683019484,
-      description: 'This quiz is so we can have a lot of fun',
-      numQuestions: 1,
-      questions: [
-        {
-          questionId: 5546,
-          question: 'Who is the Monarch of England?',
-          duration: 4,
-          thumbnailUrl: 'http://google.com/some/image/path.jpg',
-          points: 5,
-          answers: [
-            {
-              answerId: 2384,
-              answer: 'Prince Charles',
-              colour: colours.RED,
-              correct: true
-            }
-          ]
-        }
-      ],
-      duration: 44,
-      thumbnailUrl: 'http://google.com/some/image/path.jpg'
+  const data = getData();
+  const user = getUserViaToken(token,data);
+  if (!user) {
+    throw HTTPError(401, 'Empty or invalid user token');
+  }
+  if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {
+    if (data.quizzes.some((q: Quiz) => q.quizId === quizId)) {
+      throw HTTPError(403, 'Quiz/Session cannot be modified by this user. ');
     }
+  }
+  const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
+  if (session === undefined || session.quiz.quizId !== quizId) {
+    throw HTTPError(400, 'Session ID does not refer to a valid session within this quiz or is invalid');
+  }
+
+  const sessionPlayers = session.players.map((p: Player) => p.name);
+  return {
+    state: session.state,
+    atQuestion: session.atQuestion,
+    players: sessionPlayers,
+    metadata: session.quiz
   };
 };
 
