@@ -277,19 +277,17 @@ describe.skip('Tests for getQuizSessionResults', () => {
   };
   let question: {
     body: {quizId: number},
-  }
-
+  };
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
   });
-
   test('Successful retrieval of quiz results', () => {
     const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     const quizResults = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
-    expect(quizResults).toStrictEqual( {
+    expect(quizResults).toStrictEqual({
       usersRankedByScore: [
         {
           name: 'Jack',
@@ -299,16 +297,13 @@ describe.skip('Tests for getQuizSessionResults', () => {
       questionResults: [
         {
           questionId: question,
-          playersCorrectList: [
-            
-          ],
+          playersCorrectList: [],
           averageAnswerTime: 0,
           percentCorrect: 0,
         }
       ]
     });
   });
-
   test('Session ID does not refer to a valid session within this quiz', () => {
     const quiz2 = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME2, VD.QUIZDESCRIPTION2);
     requestAdminQuizQuestionCreateV2(quiz2.body.quizId, user.body.token, sampleQuestion2);
@@ -317,20 +312,17 @@ describe.skip('Tests for getQuizSessionResults', () => {
     requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     expect(response).toThrow(HTTPError[400]);
   });
-
   test('Session is not in FINAL_RESULTS state', () => {
     const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     expect(response).toThrow(HTTPError[400]);
   });
-
   test('Token is empty or invalid', () => {
     const invalidId = uuidv4();
     const response = requestNewSessionQuiz(quiz.body.quizId, invalidId, 3);
     expect(response).toThrow(HTTPError[401]);
   });
-
   test('Valid token, however user is unauthorised to view this session', () => {
     const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
@@ -782,14 +774,13 @@ describe.skip('Tests for finalResults', () => {
   };
   let question: {
     body: {quizId: number},
-  }
+  };
   let session: {
-    body: {sessionId: number}
+    body: {sessionId: number},
   };
   let player: {
-    body: {playerId: number}
+    body: {playerId: number},
   };
-
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
@@ -797,11 +788,10 @@ describe.skip('Tests for finalResults', () => {
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
     question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
   });
-
   test('Successful retrieval of final results', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
     const finalResults = requestFinalResults(player.body.playerId);
-    expect(finalResults).toStrictEqual( {
+    expect(finalResults).toStrictEqual({
       usersRankedByScore: [
         {
           name: 'Jack',
@@ -816,9 +806,8 @@ describe.skip('Tests for finalResults', () => {
           percentCorrect: 0,
         }
       ]
-    })
+    });
   });
-
   test('Player ID does not exist', () => {
     expect(requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
   });
