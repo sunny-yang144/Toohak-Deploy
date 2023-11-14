@@ -151,9 +151,8 @@ export const adminQuizCreate = (token: string, name: string, description: string
   const currentTime = new Date();
   const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
   const quizId = generateQuizId(data.quizzes);
-  const newQuiz = {
+  const newQuiz: Quiz = {
     quizId: quizId,
-    ownerId: user.userId,
     name: name,
     description: description,
     timeCreated: unixtimeSeconds,
@@ -1083,6 +1082,7 @@ export const getSessionStatus = (quizId: number, sessionId: number, token: strin
   }
 
   const sessionPlayers = session.players.map((p: Player) => p.name);
+  console.log(session.quiz);
   return {
     state: session.state,
     atQuestion: session.atQuestion,

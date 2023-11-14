@@ -195,11 +195,10 @@ export function moveStates(session: Session, action: actions)  {
   } else if (action === 'GO_TO_FINAL_RESULTS') {
     session.state = 'FINAL_RESULTS';
   }
-
   // Making the assumption that a quiz can only have one timeout at a time.
   if (session.state === 'QUESTION_OPEN') {
     const qnNum = session.atQuestion;
-    const qnDuration = session.quiz.questions[qnNum].duration;
+    const qnDuration = session.quiz.questions[qnNum - 1].duration;
     const timeout = setTimeout(() => {
       session.state = 'QUESTION_CLOSE';
     }, qnDuration * 1000);
@@ -207,7 +206,7 @@ export function moveStates(session: Session, action: actions)  {
   }
   if (session.state == 'QUESTION_COUNTDOWN') {
     const timeout = setTimeout(() => {
-      session.state = 'QUESTION_CLOSE';
+      session.state = 'QUESTION_OPEN';
     }, 3 * 1000);
     session.qnTimeout = timeout;
   }
