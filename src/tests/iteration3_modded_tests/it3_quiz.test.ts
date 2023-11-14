@@ -1814,6 +1814,91 @@ describe('Tests for adminQuizQuestionUpdate', () => {
     const quizQuestion = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user2.body.token, sampleQuestion2)).toThrow(HTTPError[403]);
   });
+
+  test('Url is not a valid URL', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+      thumbnailUrl: '',
+    };
+    expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
+  });
+  test('Url is an empty string', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+      thumbnailUrl: 'https://www.mywalletisstuckinpeanutbutter.com/',
+    };
+    expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
+  });
+  test('Url is not a valid URL', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+      thumbnailUrl: '',
+    };
+    expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
+  });
+  test('Url is not an image', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+      thumbnailUrl: 'https://www.random.org/',
+    };
+    expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
+  });
 });
 
 describe('Tests for adminQuizTrashRestore', () => {

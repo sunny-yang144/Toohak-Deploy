@@ -771,6 +771,15 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
     return { error: 'No correct answers.', statusCode: 400 };
   }
 
+  if (questionBody.thumbnailUrl.length === 0) {
+    return { error: 'No thumbnail url provided', statusCode: 400 };
+  }
+  try {
+    isImageSync(questionBody.thumbnailUrl);
+  } catch (error) {
+    return { error: 'This is not a valid URL', statusCode: 400 };
+  }
+
   // Check for duplicates
   for (let i = 0; i < questionBody.answers.length; i++) {
     for (let j = i + 1; j < questionBody.answers.length; j++) {
