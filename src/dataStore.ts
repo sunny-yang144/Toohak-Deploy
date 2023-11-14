@@ -112,7 +112,7 @@ export interface QuestionBody {
   duration: number;
   points: number;
   answers: AnswerBody[];
-  thumbnailUrl: string;
+  thumbnailUrl?: string;
 }
 export interface QuestionToken {
   questionId: number;

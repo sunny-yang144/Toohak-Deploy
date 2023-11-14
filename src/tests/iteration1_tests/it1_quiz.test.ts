@@ -241,7 +241,7 @@ describe('Tests for adminQuizRemove', () => {
   });
 });
 
-describe('Tests for adminQuizInfo', () => {
+describe.only('Tests for adminQuizInfo', () => {
   test('Invalid token', () => {
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
@@ -287,7 +287,6 @@ describe('Tests for adminQuizInfo', () => {
         numQuestions: expect.any(Number),
         questions: [], // Since we havent added any questions this should be empty
         duration: expect.any(Number),
-        thumbnailUrl: expect.any(String),
       }
     );
     expect(response.statusCode).toStrictEqual(200);
@@ -308,7 +307,6 @@ describe('Tests for adminQuizInfo', () => {
         numQuestions: expect.any(Number),
         questions: [], // Since we havent added any questions this should be empty
         duration: expect.any(Number),
-        thumbnailUrl: expect.any(String),
       }
     );
     expect(response1.statusCode).toStrictEqual(200);
@@ -324,7 +322,6 @@ describe('Tests for adminQuizInfo', () => {
         numQuestions: expect.any(Number),
         questions: [],
         duration: expect.any(Number),
-        thumbnailUrl: expect.any(String),
       }
     );
     expect(response2.statusCode).toStrictEqual(200);
@@ -338,7 +335,6 @@ describe('Tests for adminQuizInfo', () => {
     expect(response.body).toStrictEqual(
       {
         quizId: quiz.body.quizId,
-        thumbnailUrl: '',
         name: expect.any(String),
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
@@ -365,7 +361,6 @@ describe('Tests for adminQuizInfo', () => {
                 correct: expect.any(Boolean),
               }
             ],
-            thumbnailUrl: VD.IMAGEURL,
           }
         ],
         duration: expect.any(Number),

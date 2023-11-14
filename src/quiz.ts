@@ -21,7 +21,7 @@ interface adminQuizListReturn {
 interface adminQuizCreateReturn {
   quizId: number
 }
-interface adminQuizInfoReturn {
+export interface adminQuizInfoReturn {
   quizId: number,
   name: string,
   timeCreated: number,
@@ -654,13 +654,19 @@ export const adminQuizQuestionCreate = async (quizId: number, token: string, que
   }
 
   const questionId = generateQuestionId(data.questions);
+  let imgUrl: string;
+  if (questionBody.thumbnailUrl === undefined) {
+    imgUrl = '';
+  } else {
+    imgUrl = questionBody.thumbnailUrl;
+  }
   const questionObject: Question = {
     questionId: questionId,
     question: questionBody.question,
     duration: questionBody.duration,
     points: questionBody.points,
     answers: [],
-    thumbnailUrl: questionBody.thumbnailUrl,
+    thumbnailUrl: imgUrl,
   };
 
   for (const answer of questionBody.answers) {

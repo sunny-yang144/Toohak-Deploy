@@ -23,12 +23,14 @@ import {
   finalResults,
   allChatMessages,
   sendChatMessages,
+  ErrorObject,
 } from './auth';
 
 import {
   adminQuizList,
   adminQuizCreate,
   adminQuizInfo,
+  adminQuizInfoReturn,
   adminQuizRemove,
   adminQuizNameUpdate,
   adminQuizDescriptionUpdate,
@@ -51,7 +53,7 @@ import {
 } from './quiz';
 
 import { clear } from './other';
-import { setData, dataStoreFile } from './dataStore';
+import { setData, dataStoreFile, Question, Quiz } from './dataStore';
 
 // Set up web app
 const app = express();
@@ -186,6 +188,11 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
       error: response.error
     });
   }
+  delete response.thumbnailUrl;
+  response.questions = response.questions.map((q: Question) => {
+    delete q.thumbnailUrl;
+    return q;
+  });
   res.json(response);
 });
 
