@@ -293,7 +293,7 @@ describe.skip('Tests for getQuizSessionResults', () => {
     //     {
     //       questionId: question,
     //       playersCorrectList: [
-    //         ""
+    //         
     //       ],
     //       averageAnswerTime: 0,
     //       percentCorrect: 0,
