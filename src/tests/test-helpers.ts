@@ -912,7 +912,7 @@ export function requestGetQuizSessionResults (quizId: number, sessionId: number,
 export function requestGetQuizSessionResultsCSV (quizId: number, sessionId: number, token: string) {
   const res = request(
     'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results/CSV`,
     {
       headers: {
         token,
@@ -939,4 +939,18 @@ export function requestGuestPlayerJoin (sessionId: number, name: string) {
 }
 export function requestGetGuestPlayerStatus (playerId: number) {
   return requestHelper('GET', `/v1/player/${playerId}`, {});
+}
+export function requestFinalResults (playerId: number) {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/player/${playerId}/results`,
+    {
+      headers: {
+        token,
+      }
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+  };
 }

@@ -13,6 +13,7 @@ import {
   requestGuestPlayerJoin,
   requestGetQuizSessionResultsCSV,
   requestGetGuestPlayerStatus,
+  requestFinalResults,
   clear,
 } from '../test-helpers';
 import { checkCSV } from '../../other';
@@ -20,6 +21,7 @@ import { expect } from '@jest/globals';
 import { v4 as uuidv4 } from 'uuid';
 import HTTPError from 'http-errors';
 import { QuestionBody } from '../../dataStore';
+import exp from 'constants';
 
 enum VD {
   EMAIL = 'helloworld@gmail.com',
@@ -311,7 +313,7 @@ describe.skip('Tests for getQuizSessionResults', () => {
   test('Session is not in FINAL_RESULTS state', () => {
     const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     expect(response).toThrow(HTTPError[400]);
   });
 
@@ -685,5 +687,62 @@ describe.skip('Tests for guestPlayerStatus', () => {
   });
   test('PlayerId does not exist', () => {
     expect(requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
+  });
+});
+
+describe.skip('Tests for finalResults', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let question: {
+    body: {quizId: number},
+  }
+  let session: {
+    body: {sessionId: number}
+  };
+  let player: {
+    body: {playerId: number}
+  };
+
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+  });
+
+  test('Successful retrieval of final results', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    const response = requestFinalResults(player.body.playerId);
+    expect(response).toStrictEqual( {
+      usersRankedByScore: [
+        name: 'Jack',
+        score: 0,
+      ],
+      questionResults: [
+        {
+          questionId: question,
+          playersCorrectList: [
+
+          ],
+          averageAnswerTime: 0,
+          percentCorrect: 0,
+        }
+      ]
+    })
+  });
+
+  test('Player ID does not exist', () => {
+    expect(requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
+  });
+
+  test('Session is not in FINAL_RESULTS state', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
   });
 });
