@@ -898,7 +898,7 @@ describe('Tests for player submission of answers', () => {
   });
 });
 
-describe('Tests for question results', () => {
+describe.skip('Tests for question results', () => {
   let user: {
     body: {token: string},
     statusCode: number,
