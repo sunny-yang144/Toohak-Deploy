@@ -30,6 +30,7 @@ export interface adminQuizInfoReturn {
   numQuestions: number,
   questions: Question[],
   duration: number,
+  thumbnailUrl: string
 }
 interface adminQuizTrashReturn {
   quizzes: quizObject[];
@@ -547,6 +548,15 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
       return { error: `Target user already has a quiz named ${quiz.name}`, statusCode: 400 };
     }
   }
+
+  // Checking if all sessions are in END state
+  for (const session of data.sessions) {
+    if (session.quiz.quizId === quizId) {
+      if (session.state !== 'END') {
+        return { error: 'Not all sessions are in end state', statusCode: 400};
+      }
+    }
+  }
   // Remove quizId from token holder
   const indexToRemove = user.ownedQuizzes.indexOf(quizId);
   if (indexToRemove !== -1) {
@@ -847,6 +857,15 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
   if (!validQuestionId) {
     return { error: 'This is not a valid question within this quiz.', statusCode: 400 };
   }
+  
+  for (const session of data.sessions) {
+    if (session.quiz.quizId === quizId) {
+      if (session.state !== 'END') {
+        return { error: 'Not all sessions are in end state', statusCode: 400};
+      }
+    }
+  }
+
   const currentData = data.quizzes[quizId].questions[questionId];
   const newQuizDuration = data.quizzes[quizId].duration - currentData.duration;
 
@@ -970,7 +989,7 @@ export const adminQuizQuestionDuplicate = async (quizId: number, questionId: num
 /// /////////////////////////////// ITERATION 3 NEW ///////////////////////////////////////////////
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
-export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: string): EmptyObject | ErrorObject => {
+export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: string): EmptyObject => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -987,7 +1006,7 @@ export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: strin
   return {};
 };
 
-export const viewSessionActivity = (token: string, quizId: number): viewSessionActivityReturn | ErrorObject => {
+export const viewSessionActivity = (token: string, quizId: number): viewSessionActivityReturn => {
   // throw HTTPError(401, 'Token is empty');
   // throw HTTPError(401, 'Token is invalid');
   // throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
@@ -1005,7 +1024,7 @@ export const viewSessionActivity = (token: string, quizId: number): viewSessionA
   };
 };
 
-export const newSessionQuiz = (quizId: number, token: string, autoStartNum: number): newSessionQuizReturn | EmptyObject => {
+export const newSessionQuiz = (quizId: number, token: string, autoStartNum: number): newSessionQuizReturn => {
   // throw HTTPError(400, 'autoStartNum is a number greater than 50');
   // throw HTTPError(400, 'A maximum of 10 sessions that are not in END state currently exist');
   // throw HTTPError(400, 'The quiz does not have any questions in it');
@@ -1017,7 +1036,7 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
   };
 };
 
-export const updateSessionState = (quizId: number, sessionId: number, token: string, action: string): Record<string, never> | ErrorObject => {
+export const updateSessionState = (quizId: number, sessionId: number, token: string, action: string): Record<string, never> => {
   // throw HTTPError(400, 'Session ID does not refer to a valid session qithin this quiz');
   // throw HTTPError(400, 'Action provided is not a valid Action enum');
   // throw HTTPError(400, 'Action enum cannot be applied in the current state);
@@ -1027,7 +1046,7 @@ export const updateSessionState = (quizId: number, sessionId: number, token: str
   return {};
 };
 
-export const getSessionStatus = (quizId: number, sessionId: number, token: string): getSessionStatusReturn | ErrorObject => {
+export const getSessionStatus = (quizId: number, sessionId: number, token: string): getSessionStatusReturn => {
   // throw HTTPError(400, 'Session ID does not refer to a valid session qithin this quiz');
   // throw HTTPError(401, 'Token is empty');
   // throw HTTPError(401, 'Token is invalid');
@@ -1068,7 +1087,7 @@ export const getSessionStatus = (quizId: number, sessionId: number, token: strin
   };
 };
 
-export const getQuizSessionResults = (quizId: number, sessionId: number, token: string): getQuizSessionResultsReturn | ErrorObject => {
+export const getQuizSessionResults = (quizId: number, sessionId: number, token: string): getQuizSessionResultsReturn => {
   // throw HTTPError(400, 'Session ID does not refer to a valid session qithin this quiz');
   // throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
   // throw HTTPError(401, 'Token is empty');
@@ -1094,7 +1113,7 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
   };
 };
 
-export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, token: string): getQuizSessionResultsCSVReturn | ErrorObject => {
+export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, token: string): getQuizSessionResultsCSVReturn => {
   // throw HTTPError(400, 'Session ID does not refer to a valid session qithin this quiz');
   // throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
   // throw HTTPError(401, 'Token is empty');
