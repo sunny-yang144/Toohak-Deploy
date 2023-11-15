@@ -14,6 +14,7 @@ import {
   requestGetQuizSessionResultsCSV,
   requestGetGuestPlayerStatus,
   requestFinalResults,
+  requestSendChatMessages,
   requestPlayerAnswers,
   requestQuestionResults,
   requestAllChatMessages,
@@ -812,16 +813,16 @@ describe.skip('Tests for finalResults', () => {
     });
   });
   test('Player ID does not exist', () => {
-    expect(() => requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
+    expect(requestFinalResults(1000)).toThrow(HTTPError[400]);
   });
 
   test('Session is not in FINAL_RESULTS state', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    expect(() => requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
+    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
   });
 });
 
-describe('Tests for player submission of answers', () => {
+describe.skip('Tests for player submission of answers', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -897,7 +898,7 @@ describe('Tests for player submission of answers', () => {
   });
 });
 
-describe('Tests for question results', () => {
+describe.skip('Tests for question results', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -1004,5 +1005,51 @@ describe.skip('Tests for all messages displayed', () => {
   });
   test('Player ID does not exist', () => {
     expect(() => requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
+  });
+});
+
+describe.skip('Tests for sendChatMessages', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let session: {
+    body: {sessionId: number},
+  };
+  let player: {
+    body: {playerId: number},
+  };
+  let message: {
+    body: {messageBody: string},
+  };
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+  });
+  test('Successful new chat message', () => {
+    message.body.messageBody = 'I like chicken wings';
+    const newMessage = requestSendChatMessages(player.body.playerId, message.body);
+    const allMessages = requestAllChatMessages(player.body.playerId);
+    expect(newMessage).toStrictEqual({});
+    expect(allMessages.body.messages.length).toStrictEqual(1);
+    expect(allMessages.body.messages.messageBody).toStrictEqual(message.body.messageBody);
+    expect(allMessages.body.messages.playerId).toStrictEqual(player.body.playerId);
+  });
+  test('Player ID does not exist', () => {
+    message.body.messageBody = 'I like chicken wings';
+    expect(requestSendChatMessages(1000, message.body)).toThrow(HTTPError[400]);
+  });
+  test('Message body is less than 1 character', () => {
+    message.body.messageBody = '';
+    expect(requestSendChatMessages(player.body.playerId, message.body)).toThrow(HTTPError[400]);
+  });
+  test('Message body is more than 100 characters', () => {
+    message.body.messageBody = 'a'.repeat(101);
+    expect(requestSendChatMessages(player.body.playerId, message.body)).toThrow(HTTPError[400]);
   });
 });

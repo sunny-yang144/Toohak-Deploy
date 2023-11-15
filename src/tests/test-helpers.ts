@@ -894,7 +894,6 @@ export function requestGetGuestPlayerStatus (playerId: number) {
 export function requestFinalResults (playerId: number) {
   return requestHelper('GET', `/v1/player/${playerId}/results`, {});
 }
-
 export function requestPlayerAnswers (answerIds: number[], playerId: number, questionPosition: number) {
   return requestHelper('PUT', `/v1/player/${playerId}/question/${questionPosition}/answer`, {});
 }
@@ -906,4 +905,7 @@ export function requestCurrentQuestionInfoPlayer (playerId: number, questionPosi
 }
 export function requestAllChatMessages (playerId: number) {
   return requestHelper('GET', `/v1/player/${playerId}/chat`, {});
+}
+export function requestSendChatMessages (playerId: number, messageBody: object) {
+  return requestHelper('POST', `/v1/player/${playerId}/chat`, { message: messageBody });
 }
