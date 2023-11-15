@@ -1,6 +1,19 @@
-import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken, Token, DataStore, Session, actions, states, dataStoreFile, Player } from './dataStore';
+import {
+  setData,
+  getData,
+  User,
+  Quiz,
+  colours,
+  AnswerToken,
+  QuestionToken,
+  Token,
+  DataStore,
+  Session,
+  actions,
+  states,
+  Player
+} from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
-// import { createObjectCsvWriter } from 'csv-writer';
 import crypto from 'crypto';
 import request from 'sync-request-curl';
 import HTTPError from 'http-errors';
@@ -266,24 +279,24 @@ export function verifyAndGenerateName(name: string, players: Player[]) {
     while (players.some((p: Player) => p.name === name)) {
       // If a name already matches one in list, then regenerate name.
       newName = generateName();
-    };
+    }
   } else {
     if (players.some((p: Player) => p.name === name)) {
       throw HTTPError(400, 'Already a player with that name');
     }
     newName = name;
   }
-  return newName
+  return newName;
 }
 
 function generateName() {
   const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-  let availableLetters = alphabet.split('');
+  const availableLetters = alphabet.split('');
 
   const letters = Array.from({ length: 5 }, () => {
-      const randomIndex = Math.floor(Math.random() * availableLetters.length);
-      const selectedLetter = availableLetters.splice(randomIndex, 1)[0];
-      return selectedLetter;
+    const randomIndex = Math.floor(Math.random() * availableLetters.length);
+    const selectedLetter = availableLetters.splice(randomIndex, 1)[0];
+    return selectedLetter;
   }).join('');
 
   const numbers = Array.from({ length: 3 }, () => getRandomNumber()).join('');

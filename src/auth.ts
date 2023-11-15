@@ -319,15 +319,15 @@ export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoi
     throw HTTPError(400, 'Session is not in lobby state');
   }
   const playerId = generatePlayerId(data.players);
-  const newPlayer: Player = { 
-    playerId, 
-    name: newName, 
-    score: 0, 
+  const newPlayer: Player = {
+    playerId,
+    name: newName,
+    score: 0,
     questionResults: {
       questionScore: [],
       questionRank: []
     }
-  }
+  };
   session.players.push(newPlayer);
   data.players.push(newPlayer);
   return { playerId };
