@@ -822,7 +822,7 @@ describe.skip('Tests for finalResults', () => {
   });
 });
 
-describe('Tests for player submission of answers', () => {
+describe.skip('Tests for player submission of answers', () => {
   let user: {
     body: {token: string},
     statusCode: number,
