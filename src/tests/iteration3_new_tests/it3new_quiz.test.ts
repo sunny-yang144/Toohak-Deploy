@@ -25,8 +25,6 @@ import { expect } from '@jest/globals';
 import { v4 as uuidv4 } from 'uuid';
 import HTTPError from 'http-errors';
 import { QuestionBody, colours, Answer } from '../../dataStore';
-import { string } from 'yargs';
-
 
 enum VD {
   EMAIL = 'helloworld@gmail.com',
