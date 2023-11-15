@@ -11,13 +11,22 @@ import {
   MessageBody,
   Player,
 } from './dataStore';
-import { generateToken, getUserViaToken, generatePlayerId, getHashOf, verifyAndGenerateName, moveStates } from './other';
+import {
+  generateToken,
+  getUserViaToken,
+  generatePlayerId,
+  getHashOf,
+  verifyAndGenerateName,
+  moveStates,
+  round1DP
+} from './other';
 import { UserScore, QuestionResult } from './quiz';
 
 export interface ErrorObject {
   error: string;
   statusCode: number;
 }
+type EmptyObject = Record<string, never>;
 interface adminUserDetailsReturn {
   user: {
     userId: number,
@@ -372,15 +381,67 @@ export const currentQuestionInfoPlayer = (playerId: number, questionPosition: nu
   }
 };
 
-export const playerAnswers = (answerIds: number[], playerId: number, questionPosition: number): Record<string, never> | ErrorObject => {
-  // throw HTTPError(400, 'The player ID does not exist');
-  // throw HTTPError(400, 'The question position is invalid for the session this player is in');
-  // throw HTTPError(400, 'The session is not in QUESTION_OPEN state');
-  // throw HTTPError(400, 'The session is not up to this question yet');
-  // throw HTTPError(400, 'The answer IDs are invalid for this particular question');
-  // throw HTTPError(400, 'Duplicate answer IDs provided');
-  // throw HTTPError(400, 'Less than 1 answer ID was submitted');
-  return {};
+export const playerAnswers = (answerIds: number[], playerId: number, questionPosition: number): EmptyObject => {
+  const data = getData();
+  const player = data.players.find((p: Player) => p.playerId === playerId);
+  if (!player) {
+    throw HTTPError(400, 'The player ID does not exist');
+  }
+  const session = data.sessions.find((s: Session) => s.players.some((p: Player) => p.playerId === playerId));
+  if (session !== undefined) {
+    if (session.quiz.numQuestions < questionPosition) {
+      throw HTTPError(400, 'The question position is invalid for the session this player is in');
+    } else if (session.atQuestion !== questionPosition) {
+      throw HTTPError(400, 'The session is currently not on this question');
+    } else if (session.state !== 'QUESTION_OPEN') {
+      throw HTTPError(400, 'The question is not in QUESTION_OPEN so player cannot answer.');
+    } else if (answerIds.length < 1) {
+      throw HTTPError(400, 'Less than 1 answer ID was submitted');
+    }
+    const uniqueAnswers = Array.from(new Set(answerIds));
+    if (uniqueAnswers.length !== answerIds.length) {
+      throw HTTPError(400, 'Duplicate answer IDs provided');
+    }
+
+    // Since array index starts at 1, questionPosition 1 is index 0;
+    const qnPosition = questionPosition - 1;
+    for (const answerId of answerIds) {
+      if (!session.quiz.questions[qnPosition].answers.some((a: Answer) => a.answerId === answerId)) {
+        throw HTTPError(400, 'The answer IDs are invalid for this particular question');
+      }
+    }
+    // Calculate the number of correct answers
+    const question = session.quiz.questions[qnPosition];
+    let targetCorrect = 0;
+    for (const answer of question.answers) {
+      if (answer.correct === true) targetCorrect++;
+    }
+    // If a submitted answer is correct then decrement. At the end we should have 0 if player
+    // selects all right answers
+    for (const answerId of answerIds) {
+      const answer = question.answers.find((a: Answer) => a.answerId === answerId);
+      if (answer.correct === true) targetCorrect--;
+    }
+    if (targetCorrect === 0) {
+      const SesResult = session.questionResults[qnPosition];
+      SesResult.questionId = question.questionId;
+      SesResult.playersCorrectList.push(player.name);
+
+      const timeTaken = Math.floor((Date.now() - session.qnStartTime) * 1000);
+      SesResult.AnswersTimes.push(timeTaken);
+
+      const index = SesResult.playersCorrectList.indexOf(player.name);
+      const score = round1DP(question.points / (index + 1));
+      const rank = index + 1;
+
+      const sesPlayer = session.players.find((p: Player) => p.playerId === playerId);
+      sesPlayer.questionResults.questionScore[qnPosition] = score;
+      sesPlayer.questionResults.questionRank[qnPosition] = rank;
+      player.questionResults.questionScore[qnPosition] = score;
+      player.questionResults.questionRank[qnPosition] = rank;
+    }
+    return {};
+  }
 };
 
 export const questionResults = (playerId: number, questionPostion: number): questionResultsReturn | ErrorObject => {
