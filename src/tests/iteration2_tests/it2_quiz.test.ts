@@ -13,6 +13,7 @@ import {
   requestAdminQuizQuestionMove,
   requestAdminQuizQuestionUpdate,
   requestAdminQuizTrashRestore,
+  requestNewSessionQuiz,
   clear,
 } from '../test-helpers';
 
@@ -222,7 +223,7 @@ describe('Tests to Empty adminQuizTrashRemove', () => {
   });
 });
 
-describe('Testing adminQuizTransfer', () => {
+describe.only('Testing adminQuizTransfer', () => {
   test('Successful adminQuizTransfer', () => {
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
@@ -306,6 +307,15 @@ describe('Testing adminQuizTransfer', () => {
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
     const quiz = requestAdminQuizCreate(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     const response = requestAdminQuizTransfer(user2.body.token, VD.EMAIL2, quiz.body.quizId);
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(403);
+  });
+
+  test('Unsuccessful adminQuizTransfer, a session is NOT in END state', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const response = requestAdminQuizTransfer(user.body.token, VD.EMAIL2, quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
   });
@@ -779,7 +789,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
   });
 });
 
-describe('Tests for adminQuizQuestionDelete', () => {
+describe.only('Tests for adminQuizQuestionDelete', () => {
   test('Successful adminQuizQuestionDelete', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
@@ -921,6 +931,15 @@ describe('Tests for adminQuizQuestionDelete', () => {
     // Create quizQuestion for deletion
     const quizQuestionId = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, questionBody);
     const response = requestAdminQuizQuestionDelete(quiz.body.quizId, quizQuestionId.body.questionId, user2.body.token);
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(403);
+  });
+  test('Unsuccessful adminQuizDelete, a session is NOT in END state', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const response = requestAdminQuizQuestionDelete(quiz.body.quizId , question.body.questionId, quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
   });

@@ -15,6 +15,7 @@ import {
   requestAdminQuizQuestionDeleteV2,
   requestAdminQuizQuestionMoveV2,
   requestAdminQuizQuestionDuplicateV2,
+  requestNewSessionQuiz,
   clear,
 } from '../test-helpers';
 
@@ -519,7 +520,7 @@ describe('Tests to Empty adminQuizTrashRemove', () => {
   });
 });
 
-describe('Testing adminQuizTransfer', () => {
+describe.only('Testing adminQuizTransfer', () => {
   test('Successful adminQuizTransfer', () => {
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
@@ -585,6 +586,12 @@ describe('Testing adminQuizTransfer', () => {
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
     const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     expect(() => requestAdminQuizTransferV2(user2.body.token, VD.EMAIL2, quiz.body.quizId)).toThrow(HTTPError[403]);
+  });
+  test.only('Unsuccessful adminQuizTransfer, a session is NOT in END state', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    expect(() => requestAdminQuizTransferV2(user.body.token, VD.EMAIL2, quiz.body.quizId)).toThrow(HTTPError[400]);
   });
 });
 
@@ -1050,7 +1057,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
   });
 });
 
-describe('Tests for adminQuizQuestionDelete', () => {
+describe.only('Tests for adminQuizQuestionDelete', () => {
   test('Successful adminQuizQuestionDelete', () => {
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
@@ -1166,6 +1173,13 @@ describe('Tests for adminQuizQuestionDelete', () => {
     };
     const quizQuestionId = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody);
     expect(() => requestAdminQuizQuestionDeleteV2(quiz.body.quizId, quizQuestionId.body.questionId, user2.body.token)).toThrow(HTTPError[403]);
+  });
+  test('Unsuccessful adminQuizDelete, a session is NOT in END state', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    expect(() => requestAdminQuizQuestionDeleteV2(quiz.body.quizId , question.body.questionId, quiz.body.quizId)).toThrow(HTTPError[400]);
   });
 });
 
