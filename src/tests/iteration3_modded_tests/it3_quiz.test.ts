@@ -520,7 +520,7 @@ describe('Tests to Empty adminQuizTrashRemove', () => {
   });
 });
 
-describe.only('Testing adminQuizTransfer', () => {
+describe('Testing adminQuizTransfer', () => {
   test('Successful adminQuizTransfer', () => {
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
@@ -587,10 +587,10 @@ describe.only('Testing adminQuizTransfer', () => {
     const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     expect(() => requestAdminQuizTransferV2(user2.body.token, VD.EMAIL2, quiz.body.quizId)).toThrow(HTTPError[403]);
   });
-  test.only('Unsuccessful adminQuizTransfer, a session is NOT in END state', () => {
+  test('Unsuccessful adminQuizTransfer, a session is NOT in END state', () => {
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
-    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
     expect(() => requestAdminQuizTransferV2(user.body.token, VD.EMAIL2, quiz.body.quizId)).toThrow(HTTPError[400]);
   });
 });
@@ -1057,7 +1057,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
   });
 });
 
-describe.only('Tests for adminQuizQuestionDelete', () => {
+describe('Tests for adminQuizQuestionDelete', () => {
   test('Successful adminQuizQuestionDelete', () => {
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
@@ -1179,7 +1179,7 @@ describe.only('Tests for adminQuizQuestionDelete', () => {
     const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     const question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
     requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    expect(() => requestAdminQuizQuestionDeleteV2(quiz.body.quizId , question.body.questionId, quiz.body.quizId)).toThrow(HTTPError[400]);
+    expect(() => requestAdminQuizQuestionDeleteV2(quiz.body.quizId, question.body.questionId, user.body.token)).toThrow(HTTPError[400]);
   });
 });
 

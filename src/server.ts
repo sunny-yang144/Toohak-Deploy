@@ -23,14 +23,12 @@ import {
   finalResults,
   allChatMessages,
   sendChatMessages,
-  ErrorObject,
 } from './auth';
 
 import {
   adminQuizList,
   adminQuizCreate,
   adminQuizInfo,
-  adminQuizInfoReturn,
   adminQuizRemove,
   adminQuizNameUpdate,
   adminQuizDescriptionUpdate,
@@ -53,7 +51,7 @@ import {
 } from './quiz';
 
 import { clear } from './other';
-import { setData, dataStoreFile, Question, Quiz } from './dataStore';
+import { setData, dataStoreFile, Question } from './dataStore';
 
 // Set up web app
 const app = express();

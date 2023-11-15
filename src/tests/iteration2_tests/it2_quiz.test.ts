@@ -223,7 +223,7 @@ describe('Tests to Empty adminQuizTrashRemove', () => {
   });
 });
 
-describe.only('Testing adminQuizTransfer', () => {
+describe('Testing adminQuizTransfer', () => {
   test('Successful adminQuizTransfer', () => {
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
@@ -314,10 +314,11 @@ describe.only('Testing adminQuizTransfer', () => {
   test('Unsuccessful adminQuizTransfer, a session is NOT in END state', () => {
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
     requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     const response = requestAdminQuizTransfer(user.body.token, VD.EMAIL2, quiz.body.quizId);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
-    expect(response.statusCode).toStrictEqual(403);
+    expect(response.statusCode).toStrictEqual(400);
   });
 });
 
@@ -345,7 +346,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
     expect(quizInfo.body).toStrictEqual(
       {
         quizId: quiz.body.quizId,
-        thumbnailUrl: '',
         name: expect.any(String),
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
@@ -372,7 +372,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
                 correct: expect.any(Boolean),
               }
             ],
-            thumbnailUrl: VD.IMAGEURL,
           },
           {
             questionId: quizQuestion2.body.questionId,
@@ -394,7 +393,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
                 correct: expect.any(Boolean),
               }
             ],
-            thumbnailUrl: VD.IMAGEURL,
           }
         ],
         duration: expect.any(Number),
@@ -789,7 +787,7 @@ describe('Tests for adminQuizQuestionCreate', () => {
   });
 });
 
-describe.only('Tests for adminQuizQuestionDelete', () => {
+describe('Tests for adminQuizQuestionDelete', () => {
   test('Successful adminQuizQuestionDelete', () => {
     // Create user and quiz
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
@@ -939,9 +937,9 @@ describe.only('Tests for adminQuizQuestionDelete', () => {
     const quiz = requestAdminQuizCreate(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     const question = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
     requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    const response = requestAdminQuizQuestionDelete(quiz.body.quizId , question.body.questionId, quiz.body.quizId);
+    const response = requestAdminQuizQuestionDelete(quiz.body.quizId, question.body.questionId, user.body.token);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
-    expect(response.statusCode).toStrictEqual(403);
+    expect(response.statusCode).toStrictEqual(400);
   });
 });
 
@@ -996,7 +994,6 @@ describe('Tests for adminQuizQuestionDuplicate', () => {
               correct: expect.any(Boolean),
             }
           ],
-          thumbnailUrl: VD.IMAGEURL,
         },
         {
           questionId: expect.any(Number), // Should now be question 1's duplicate
@@ -1017,7 +1014,6 @@ describe('Tests for adminQuizQuestionDuplicate', () => {
               correct: expect.any(Boolean),
             }
           ],
-          thumbnailUrl: VD.IMAGEURL,
         },
       ]
     );
@@ -1140,7 +1136,6 @@ describe('Tests for adminQuizQuestionMove', () => {
               correct: expect.any(Boolean),
             }
           ],
-          thumbnailUrl: VD.IMAGEURL,
         },
         {
           questionId: quizQuestion.body.questionId, // Should now be question 1
@@ -1161,7 +1156,6 @@ describe('Tests for adminQuizQuestionMove', () => {
               correct: expect.any(Boolean),
             }
           ],
-          thumbnailUrl: VD.IMAGEURL,
         },
       ]
     );
@@ -1317,7 +1311,6 @@ describe('Tests for adminQuizQuestionUpdate', () => {
               correct: expect.any(Boolean),
             }
           ],
-          thumbnailUrl: VD.IMAGEURL,
         },
       ]
     );

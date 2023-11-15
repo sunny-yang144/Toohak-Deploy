@@ -584,7 +584,7 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
   for (const session of data.sessions) {
     if (session.quiz.quizId === quizId) {
       if (session.state !== 'END') {
-        return { error: 'Not all sessions are in end state', statusCode: 400};
+        return { error: 'Not all sessions are in end state', statusCode: 400 };
       }
     }
   }
@@ -888,11 +888,11 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
   if (!validQuestionId) {
     return { error: 'This is not a valid question within this quiz.', statusCode: 400 };
   }
-  
+
   for (const session of data.sessions) {
     if (session.quiz.quizId === quizId) {
       if (session.state !== 'END') {
-        return { error: 'Not all sessions are in end state', statusCode: 400};
+        return { error: 'Not all sessions are in end state', statusCode: 400 };
       }
     }
   }
