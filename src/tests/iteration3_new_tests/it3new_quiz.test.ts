@@ -16,6 +16,7 @@ import {
   requestFinalResults,
   requestPlayerAnswers,
   requestQuestionResults,
+  requestAllChatMessages,
   clear,
 } from '../test-helpers';
 import { checkCSV } from '../../other';
@@ -961,5 +962,47 @@ describe('Tests for question results', () => {
   test('Session is not yet up to this question', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     expect(() => requestQuestionResults(player.body.playerId, 2)).toThrow(HTTPError[400]);
+  });
+});
+
+describe.skip('Tests for all messages displayed', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let session: {
+    body: {sessionId: number},
+  };
+  let player: {
+    body: {playerId: number},
+  };
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+  });
+  test('Successful return of all messages sent in same session as player', () => {
+    // Send a message
+    const chatLog = requestAllChatMessages(player.body.playerId);
+    expect(chatLog).toStrictEqual(
+      {
+        messages: [
+          {
+            messageBody: 'This is a message body',
+            playerId: 5546,
+            playerName: 'Yuchao Jiang',
+            timeSent: 1683019484
+          }
+        ]
+      }
+    );
+  });
+  test('Player ID does not exist', () => {
+    expect(() => requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
   });
 });
