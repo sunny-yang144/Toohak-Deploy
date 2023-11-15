@@ -673,7 +673,7 @@ describe.skip('Tests for guestPlayerJoin', () => {
   });
   //  Not sure whether it should be VD.FIRSTNAME VD.LASTNAME or it's supposed to be usernames.
   test('Guest Name Already Exists', () => {
-    expect(requestGuestPlayerJoin(session.body.sessionId, `${VD.NAMEFIRST} ${VD.NAMELAST}`).body).toThrow(HTTPError[400]);
+    expect(() => requestGuestPlayerJoin(session.body.sessionId, `${VD.NAMEFIRST} ${VD.NAMELAST}`).body).toThrow(HTTPError[400]);
   });
   test('Session is not in LOBBY State', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
@@ -762,7 +762,7 @@ describe.skip('Tests for guestPlayerStatus', () => {
     );
   });
   test('PlayerId does not exist', () => {
-    expect(requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
+    expect(() => requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
   });
 });
 
@@ -811,12 +811,12 @@ describe.skip('Tests for finalResults', () => {
     });
   });
   test('Player ID does not exist', () => {
-    expect(requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
+    expect(() => requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
   });
 
   test('Session is not in FINAL_RESULTS state', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
+    expect(() => requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
   });
 });
 
@@ -865,27 +865,27 @@ describe('Tests for player submission of answers', () => {
     expect(requestQuestionResults(player.body.playerId, 1).body.playersCorrectList).toBe([VD.NAMEFIRST]);
   });
   test('PlayerID does not exist', () => {
-    expect(requestPlayerAnswers(answerIds, 1000, question.body.questionId)).toThrow(HTTPError[400]);
+    expect(() => requestPlayerAnswers(answerIds, 1000, question.body.questionId)).toThrow(HTTPError[400]);
   });
   test('Invalid question position for current player session', () => {
-    expect(requestPlayerAnswers(answerIds, player.body.playerId, 1000)).toThrow(HTTPError[400]);
+    expect(() => requestPlayerAnswers(answerIds, player.body.playerId, 1000)).toThrow(HTTPError[400]);
   });
   test('Session is not in QUESTION_OPEN state', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    expect(requestPlayerAnswers(answerIds, player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
+    expect(() => requestPlayerAnswers(answerIds, player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
   });
   test('Session is not yet up to this question', () => {
-    expect(requestPlayerAnswers(answerIds, player.body.playerId, question2.body.questionId)).toThrow(HTTPError[400]);
+    expect(() => requestPlayerAnswers(answerIds, player.body.playerId, question2.body.questionId)).toThrow(HTTPError[400]);
   });
   test('Invalid answerID for this particular question', () => {
-    expect(requestPlayerAnswers([1000, 2000, 3000], player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
+    expect(() => requestPlayerAnswers([1000, 2000, 3000], player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
   });
   test('Duplicate answerID provided', () => {
     const duplicateAnswerIds = answerIds.concat(answerIds);
-    expect(requestPlayerAnswers(duplicateAnswerIds, player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
+    expect(() => requestPlayerAnswers(duplicateAnswerIds, player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
   });
   test('Less than 1 answerID provided', () => {
-    expect(requestPlayerAnswers([], player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
+    expect(() => requestPlayerAnswers([], player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
   });
   test('Can submit more than once in the CORRECT state', () => {
     expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
@@ -894,7 +894,7 @@ describe('Tests for player submission of answers', () => {
     if (sessionStatus.body === 'QUESTION_OPEN') {
       expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
     } else {
-      expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toThrow(HTTPError[400]);
+      expect(() => requestPlayerAnswers(answerIds, player.body.playerId, 1)).toThrow(HTTPError[400]);
     }
   });
 });
