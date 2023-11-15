@@ -492,7 +492,8 @@ describe.only('Tests for updateSessionState', () => {
   test('QUESTION_OPEN to QUESTION_CLOSE on duration ending', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    sleepSync(4 * 1000);
+    const duration = requestAdminQuizInfoV2(user.body.token, quiz.body.quizId).body.questions[0].duration;
+    sleepSync(duration * 1000);
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
     expect(getSessions).toBe('QUESTION_CLOSE');
   });

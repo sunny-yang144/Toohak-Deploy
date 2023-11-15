@@ -12,7 +12,7 @@ import {
   MessageBody,
   Player,
 } from './dataStore';
-import { generateToken, getUserViaToken, generatePlayerId, getHashOf, verifyAndGenerateName } from './other';
+import { generateToken, getUserViaToken, generatePlayerId, getHashOf, verifyAndGenerateName, moveStates } from './other';
 import { UserScore, QuestionResult } from './quiz';
 
 export interface ErrorObject {
@@ -330,6 +330,11 @@ export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoi
   };
   session.players.push(newPlayer);
   data.players.push(newPlayer);
+  if (session.autoStartNum !== 0) {
+    if (data.players.length >= session.autoStartNum) {
+      moveStates(session, 'NEXT_QUESTION');
+    }
+  }
   return { playerId };
 };
 

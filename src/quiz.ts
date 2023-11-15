@@ -1153,7 +1153,6 @@ export const getSessionStatus = (quizId: number, sessionId: number, token: strin
   }
 
   const sessionPlayers = session.players.map((p: Player) => p.name);
-  console.log(session.quiz);
   return {
     state: session.state,
     atQuestion: session.atQuestion,
