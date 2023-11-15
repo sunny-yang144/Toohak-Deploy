@@ -34,6 +34,10 @@ export interface Token {
   userId: number; // Associate a user from a inputted token.
 }
 
+export interface NodeJS {
+  Timeout: number;
+}
+
 export interface User {
   userId: number;
   email: string;
@@ -75,6 +79,7 @@ export interface Player {
   playerId: number;
   name: string;
   score: number;
+  questionResults: PlayerQuestionResults
 }
 export interface Quiz {
   quizId: number;
@@ -86,6 +91,11 @@ export interface Quiz {
   questions: Question[];
   duration: number;
   thumbnailUrl?: string;
+}
+
+export interface PlayerQuestionResults {
+  questionScore: number[];
+  questionRank: number[];
 }
 
 export interface SessionQuestionResults {
@@ -101,6 +111,8 @@ export interface Session {
   atQuestion: number;
   state: states;
   questionResults: SessionQuestionResults[];
+  autoStartNum: number;
+  qnTimeout?: NodeJS.Timeout;
 }
 
 export interface AnswerBody {

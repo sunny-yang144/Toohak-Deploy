@@ -769,26 +769,25 @@ export function requestAdminQuizQuestionDuplicateV2 (quizId: number, questionId:
 /// /////////////////////////////     ITERATION 3      //////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 // Used from lab08_quiz.
-type ResponseBody = Record<string, unknown>;
+// type ResponseBody = Record<string, unknown>;
 const requestHelper = (
   method: HttpVerb,
   path: string,
   payload: Payload,
   headers: IncomingHttpHeaders = {}
-): ResponseBody => {
+) => {
   let qs = {};
   let json = {};
   if (['GET', 'DELETE'].includes(method.toUpperCase())) {
     qs = payload;
   } else {
-    // PUT/POST
     json = payload;
   }
 
   const url = SERVER_URL + path;
   const res = request(method, url, { qs, json, headers, timeout: TIMEOUT_MS });
 
-  let responseBody: ResponseBody;
+  let responseBody;
   try {
     responseBody = JSON.parse(res.body.toString());
   } catch (err: unknown) {
@@ -821,7 +820,9 @@ const requestHelper = (
         throw HTTPError(res.statusCode, errorMessage + `\n\nSorry, no idea! Look up the status code ${res.statusCode} online!\n`);
       }
   }
-  return responseBody;
+  return {
+    body: responseBody,
+  };
 };
 
 export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUrl: string) {
@@ -829,69 +830,19 @@ export function requestUpdateQuizThumbNail (quizId: number, token: string, imgUr
 }
 
 export function requestViewSessionActivity (quizId: number, token: string) {
-  const res = request(
-    'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/sessions`,
-    {
-      headers: {
-        token,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-  };
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/sessions`, {}, { token });
 }
 
 export function requestNewSessionQuiz (quizId: number, token: string, autoStartNum: number) {
-  const res = request(
-    'POST',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/start`,
-    {
-      headers: {
-        token,
-      },
-      json: {
-        autoStartNum,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-  };
+  return requestHelper('POST', `/v1/admin/quiz/${quizId}/session/start`, { autoStartNum }, { token });
 }
 
 export function requestUpdateSessionState (quizId: number, sessionId: number, token: string, action: actions) {
-  const res = request(
-    'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
-    {
-      headers: {
-        token,
-      },
-      json: {
-        action,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-  };
+  return requestHelper('PUT', `/v1/admin/quiz/${quizId}/session/${sessionId}`, { action }, { token });
 }
 
 export function requestGetSessionStatus (quizId: number, sessionId: number, token: string) {
-  const res = request(
-    'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
-    {
-      headers: {
-        token,
-      }
-    }
-  );
-  return {
-    body: JSON.parse(res.body.toString()),
-  };
+  return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}`, {}, { token });
 }
 
 export function requestGetQuizSessionResults (quizId: number, sessionId: number, token: string) {
@@ -912,7 +863,7 @@ export function requestGetQuizSessionResults (quizId: number, sessionId: number,
 export function requestGetQuizSessionResultsCSV (quizId: number, sessionId: number, token: string) {
   const res = request(
     'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results/CSV`,
     {
       headers: {
         token,
@@ -939,4 +890,7 @@ export function requestGuestPlayerJoin (sessionId: number, name: string) {
 }
 export function requestGetGuestPlayerStatus (playerId: number) {
   return requestHelper('GET', `/v1/player/${playerId}`, {});
+}
+export function requestFinalResults (playerId: number) {
+  return requestHelper('GET', `/v1/player/${playerId}/results`, {});
 }
