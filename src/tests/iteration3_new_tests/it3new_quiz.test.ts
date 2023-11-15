@@ -14,6 +14,7 @@ import {
   requestGetQuizSessionResultsCSV,
   requestGetGuestPlayerStatus,
   requestFinalResults,
+  requestSendChatMessages,
   clear,
 } from '../test-helpers';
 import { checkCSV } from '../../other';
@@ -21,6 +22,7 @@ import { expect } from '@jest/globals';
 import { v4 as uuidv4 } from 'uuid';
 import HTTPError from 'http-errors';
 import { QuestionBody, colours } from '../../dataStore';
+import { string } from 'yargs';
 
 enum VD {
   EMAIL = 'helloworld@gmail.com',
@@ -815,5 +817,44 @@ describe.skip('Tests for finalResults', () => {
   test('Session is not in FINAL_RESULTS state', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
+  });
+});
+
+describe.skip('Tests for sendChatMessages', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let session: {
+    body: {sessionId: number},
+  };
+  let player: {
+    body: {playerId: number},
+  };
+  let message: {
+    body: {messageBody: string},
+  }
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+  });
+  test('Successful new chat message', () => {
+    const newMessage = requestSendChatMessages(player.body.playerId, message.body.messageBody);
+    expect(newMessage.body).toStrictEqual(expect.any(string));
+    expect(newMessage).toStrictEqual({});
+  });
+  test('Player ID does not exist', () => {
+    expect(requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
+  });
+  test('Message body is less than 1 character', () => {
+    expect(requestSendChatMessages(player.body.playerId, '')).toThrow(HTTPError[400]);
+  });
+  test('Message body is more than 100 characters', () => {
+    expect(requestSendChatMessages(player.body.playerId, 'a'.repeat(101))).toThrow(HTTPError[400]);
   });
 });

@@ -894,3 +894,6 @@ export function requestGetGuestPlayerStatus (playerId: number) {
 export function requestFinalResults (playerId: number) {
   return requestHelper('GET', `/v1/player/${playerId}/results`, {});
 }
+export function requestSendChatMessages (playerId: number) {
+  return requestHelper('POST', `/v1/player/${playerId}/chat`, { message });
+}
