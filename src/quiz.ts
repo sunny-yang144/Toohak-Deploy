@@ -1108,6 +1108,7 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
     state: 'LOBBY',
     questionResults: [],
     autoStartNum: autoStartNum,
+    messages: []
   };
 
   data.sessions.push(sessionObject);

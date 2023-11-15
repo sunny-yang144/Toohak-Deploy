@@ -113,6 +113,7 @@ export interface Session {
   questionResults: SessionQuestionResults[];
   autoStartNum: number;
   qnTimeout?: NodeJS.Timeout;
+  messages: Message[];
 }
 
 export interface AnswerBody {
