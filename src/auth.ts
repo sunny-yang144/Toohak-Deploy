@@ -2,7 +2,6 @@
 import validator from 'validator';
 import HTTPError from 'http-errors';
 import {
-  colours,
   getData,
   setData,
   User,
