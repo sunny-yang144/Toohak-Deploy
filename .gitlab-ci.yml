@@ -1,10 +1,28 @@
 image: comp1531/automarking:latest
 
 stages:
+  - lint
+  - tsc
   - checks
 
 before_script:
   - npm install
+
+lint:
+  stage: lint
+  only:
+    - master
+    - merge_requests
+  script:
+    - npm run lint
+
+tsc:
+  stage: tsc
+  only:
+    - master
+    - merge_requests
+  script:
+    - npm run tsc
 
 tests:
   stage: checks
