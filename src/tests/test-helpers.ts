@@ -904,3 +904,6 @@ export function requestQuestionResults (playerId: number, questionPosition: numb
 export function requestCurrentQuestionInfoPlayer (playerId: number, questionPosition: number) {
   return requestHelper('GET', `/v1/player/${playerId}/question/${questionPosition}`, {});
 }
+export function requestAllChatMessages (playerId: number) {
+  return requestHelper('GET', `/v1/player/${playerId}/chat`, {});
+}
