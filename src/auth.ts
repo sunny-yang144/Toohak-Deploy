@@ -12,7 +12,7 @@ import {
   MessageBody,
   Player,
 } from './dataStore';
-import { generateToken, getUserViaToken, generatePlayerId, getHashOf, verifyAndGenerateName } from './other';
+import { generateToken, getUserViaToken, generatePlayerId, getHashOf, verifyAndGenerateName, moveStates } from './other';
 import { UserScore, QuestionResult } from './quiz';
 
 export interface ErrorObject {
@@ -309,8 +309,6 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
 /// /////////////////////////////// ITERATION 3 NEW ///////////////////////////////////////////////
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
-// """""" MAYBE THIS SHOULD BE MOVED INTO a new folder such as players.ts """""" //
-
 export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoinReturn => {
   const data = getData();
   const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
@@ -330,6 +328,11 @@ export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoi
   };
   session.players.push(newPlayer);
   data.players.push(newPlayer);
+  if (session.autoStartNum !== 0) {
+    if (data.players.length >= session.autoStartNum) {
+      moveStates(session, 'NEXT_QUESTION');
+    }
+  }
   return { playerId };
 };
 
