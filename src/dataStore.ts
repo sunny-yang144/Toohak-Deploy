@@ -113,12 +113,17 @@ export interface Session {
   questionResults: SessionQuestionResults[];
   autoStartNum: number;
   qnTimeout?: NodeJS.Timeout;
+  qnStartTime?: number;
   messages: Message[];
 }
 
 export interface AnswerBody {
   answer: string;
   correct: boolean;
+}
+export interface AnswerToken {
+  answerId: number;
+  questionId: number;
 }
 export interface QuestionBody {
   question: string;
@@ -130,10 +135,6 @@ export interface QuestionBody {
 export interface QuestionToken {
   questionId: number;
   quizId: number;
-}
-export interface AnswerToken {
-  answerId: number;
-  questionId: number;
 }
 // The name for the dataStoreFile
 export const dataStoreFile = process.cwd() + '/dataStorage.json';

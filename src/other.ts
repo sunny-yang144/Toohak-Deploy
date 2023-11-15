@@ -243,6 +243,7 @@ export function moveStates(session: Session, action: actions) {
       session.state = 'QUESTION_CLOSE';
     }, qnDuration * 1000);
     session.qnTimeout = timeout;
+    session.qnStartTime = Date.now();
   }
   if (session.state === 'QUESTION_COUNTDOWN') {
     const timeout = setTimeout(() => {
@@ -308,4 +309,8 @@ function generateName() {
 
 function getRandomNumber() {
   return Math.floor(Math.random() * 10);
+}
+
+export function round1DP(number: number) {
+  return Math.round(number * 10) / 10;
 }
