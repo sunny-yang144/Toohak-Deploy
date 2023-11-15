@@ -16,15 +16,13 @@ import {
   requestFinalResults,
   requestPlayerAnswers,
   requestQuestionResults,
-  requestCurrentQuestionInfoPlayer,
   clear,
 } from '../test-helpers';
-import { checkCSV, generateAnswerId, generateQuestionId } from '../../other';
+import { checkCSV } from '../../other';
 import { expect } from '@jest/globals';
 import { v4 as uuidv4 } from 'uuid';
 import HTTPError from 'http-errors';
-import { QuestionBody, colours, Question, Answer } from '../../dataStore';
-import { request } from 'http';
+import { QuestionBody, colours, Answer } from '../../dataStore';
 
 enum VD {
   EMAIL = 'helloworld@gmail.com',
@@ -847,14 +845,14 @@ describe('Tests for player submission of answers', () => {
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
-    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
     question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
     question2 = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion2);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
     // Construct an array of answerIds for the currently active question
     const quizData = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
     const guestStatus = requestGetGuestPlayerStatus(player.body.playerId);
-    questionIndex = guestStatus.body.atQuestion
+    questionIndex = guestStatus.body.atQuestion;
     const answers = quizData.body.metadata.questions[questionIndex].answers;
     answerIds = answers.map((answer: Answer) => answer.answerId);
   });
@@ -874,13 +872,13 @@ describe('Tests for player submission of answers', () => {
   });
   test('Session is not in QUESTION_OPEN state', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    expect(requestPlayerAnswers(answerIds,player.body.playerId, question.body.questionId )).toThrow(HTTPError[400]);
+    expect(requestPlayerAnswers(answerIds, player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
   });
   test('Session is not yet up to this question', () => {
     expect(requestPlayerAnswers(answerIds, player.body.playerId, question2.body.questionId)).toThrow(HTTPError[400]);
   });
   test('Invalid answerID for this particular question', () => {
-    expect(requestPlayerAnswers([1000,2000,3000], player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
+    expect(requestPlayerAnswers([1000, 2000, 3000], player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
   });
   test('Duplicate answerID provided', () => {
     const duplicateAnswerIds = answerIds.concat(answerIds);
@@ -895,8 +893,7 @@ describe('Tests for player submission of answers', () => {
     sleepSync(3 * 1000);
     if (sessionStatus.body === 'QUESTION_OPEN') {
       expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
-    }
-    else {
+    } else {
       expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toThrow(HTTPError[400]);
     }
   });
