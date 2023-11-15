@@ -1,17 +1,19 @@
+
 import validator from 'validator';
-// import HTTPError from 'http-errors';
+import HTTPError from 'http-errors';
 import {
   colours,
   getData,
   setData,
   User,
   Answer,
+  Session,
   Message,
   MessageBody,
+  Player,
 } from './dataStore';
-import { generateToken, getUserViaToken, getHashOf } from './other';
+import { generateToken, getUserViaToken, generatePlayerId, getHashOf, verifyAndGenerateName } from './other';
 import { UserScore, QuestionResult } from './quiz';
-// import { STATUS_CODES } from 'http';
 
 export interface ErrorObject {
   error: string;
@@ -309,12 +311,26 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
 
 // """""" MAYBE THIS SHOULD BE MOVED INTO a new folder such as players.ts """""" //
 
-export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoinReturn | ErrorObject => {
-  // throw HTTPError(400, 'Name of user entered is not unique');
-  // throw HTTPError(400, 'Session is not in lobby state');
-  return {
-    playerId: 5546
+export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoinReturn => {
+  const data = getData();
+  const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
+  const newName = verifyAndGenerateName(name, session.players);
+  if (session.state !== 'LOBBY') {
+    throw HTTPError(400, 'Session is not in lobby state');
+  }
+  const playerId = generatePlayerId(data.players);
+  const newPlayer: Player = {
+    playerId,
+    name: newName,
+    score: 0,
+    questionResults: {
+      questionScore: [],
+      questionRank: []
+    }
   };
+  session.players.push(newPlayer);
+  data.players.push(newPlayer);
+  return { playerId };
 };
 
 export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn | ErrorObject => {

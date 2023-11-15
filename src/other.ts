@@ -1,6 +1,19 @@
-import { setData, getData, User, Quiz, colours, AnswerToken, QuestionToken, Token, DataStore, Session, actions, states } from './dataStore';
+import {
+  setData,
+  getData,
+  User,
+  Quiz,
+  colours,
+  AnswerToken,
+  QuestionToken,
+  Token,
+  DataStore,
+  Session,
+  actions,
+  states,
+  Player
+} from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
-// import { createObjectCsvWriter } from 'csv-writer';
 import crypto from 'crypto';
 import request from 'sync-request-curl';
 import HTTPError from 'http-errors';
@@ -13,6 +26,7 @@ export function clear (): Record<string, never> {
     questions: [],
     answers: [],
     sessions: [],
+    players: []
   });
   return {};
 }
@@ -39,10 +53,31 @@ export function generateQuizId (idArray: Quiz[]) {
 }
 
 /**
- * @param { Quiz[] } idArray
+ * @param { Player[] } idArray
  *
- * Takes in an array, finds the highest quizId then returns a number higher
- * than all current quizIds in the dataStore
+ * Takes in an array, finds the highest sessionId then returns a number higher
+ * than all current sessionIds in the dataStore
+ *
+ * @returns { Number } Max + 1
+ */
+export function generatePlayerId (idArray: Player[]) {
+  if (idArray.length === 0) {
+    return 0;
+  }
+  let max = idArray[0].playerId;
+  for (const player of idArray) {
+    if (player.playerId > max) {
+      max = player.playerId;
+    }
+  }
+  return max + 1;
+}
+
+/**
+ * @param { Session[] } idArray
+ *
+ * Takes in an array, finds the highest sessionId then returns a number higher
+ * than all current sessionIds in the dataStore
  *
  * @returns { Number } Max + 1
  */
@@ -235,4 +270,42 @@ export function calculateRoundedAverage(numbers: number[]) {
 export function arraytoCSV(array: string[][]) {
   const csv = array.map(row => row.join(',')).join('\n');
   return csv;
+}
+
+export function verifyAndGenerateName(name: string, players: Player[]) {
+  let newName: string;
+  if (name === '') {
+    newName = generateName();
+    while (players.some((p: Player) => p.name === name)) {
+      // If a name already matches one in list, then regenerate name.
+      newName = generateName();
+    }
+  } else {
+    if (players.some((p: Player) => p.name === name)) {
+      throw HTTPError(400, 'Already a player with that name');
+    }
+    newName = name;
+  }
+  return newName;
+}
+
+function generateName() {
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+  const availableLetters = alphabet.split('');
+
+  const letters = Array.from({ length: 5 }, () => {
+    const randomIndex = Math.floor(Math.random() * availableLetters.length);
+    const selectedLetter = availableLetters.splice(randomIndex, 1)[0];
+    return selectedLetter;
+  }).join('');
+
+  const numbers = Array.from({ length: 3 }, () => getRandomNumber()).join('');
+
+  const name = letters + numbers;
+
+  return name;
+}
+
+function getRandomNumber() {
+  return Math.floor(Math.random() * 10);
 }
