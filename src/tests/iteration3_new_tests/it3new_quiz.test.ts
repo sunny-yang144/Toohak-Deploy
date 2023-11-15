@@ -831,9 +831,6 @@ describe('Tests for player submission of answers', () => {
   let question: {
     body: {questionId: number},
   };
-  let question2: {
-    body: {questionId: number},
-  };
   let session: {
     body: {sessionId: number},
   };
@@ -846,7 +843,7 @@ describe('Tests for player submission of answers', () => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
-    question2 = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion2);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion2);
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
     // Construct an array of answerIds for the currently active question
@@ -875,7 +872,7 @@ describe('Tests for player submission of answers', () => {
     expect(() => requestPlayerAnswers(answerIds, player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
   });
   test('Session is not yet up to this question', () => {
-    expect(() => requestPlayerAnswers(answerIds, player.body.playerId, question2.body.questionId)).toThrow(HTTPError[400]);
+    expect(() => requestPlayerAnswers(answerIds, player.body.playerId, 2)).toThrow(HTTPError[400]);
   });
   test('Invalid answerID for this particular question', () => {
     expect(() => requestPlayerAnswers([1000, 2000, 3000], player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
@@ -896,5 +893,73 @@ describe('Tests for player submission of answers', () => {
     } else {
       expect(() => requestPlayerAnswers(answerIds, player.body.playerId, 1)).toThrow(HTTPError[400]);
     }
+  });
+});
+
+describe('Tests for question results', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let question: {
+    body: {questionId: number},
+  };
+  let session: {
+    body: {sessionId: number},
+  };
+  let player: {
+    body: {playerId: number},
+  };
+  let questionIndex: number;
+  let answerIds: number[];
+
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion2);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+    // Construct an array of answerIds for the currently active question
+    const quizData = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
+    const guestStatus = requestGetGuestPlayerStatus(player.body.playerId);
+    questionIndex = guestStatus.body.atQuestion;
+    const answers = quizData.body.metadata.questions[questionIndex].answers;
+    answerIds = answers.map((answer: Answer) => answer.answerId);
+    // Get guest player to answer a question (Fully correctn answers)
+    requestPlayerAnswers(answerIds, player.body.playerId, 1);
+  });
+
+  test('Successfully get results of question in session player is currently in', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    const questionResultsAfter = requestQuestionResults(player.body.playerId, 1);
+    expect(questionResultsAfter).toStrictEqual(
+      {
+        questionId: question.body.questionId,
+        playersCorrectList: [
+          VD.NAMEFIRST
+        ],
+        averageAnswerTime: expect.any(Number),
+        percentCorrect: expect.any(Number)
+      }
+    );
+  });
+  test('PlayerID does not exist', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(() => requestQuestionResults(1000, 1)).toThrow(HTTPError[400]);
+  });
+  test('Question position is not valid for session player is in', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(() => requestQuestionResults(player.body.playerId, 1000)).toThrow(HTTPError[400]);
+  });
+  test('Session is not in ANSWER_SHOW state', () => {
+    expect(() => requestQuestionResults(player.body.playerId, 1)).toThrow(HTTPError[400]);
+  });
+  test('Session is not yet up to this question', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(() => requestQuestionResults(player.body.playerId, 2)).toThrow(HTTPError[400]);
   });
 });
