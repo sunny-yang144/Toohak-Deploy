@@ -1,6 +1,6 @@
 import request, { HttpVerb } from 'sync-request-curl';
 import { port, url } from '../config.json';
-import { MessageBody, QuestionBody, actions } from '../dataStore';
+import { QuestionBody, actions } from '../dataStore';
 const SERVER_URL = `${url}:${port}`;
 import HTTPError from 'http-errors';
 import { IncomingHttpHeaders } from 'http';
@@ -906,6 +906,6 @@ export function requestCurrentQuestionInfoPlayer (playerId: number, questionPosi
 export function requestAllChatMessages (playerId: number) {
   return requestHelper('GET', `/v1/player/${playerId}/chat`, {});
 }
-export function requestSendChatMessages (playerId: number, messageBody: any) {
+export function requestSendChatMessages (playerId: number, messageBody: object) {
   return requestHelper('POST', `/v1/player/${playerId}/chat`, { message: messageBody });
 }
