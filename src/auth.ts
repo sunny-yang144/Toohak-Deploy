@@ -309,8 +309,6 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
 /// /////////////////////////////// ITERATION 3 NEW ///////////////////////////////////////////////
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
-// """""" MAYBE THIS SHOULD BE MOVED INTO a new folder such as players.ts """""" //
-
 export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoinReturn => {
   const data = getData();
   const session = data.sessions.find((s: Session) => s.sessionId === sessionId);

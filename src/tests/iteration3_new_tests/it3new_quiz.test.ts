@@ -648,37 +648,6 @@ describe.only('Tests for updateSessionState', () => {
     expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
   });
 });
-
-describe.skip('Tests for guestPlayerJoin', () => {
-  let user: {
-    body: {token: string},
-    statusCode: number,
-  };
-  let quiz: {
-    body: {quizId: number},
-  };
-  let session: {
-    body: {sessionId: number}
-  };
-
-  beforeEach(() => {
-    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
-    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
-    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-  });
-
-  test('Guest Join Successful', () => {
-    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
-  });
-  //  Not sure whether it should be VD.FIRSTNAME VD.LASTNAME or it's supposed to be usernames.
-  test('Guest Name Already Exists', () => {
-    expect(requestGuestPlayerJoin(session.body.sessionId, `${VD.NAMEFIRST} ${VD.NAMELAST}`).body).toThrow(HTTPError[400]);
-  });
-  test('Session is not in LOBBY State', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
-  });
-});
 describe.skip('Tests for getQuizSessionResultsCSV', () => {
   let user: {
     body: {token: string},
@@ -726,6 +695,41 @@ describe.skip('Tests for getQuizSessionResultsCSV', () => {
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
     const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token);
     expect(response).toThrow(HTTPError[403]);
+  });
+});
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// IT3 PLAYER FUNCTION TESTS ///////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+describe.skip('Tests for guestPlayerJoin', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let session: {
+    body: {sessionId: number}
+  };
+
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+  });
+
+  test('Guest Join Successful', () => {
+    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
+  });
+  //  Not sure whether it should be VD.FIRSTNAME VD.LASTNAME or it's supposed to be usernames.
+  test('Guest Name Already Exists', () => {
+    expect(requestGuestPlayerJoin(session.body.sessionId, `${VD.NAMEFIRST} ${VD.NAMELAST}`).body).toThrow(HTTPError[400]);
+  });
+  test('Session is not in LOBBY State', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
   });
 });
 describe.skip('Tests for guestPlayerStatus', () => {
