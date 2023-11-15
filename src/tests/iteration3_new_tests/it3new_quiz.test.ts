@@ -15,14 +15,18 @@ import {
   requestGetGuestPlayerStatus,
   requestFinalResults,
   requestSendChatMessages,
+  requestPlayerAnswers,
+  requestQuestionResults,
+  requestAllChatMessages,
   clear,
 } from '../test-helpers';
 import { checkCSV } from '../../other';
 import { expect } from '@jest/globals';
 import { v4 as uuidv4 } from 'uuid';
 import HTTPError from 'http-errors';
-import { QuestionBody, colours } from '../../dataStore';
+import { QuestionBody, colours, Answer } from '../../dataStore';
 import { string } from 'yargs';
+
 
 enum VD {
   EMAIL = 'helloworld@gmail.com',
@@ -673,7 +677,7 @@ describe.skip('Tests for guestPlayerJoin', () => {
   });
   //  Not sure whether it should be VD.FIRSTNAME VD.LASTNAME or it's supposed to be usernames.
   test('Guest Name Already Exists', () => {
-    expect(requestGuestPlayerJoin(session.body.sessionId, `${VD.NAMEFIRST} ${VD.NAMELAST}`).body).toThrow(HTTPError[400]);
+    expect(() => requestGuestPlayerJoin(session.body.sessionId, `${VD.NAMEFIRST} ${VD.NAMELAST}`).body).toThrow(HTTPError[400]);
   });
   test('Session is not in LOBBY State', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
@@ -762,7 +766,7 @@ describe.skip('Tests for guestPlayerStatus', () => {
     );
   });
   test('PlayerId does not exist', () => {
-    expect(requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
+    expect(() => requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
   });
 });
 
@@ -811,12 +815,198 @@ describe.skip('Tests for finalResults', () => {
     });
   });
   test('Player ID does not exist', () => {
-    expect(requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
+    expect(requestFinalResults(1000)).toThrow(HTTPError[400]);
   });
 
   test('Session is not in FINAL_RESULTS state', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
+  });
+});
+
+describe('Tests for player submission of answers', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let question: {
+    body: {questionId: number},
+  };
+  let session: {
+    body: {sessionId: number},
+  };
+  let player: {
+    body: {playerId: number},
+  };
+  let questionIndex: number;
+  let answerIds: number[];
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion2);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+    // Construct an array of answerIds for the currently active question
+    const quizData = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
+    const guestStatus = requestGetGuestPlayerStatus(player.body.playerId);
+    questionIndex = guestStatus.body.atQuestion;
+    const answers = quizData.body.metadata.questions[questionIndex].answers;
+    answerIds = answers.map((answer: Answer) => answer.answerId);
+  });
+
+  test('Sucessful submission of answers to currently active question', () => {
+    expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
+    // Check if a player who sumbits an answer has had their questionInformation changed ... TODO
+    // Check if a player who submits correct answers is added to the playersCorrectList
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(requestQuestionResults(player.body.playerId, 1).body.playersCorrectList).toBe([VD.NAMEFIRST]);
+  });
+  test('PlayerID does not exist', () => {
+    expect(() => requestPlayerAnswers(answerIds, 1000, question.body.questionId)).toThrow(HTTPError[400]);
+  });
+  test('Invalid question position for current player session', () => {
+    expect(() => requestPlayerAnswers(answerIds, player.body.playerId, 1000)).toThrow(HTTPError[400]);
+  });
+  test('Session is not in QUESTION_OPEN state', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(() => requestPlayerAnswers(answerIds, player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
+  });
+  test('Session is not yet up to this question', () => {
+    expect(() => requestPlayerAnswers(answerIds, player.body.playerId, 2)).toThrow(HTTPError[400]);
+  });
+  test('Invalid answerID for this particular question', () => {
+    expect(() => requestPlayerAnswers([1000, 2000, 3000], player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
+  });
+  test('Duplicate answerID provided', () => {
+    const duplicateAnswerIds = answerIds.concat(answerIds);
+    expect(() => requestPlayerAnswers(duplicateAnswerIds, player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
+  });
+  test('Less than 1 answerID provided', () => {
+    expect(() => requestPlayerAnswers([], player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
+  });
+  test('Can submit more than once in the CORRECT state', () => {
+    expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
+    const sessionStatus = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
+    sleepSync(3 * 1000);
+    if (sessionStatus.body === 'QUESTION_OPEN') {
+      expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
+    } else {
+      expect(() => requestPlayerAnswers(answerIds, player.body.playerId, 1)).toThrow(HTTPError[400]);
+    }
+  });
+});
+
+describe('Tests for question results', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let question: {
+    body: {questionId: number},
+  };
+  let session: {
+    body: {sessionId: number},
+  };
+  let player: {
+    body: {playerId: number},
+  };
+  let questionIndex: number;
+  let answerIds: number[];
+
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion2);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+    // Construct an array of answerIds for the currently active question
+    const quizData = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
+    const guestStatus = requestGetGuestPlayerStatus(player.body.playerId);
+    questionIndex = guestStatus.body.atQuestion;
+    const answers = quizData.body.metadata.questions[questionIndex].answers;
+    answerIds = answers.map((answer: Answer) => answer.answerId);
+    // Get guest player to answer a question (Fully correctn answers)
+    requestPlayerAnswers(answerIds, player.body.playerId, 1);
+  });
+
+  test('Successfully get results of question in session player is currently in', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    const questionResultsAfter = requestQuestionResults(player.body.playerId, 1);
+    expect(questionResultsAfter).toStrictEqual(
+      {
+        questionId: question.body.questionId,
+        playersCorrectList: [
+          VD.NAMEFIRST
+        ],
+        averageAnswerTime: expect.any(Number),
+        percentCorrect: expect.any(Number)
+      }
+    );
+  });
+  test('PlayerID does not exist', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(() => requestQuestionResults(1000, 1)).toThrow(HTTPError[400]);
+  });
+  test('Question position is not valid for session player is in', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(() => requestQuestionResults(player.body.playerId, 1000)).toThrow(HTTPError[400]);
+  });
+  test('Session is not in ANSWER_SHOW state', () => {
+    expect(() => requestQuestionResults(player.body.playerId, 1)).toThrow(HTTPError[400]);
+  });
+  test('Session is not yet up to this question', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(() => requestQuestionResults(player.body.playerId, 2)).toThrow(HTTPError[400]);
+  });
+});
+
+describe.skip('Tests for all messages displayed', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let session: {
+    body: {sessionId: number},
+  };
+  let player: {
+    body: {playerId: number},
+  };
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+  });
+  test('Successful return of all messages sent in same session as player', () => {
+    // Send a message
+    const chatLog = requestAllChatMessages(player.body.playerId);
+    expect(chatLog).toStrictEqual(
+      {
+        messages: [
+          {
+            messageBody: 'This is a message body',
+            playerId: 5546,
+            playerName: 'Yuchao Jiang',
+            timeSent: 1683019484
+          }
+        ]
+      }
+    );
+  });
+  test('Player ID does not exist', () => {
+    expect(() => requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
   });
 });
 
@@ -836,7 +1026,7 @@ describe.skip('Tests for sendChatMessages', () => {
   };
   let message: {
     body: {messageBody: string},
-  }
+  };
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
@@ -844,17 +1034,24 @@ describe.skip('Tests for sendChatMessages', () => {
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
   });
   test('Successful new chat message', () => {
-    const newMessage = requestSendChatMessages(player.body.playerId, message.body.messageBody);
-    expect(newMessage.body).toStrictEqual(expect.any(string));
+    message.body.messageBody = 'I like chicken wings';
+    const newMessage = requestSendChatMessages(player.body.playerId, message.body);
+    const allMessages = requestAllChatMessages(player.body.playerId);
     expect(newMessage).toStrictEqual({});
+    expect(allMessages.body.messages.length).toStrictEqual(1);
+    expect(allMessages.body.messages.messageBody).toStrictEqual(message.body.messageBody);
+    expect(allMessages.body.messages.playerId).toStrictEqual(player.body.playerId);
   });
   test('Player ID does not exist', () => {
-    expect(requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
+    message.body.messageBody = 'I like chicken wings';
+    expect(requestSendChatMessages(1000, message.body)).toThrow(HTTPError[400]);
   });
   test('Message body is less than 1 character', () => {
-    expect(requestSendChatMessages(player.body.playerId, '')).toThrow(HTTPError[400]);
+    message.body.messageBody = '';
+    expect(requestSendChatMessages(player.body.playerId, message.body)).toThrow(HTTPError[400]);
   });
   test('Message body is more than 100 characters', () => {
-    expect(requestSendChatMessages(player.body.playerId, 'a'.repeat(101))).toThrow(HTTPError[400]);
+    message.body.messageBody = 'a'.repeat(101);
+    expect(requestSendChatMessages(player.body.playerId, message.body)).toThrow(HTTPError[400]);
   });
 });

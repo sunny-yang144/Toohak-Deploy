@@ -47,7 +47,7 @@ interface adminQuizListReturn {
 interface adminQuizCreateReturn {
   quizId: number
 }
-interface adminQuizInfoReturn {
+export interface adminQuizInfoReturn {
   quizId: number,
   name: string,
   timeCreated: number,
@@ -56,6 +56,7 @@ interface adminQuizInfoReturn {
   numQuestions: number,
   questions: Question[],
   duration: number,
+  thumbnailUrl: string
 }
 interface adminQuizTrashReturn {
   quizzes: quizObject[];
@@ -578,6 +579,15 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
       return { error: `Target user already has a quiz named ${quiz.name}`, statusCode: 400 };
     }
   }
+
+  // Checking if all sessions are in END state
+  for (const session of data.sessions) {
+    if (session.quiz.quizId === quizId) {
+      if (session.state !== 'END') {
+        return { error: 'Not all sessions are in end state', statusCode: 400 };
+      }
+    }
+  }
   // Remove quizId from token holder
   const indexToRemove = user.ownedQuizzes.indexOf(quizId);
   if (indexToRemove !== -1) {
@@ -685,13 +695,19 @@ export const adminQuizQuestionCreate = async (quizId: number, token: string, que
   }
 
   const questionId = generateQuestionId(data.questions);
+  let imgUrl: string;
+  if (questionBody.thumbnailUrl === undefined) {
+    imgUrl = '';
+  } else {
+    imgUrl = questionBody.thumbnailUrl;
+  }
   const questionObject: Question = {
     questionId: questionId,
     question: questionBody.question,
     duration: questionBody.duration,
     points: questionBody.points,
     answers: [],
-    thumbnailUrl: questionBody.thumbnailUrl,
+    thumbnailUrl: imgUrl,
   };
 
   for (const answer of questionBody.answers) {
@@ -802,6 +818,15 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
     return { error: 'No correct answers.', statusCode: 400 };
   }
 
+  if (questionBody.thumbnailUrl.length === 0) {
+    return { error: 'No thumbnail url provided', statusCode: 400 };
+  }
+  try {
+    isImageSync(questionBody.thumbnailUrl);
+  } catch (error) {
+    return { error: 'This is not a valid URL', statusCode: 400 };
+  }
+
   // Check for duplicates
   for (let i = 0; i < questionBody.answers.length; i++) {
     for (let j = i + 1; j < questionBody.answers.length; j++) {
@@ -863,6 +888,15 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
   if (!validQuestionId) {
     return { error: 'This is not a valid question within this quiz.', statusCode: 400 };
   }
+
+  for (const session of data.sessions) {
+    if (session.quiz.quizId === quizId) {
+      if (session.state !== 'END') {
+        return { error: 'Not all sessions are in end state', statusCode: 400 };
+      }
+    }
+  }
+
   const currentData = data.quizzes[quizId].questions[questionId];
   const newQuizDuration = data.quizzes[quizId].duration - currentData.duration;
 
@@ -986,7 +1020,7 @@ export const adminQuizQuestionDuplicate = async (quizId: number, questionId: num
 /// /////////////////////////////// ITERATION 3 NEW ///////////////////////////////////////////////
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
-export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: string): EmptyObject | ErrorObject => {
+export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: string): EmptyObject => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -1074,6 +1108,7 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
     state: 'LOBBY',
     questionResults: [],
     autoStartNum: autoStartNum,
+    messages: []
   };
 
   data.sessions.push(sessionObject);

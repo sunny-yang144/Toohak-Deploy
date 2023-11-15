@@ -113,6 +113,7 @@ export interface Session {
   questionResults: SessionQuestionResults[];
   autoStartNum: number;
   qnTimeout?: NodeJS.Timeout;
+  messages: Message[];
 }
 
 export interface AnswerBody {
@@ -124,7 +125,7 @@ export interface QuestionBody {
   duration: number;
   points: number;
   answers: AnswerBody[];
-  thumbnailUrl: string;
+  thumbnailUrl?: string;
 }
 export interface QuestionToken {
   questionId: number;
@@ -144,6 +145,7 @@ export interface DataStore {
   questions: QuestionToken[]; // Easy identifiers of question, not to be confused
   answers: AnswerToken[]; // with token.
   sessions: Session[];
+  players: Player[];
 }
 
 //
@@ -161,6 +163,7 @@ let data: DataStore = {
   questions: [],
   answers: [],
   sessions: [],
+  players: [],
 };
 
 // Converts data into JSON and writes it into the dataStorage file
