@@ -337,12 +337,19 @@ export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoi
 };
 
 export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn | ErrorObject => {
-  // throw HTTPError(400, 'The player ID does not exist');
-  return {
-    state: 'LOBBY',
-    numQuestions: 1,
-    atQuestion: 3
-  };
+  const data = getData();
+  const player = data.players.find((p: Player) => p.playerId === playerId);
+  if (!player) {
+    throw HTTPError(400, 'The player ID does not exist');
+  }
+  const session = data.sessions.find((s: Session) => s.players.some((p: Player) => p.playerId === playerId));
+  if (session !== undefined) {
+    return {
+      state: session.state,
+      numQuestions: session.quiz.numQuestions,
+      atQuestion: session.atQuestion
+    };
+  }
 };
 
 export const currentQuestionInfoPlayer = (playerId: number, questionPosition: number): currentQuestionInfoPlayerReturn | ErrorObject => {
