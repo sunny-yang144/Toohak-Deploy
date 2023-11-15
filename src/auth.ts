@@ -2,7 +2,6 @@
 import validator from 'validator';
 import HTTPError from 'http-errors';
 import {
-  colours,
   getData,
   setData,
   User,
@@ -336,7 +335,7 @@ export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoi
   return { playerId };
 };
 
-export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn | ErrorObject => {
+export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn => {
   const data = getData();
   const player = data.players.find((p: Player) => p.playerId === playerId);
   if (!player) {
@@ -352,26 +351,25 @@ export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn | E
   }
 };
 
-export const currentQuestionInfoPlayer = (playerId: number, questionPosition: number): currentQuestionInfoPlayerReturn | ErrorObject => {
-  // throw HTTPError(400, 'The player ID does not exist');
-  // throw HTTPError(400, 'The question position is invalid for the session this player is in');
-  // throw HTTPError(400, 'The session is currently not on this question');
-  // throw HTTPError(400, 'The session is in lobby state');
-  // throw HTTPError(400, 'The session is in end state');
-  return {
-    questionId: 5546,
-    question: 'Who is the Monarch of England?',
-    duration: 4,
-    thumbnailUrl: 'http://google.com/some/image/path.jpg',
-    points: 5,
-    answers: [
-      {
-        answerId: 2384,
-        answer: 'Prince Charles',
-        colour: colours.RED
-      }
-    ]
-  };
+export const currentQuestionInfoPlayer = (playerId: number, questionPosition: number): currentQuestionInfoPlayerReturn => {
+  const data = getData();
+  const player = data.players.find((p: Player) => p.playerId === playerId);
+  if (!player) {
+    throw HTTPError(400, 'The player ID does not exist');
+  }
+  const session = data.sessions.find((s: Session) => s.players.some((p: Player) => p.playerId === playerId));
+  if (session !== undefined) {
+    if (session.quiz.numQuestions < questionPosition) {
+      throw HTTPError(400, 'The question position is invalid for the session this player is in');
+    }
+    if (session.atQuestion !== questionPosition) {
+      throw HTTPError(400, 'The session is currently not on this question');
+    }
+    if (session.state === 'LOBBY' || session.state === 'END') {
+      throw HTTPError(400, 'The session is in lobby or end state(invalid).');
+    }
+    return session.quiz.questions[questionPosition - 1];
+  }
 };
 
 export const playerAnswers = (answerIds: number[], playerId: number, questionPosition: number): Record<string, never> | ErrorObject => {
