@@ -270,8 +270,7 @@ describe.skip('Tests: Start a new session for a quiz', () => {
   });
 });
 
-describe('Test: Update a session state', () => {
-describe.skip('Tests for getQuizSessionResults', () => {
+describe.skip('Test for getQuizSessionResults', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -418,8 +417,7 @@ describe.skip('Tests for getSessionStatus', () => {
   });
 });
 
-describe.skip('Tests for updateSessionState', () => {
-  //  ////////////////note: I HAVE NO IDEA HOW TO GET THE TIME STUFF TO WORK SO I COMMENTED IT OUT////////
+describe.skip('Test: Update a session state', () => {
   let user: {
     body: {token: string},
     statusCode: number,
