@@ -483,17 +483,19 @@ export const finalResults = (playerId: number): finalResultsReturn | ErrorObject
 };
 
 export const allChatMessages = (playerId: number): allChatMessagesReturn | ErrorObject => {
-  // throw HTTPError(400, 'The player ID does not exist');
-  return {
-    messages: [
-      {
-        messageBody: 'This is a message body',
-        playerId: 5546,
-        playerName: 'Yuchao Jiang',
-        timeSent: 1683019484
-      }
-    ]
+  const data = getData();
+  const existingPlayerId = data.players.map((p: Player) => p.playerId).includes(playerId);
+  if (!existingPlayerId) {
+    throw HTTPError(400, 'Player ID does not exist!');
+  }
+  const playerSession = data.sessions.find(session => session.players.some(player => player.playerId === playerId));
+  const allMessages: allChatMessagesReturn = {
+    messages: [],
   };
+  for (let i = 0; i < playerSession.messages.length; i++) {
+    allMessages.messages.push(playerSession.messages[i]);
+  }
+  return allMessages;
 };
 
 export const sendChatMessages = (playerId: number, message: MessageBody): Record<string, never> | ErrorObject => {
