@@ -11,6 +11,7 @@ import {
   Session,
   actions,
   Player,
+  SessionQuestionResults,
   // Message
 } from './dataStore';
 import {
@@ -1103,6 +1104,17 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
   if (quiz.questions.length === 0) {
     throw HTTPError(400, 'The quiz does not have any questions in it');
   }
+  // This initialises a default value for questionResults to access in other functions
+  // ASSUMPTION: QuestionId is not a negative number
+  const defaultResults: SessionQuestionResults = {
+    questionId: -1,
+    playersCorrectList: [],
+    AnswersTimes: []
+  };
+  const questionResults: SessionQuestionResults[] = [];
+  for (let i = 0; i < quiz.numQuestions; i++) {
+    questionResults.push(defaultResults);
+  }
 
   const newSessionId = generateSessionId(data.sessions);
   const sessionObject: Session = {
@@ -1111,13 +1123,13 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
     players: [],
     atQuestion: 0,
     state: 'LOBBY',
-    questionResults: [],
+    questionResults: questionResults,
     autoStartNum: autoStartNum,
     messages: []
   };
 
   data.sessions.push(sessionObject);
-
+  setData(data);
   return {
     sessionId: newSessionId,
   };
@@ -1191,7 +1203,7 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
     questionResults: []
   };
 
-  for (let i = 0; i < session.quiz.numQuestions; i++) {
+  for (let i = 0; i < session.atQuestion; i++) {
     SesResult.questionResults[i].questionId = session.questionResults[i].questionId;
     SesResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
     SesResult.questionResults[i].averageAnswerTime = calculateRoundedAverage(session.questionResults[i].AnswersTimes);

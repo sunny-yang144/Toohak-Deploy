@@ -91,10 +91,11 @@ function sleepSync(ms: number) {
 beforeEach(() => {
   clear();
 });
-
+/*
 afterAll(() => {
   clear();
 });
+*/
 
 /// /////////////////////////////////////////////////////////////////////////////////////
 /// ///////////////////////////     NEW ITERATION 3      ////////////////////////////////
@@ -787,7 +788,7 @@ describe.skip('Test: Get quiz session final results in CSV format', () => {
 /// ////////////////////////////// IT3 PLAYER FUNCTION TESTS ///////////////////////////////
 /// ////////////////////////////////////////////////////////////////////////////////////////
 
-describe.skip('Test: Allow gest player to join a session', () => {
+describe.skip('Test: Allow guest player to join a session', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -807,20 +808,15 @@ describe.skip('Test: Allow gest player to join a session', () => {
   });
 
   test('Guest Join Successful', () => {
-    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
+    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toStrictEqual({ playerId: expect.any(Number) });
   });
-  //  Not sure whether it should be VD.FIRSTNAME VD.LASTNAME or it's supposed to be usernames.
   test('Guest Name Already Exists', () => {
-    expect(requestGuestPlayerJoin(session.body.sessionId, `${VD.NAMEFIRST} ${VD.NAMELAST}`).body).toThrow(HTTPError[400]);
-  });
-  //  Maybe it means that you cant have two identical guest names
-  test('Guest Name Already Exists', () => {
-    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
-    expect(() => requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toThrow(HTTPError[400]);
+    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toStrictEqual({ playerId: expect.any(Number) });
+    expect(() => requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME)).toThrow(HTTPError[400]);
   });
   test('Session is not in LOBBY State', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    expect(() => requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toThrow(HTTPError[400]);
+    expect(() => requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME)).toThrow(HTTPError[400]);
   });
 });
 
@@ -848,20 +844,20 @@ describe.skip('Test: Status of guest player in session', () => {
   });
 
   test('Guest Status Successful (LOBBY)', () => {
-    expect(requestGetGuestPlayerStatus(player.body.playerId).body).toBe(
+    expect(requestGetGuestPlayerStatus(player.body.playerId).body).toStrictEqual(
       {
         state: 'LOBBY',
-        numQuestions: 0,
+        numQuestions: 1,
         atQuestion: 0
       }
     );
   });
-  test('Guest Status Successful from (QUESTION)', () => {
+  test('Guest Status Successful from (QUESTION 1)', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    expect(requestGetGuestPlayerStatus(player.body.playerId).body).toBe(
+    expect(requestGetGuestPlayerStatus(player.body.playerId).body).toStrictEqual(
       {
         state: 'QUESTION_COUNTDOWN',
-        numQuestions: 0,
+        numQuestions: 1,
         atQuestion: 1
       }
     );
@@ -899,7 +895,7 @@ describe.skip('Test: Current question information for a player', () => {
 
   test('Successful show of current question info', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    expect(requestPlayerQuestionInfo(player.body.playerId, 1)).toStrictEqual(
+    expect(requestPlayerQuestionInfo(player.body.playerId, 1).body).toStrictEqual(
       {
         questionId: question.body.questionId,
         question: 'Who is the Monarch of England?',
@@ -941,7 +937,7 @@ describe.skip('Test: Current question information for a player', () => {
     expect(() => requestPlayerQuestionInfo(player.body.playerId, 1)).toThrow(HTTPError[400]);
   });
 });
-
+// FAIL
 describe.skip('Test: Player submisssion of answer(s)', () => {
   let user: {
     body: {token: string},
@@ -974,12 +970,12 @@ describe.skip('Test: Player submisssion of answer(s)', () => {
     const quizData = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
     const guestStatus = requestGetGuestPlayerStatus(player.body.playerId);
     questionIndex = guestStatus.body.atQuestion;
-    const answers = quizData.body.metadata.questions[questionIndex].answers;
+    const answers = quizData.body.metadata.questions[questionIndex - 1].answers;
     answerIds = answers.map((answer: Answer) => answer.answerId);
   });
 
   test('Sucessful submission of answers to currently active question', () => {
-    expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
+    expect(requestPlayerAnswers(answerIds, player.body.playerId, 1).body).toStrictEqual({});
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     expect(requestQuestionResults(player.body.playerId, 1).body.playersCorrectList).toBe([VD.NAMEFIRST]);
   });
@@ -1018,7 +1014,7 @@ describe.skip('Test: Player submisssion of answer(s)', () => {
     expect(() => requestPlayerAnswers(answerIds, player.body.playerId, 1)).toThrow(HTTPError[400]);
   });
 });
-
+// FAIL
 describe.skip('Test: Results for a question', () => {
   let user: {
     body: {token: string},
@@ -1052,7 +1048,7 @@ describe.skip('Test: Results for a question', () => {
     const quizData = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
     const guestStatus = requestGetGuestPlayerStatus(player.body.playerId);
     questionIndex = guestStatus.body.atQuestion;
-    const answers = quizData.body.metadata.questions[questionIndex].answers;
+    const answers = quizData.body.metadata.questions[questionIndex - 1].answers;
     answerIds = answers.map((answer: Answer) => answer.answerId);
     // Get guest player to answer a question (Fully correct answers)
     requestPlayerAnswers(answerIds, player.body.playerId, 1);
@@ -1088,7 +1084,7 @@ describe.skip('Test: Results for a question', () => {
     expect(() => requestQuestionResults(player.body.playerId, 2)).toThrow(HTTPError[400]);
   });
 });
-
+// FAIL
 describe.skip('Test: Final results for a session', () => {
   let user: {
     body: {token: string},
@@ -1233,7 +1229,7 @@ describe.skip('Test: All chat messages in session', () => {
     expect(() => requestAllChatMessages(1000)).toThrow(HTTPError[400]);
   });
 });
-
+// FAIL
 describe.skip('Test: Send chat message in session', () => {
   let user: {
     body: {token: string},

@@ -852,7 +852,7 @@ export function requestGetQuizSessionResultsCSV (quizId: number, sessionId: numb
   return requestHelper('GET', `/v1/admin/quiz/${quizId}/session/${sessionId}/results/CSV`, {}, { token });
 }
 export function requestGuestPlayerJoin (sessionId: number, name: string) {
-  return requestHelper('POST', '/v1/player/join', { name });
+  return requestHelper('POST', '/v1/player/join', { sessionId, name });
 }
 export function requestGetGuestPlayerStatus (playerId: number) {
   return requestHelper('GET', `/v1/player/${playerId}`, {});
@@ -861,7 +861,7 @@ export function requestFinalResults (playerId: number) {
   return requestHelper('GET', `/v1/player/${playerId}/results`, {});
 }
 export function requestPlayerAnswers (answerIds: number[], playerId: number, questionPosition: number) {
-  return requestHelper('PUT', `/v1/player/${playerId}/question/${questionPosition}/answer`, {});
+  return requestHelper('PUT', `/v1/player/${playerId}/question/${questionPosition}/answer`, { answerIds });
 }
 export function requestQuestionResults (playerId: number, questionPosition: number) {
   return requestHelper('GET', `/v1/player/${playerId}/question/${questionPosition}/results`, {});

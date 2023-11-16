@@ -10,3 +10,6 @@ this may be change to using uuid in the future.
 - When testing if timeLastEdited was truly updated, the timestamp was created from within the test
 as opposed to within the function itself. The difference would result in a subsecond delay but should
 be accounted for as a two second leeway was given.
+
+### Assumptions made for Iteration 3
+ - QuestionID is a non negative integer

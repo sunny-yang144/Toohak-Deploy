@@ -321,6 +321,9 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
 export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoinReturn => {
   const data = getData();
   const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
+  if (session === undefined) {
+    throw HTTPError(400, 'Could not find session');
+  }
   const newName = verifyAndGenerateName(name, session.players);
   if (session.state !== 'LOBBY') {
     throw HTTPError(400, 'Session is not in lobby state');
@@ -381,7 +384,21 @@ export const currentQuestionInfoPlayer = (playerId: number, questionPosition: nu
   if (session.state === 'LOBBY' || session.state === 'END') {
     throw HTTPError(400, 'The session is in lobby or end state(invalid).');
   }
-  return session.quiz.questions[questionPosition - 1];
+  const questionInfo = session.quiz.questions[questionPosition - 1];
+  const questionInfoMapped = questionInfo.answers.map(answer => ({
+    answerId: answer.answerId,
+    answer: answer.answer,
+    colour: answer.colour
+  }));
+
+  return {
+    questionId: questionInfo.questionId,
+    question: questionInfo.question,
+    duration: questionInfo.duration,
+    thumbnailUrl: questionInfo.thumbnailUrl,
+    points: questionInfo.points,
+    answers: questionInfoMapped
+  };
 };
 
 export const playerAnswers = (answerIds: number[], playerId: number, questionPosition: number): EmptyObject | undefined => {
@@ -391,6 +408,7 @@ export const playerAnswers = (answerIds: number[], playerId: number, questionPos
     throw HTTPError(400, 'The player ID does not exist');
   }
   const session = data.sessions.find((s: Session) => s.players.some((p: Player) => p.playerId === playerId));
+  console.log(session);
   if (session !== undefined) {
     if (session.quiz.numQuestions < questionPosition) {
       throw HTTPError(400, 'The question position is invalid for the session this player is in');
