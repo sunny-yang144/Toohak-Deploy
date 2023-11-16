@@ -334,7 +334,7 @@ describe.skip('Tests for getQuizSessionResults', () => {
     expect(response).toThrow(HTTPError[403]);
   });
 });
-describe.only('Tests for getSessionStatus', () => {
+describe.skip('Tests for getSessionStatus', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -418,7 +418,7 @@ describe.only('Tests for getSessionStatus', () => {
   });
 });
 
-describe.only('Tests for updateSessionState', () => {
+describe.skip('Tests for updateSessionState', () => {
   //  ////////////////note: I HAVE NO IDEA HOW TO GET THE TIME STUFF TO WORK SO I COMMENTED IT OUT////////
   let user: {
     body: {token: string},
@@ -1042,7 +1042,7 @@ describe.skip('Tests for all messages displayed', () => {
   });
 });
 
-describe.skip('Tests for sendChatMessages', () => {
+describe.only('Tests for sendChatMessages', () => {
   let user: {
     body: {token: string},
     statusCode: number,
