@@ -113,6 +113,7 @@ export interface Session {
   questionResults: SessionQuestionResults[];
   autoStartNum: number;
   qnTimeout?: NodeJS.Timeout;
+  qnStartTime?: number;
   messages: Message[];
 }
 
@@ -120,20 +121,20 @@ export interface AnswerBody {
   answer: string;
   correct: boolean;
 }
+export interface AnswerToken {
+  answerId: number;
+  questionId: number;
+}
 export interface QuestionBody {
   question: string;
   duration: number;
   points: number;
   answers: AnswerBody[];
-  thumbnailUrl: string;
+  thumbnailUrl?: string;
 }
 export interface QuestionToken {
   questionId: number;
   quizId: number;
-}
-export interface AnswerToken {
-  answerId: number;
-  questionId: number;
 }
 // The name for the dataStoreFile
 export const dataStoreFile = process.cwd() + '/dataStorage.json';
@@ -145,6 +146,7 @@ export interface DataStore {
   questions: QuestionToken[]; // Easy identifiers of question, not to be confused
   answers: AnswerToken[]; // with token.
   sessions: Session[];
+  players: Player[];
 }
 
 //
@@ -162,6 +164,7 @@ let data: DataStore = {
   questions: [],
   answers: [],
   sessions: [],
+  players: [],
 };
 
 // Converts data into JSON and writes it into the dataStorage file

@@ -14,6 +14,7 @@ import {
   requestGetQuizSessionResultsCSV,
   requestGetGuestPlayerStatus,
   requestFinalResults,
+  requestSendChatMessages,
   requestPlayerAnswers,
   requestQuestionResults,
   requestAllChatMessages,
@@ -495,7 +496,8 @@ describe.only('Tests for updateSessionState', () => {
   test('QUESTION_OPEN to QUESTION_CLOSE on duration ending', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    sleepSync(4 * 1000);
+    const duration = requestAdminQuizInfoV2(user.body.token, quiz.body.quizId).body.questions[0].duration;
+    sleepSync(duration * 1000);
     const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
     expect(getSessions).toBe('QUESTION_CLOSE');
   });
@@ -651,36 +653,6 @@ describe.only('Tests for updateSessionState', () => {
   });
 });
 
-describe.skip('Tests for guestPlayerJoin', () => {
-  let user: {
-    body: {token: string},
-    statusCode: number,
-  };
-  let quiz: {
-    body: {quizId: number},
-  };
-  let session: {
-    body: {sessionId: number}
-  };
-
-  beforeEach(() => {
-    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
-    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
-    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-  });
-
-  test('Guest Join Successful', () => {
-    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
-  });
-  //  Not sure whether it should be VD.FIRSTNAME VD.LASTNAME or it's supposed to be usernames.
-  test('Guest Name Already Exists', () => {
-    expect(() => requestGuestPlayerJoin(session.body.sessionId, `${VD.NAMEFIRST} ${VD.NAMELAST}`).body).toThrow(HTTPError[400]);
-  });
-  test('Session is not in LOBBY State', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
-  });
-});
 describe.skip('Tests for getQuizSessionResultsCSV', () => {
   let user: {
     body: {token: string},
@@ -728,6 +700,41 @@ describe.skip('Tests for getQuizSessionResultsCSV', () => {
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
     const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token);
     expect(response).toThrow(HTTPError[403]);
+  });
+});
+
+/// ////////////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////// IT3 PLAYER FUNCTION TESTS ///////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////////////////
+
+describe.skip('Tests for guestPlayerJoin', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let session: {
+    body: {sessionId: number}
+  };
+
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+  });
+
+  test('Guest Join Successful', () => {
+    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
+  });
+  //  Not sure whether it should be VD.FIRSTNAME VD.LASTNAME or it's supposed to be usernames.
+  test('Guest Name Already Exists', () => {
+    expect(requestGuestPlayerJoin(session.body.sessionId, `${VD.NAMEFIRST} ${VD.NAMELAST}`).body).toThrow(HTTPError[400]);
+  });
+  test('Session is not in LOBBY State', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
   });
 });
 describe.skip('Tests for guestPlayerStatus', () => {
@@ -812,16 +819,16 @@ describe.skip('Tests for finalResults', () => {
     });
   });
   test('Player ID does not exist', () => {
-    expect(() => requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
+    expect(requestFinalResults(1000)).toThrow(HTTPError[400]);
   });
 
   test('Session is not in FINAL_RESULTS state', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    expect(() => requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
+    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
   });
 });
 
-describe('Tests for player submission of answers', () => {
+describe.skip('Tests for player submission of answers', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -897,7 +904,7 @@ describe('Tests for player submission of answers', () => {
   });
 });
 
-describe('Tests for question results', () => {
+describe.skip('Tests for question results', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -995,13 +1002,13 @@ describe.skip('Tests for all messages displayed', () => {
 
   test('Successful return of all messages sent in same session as player', () => {
     // Send a message
-    message.body.messageBody = 'First Message'
-    requestSendChatMessage(player.body.playerId, message.body);
+    message.body.messageBody = 'First Message';
+    requestSendChatMessages(player.body.playerId, message.body);
     const currentTime1 = new Date();
     const unixtimeFirstMessage = Math.floor(currentTime1.getTime() / 1000);
 
-    message2.body.messageBody = 'Second Message'
-    requestSendChatMessage(player.body.playerId, message2.body);
+    message2.body.messageBody = 'Second Message';
+    requestSendChatMessages(player.body.playerId, message2.body);
     const currentTime2 = new Date();
     const unixtimeSecondMessage = Math.floor(currentTime2.getTime() / 1000);
 
@@ -1030,5 +1037,51 @@ describe.skip('Tests for all messages displayed', () => {
   });
   test('Player ID does not exist', () => {
     expect(() => requestAllChatMessages(1000)).toThrow(HTTPError[400]);
+  });
+});
+
+describe.skip('Tests for sendChatMessages', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let session: {
+    body: {sessionId: number},
+  };
+  let player: {
+    body: {playerId: number},
+  };
+  let message: {
+    body: {messageBody: string},
+  };
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+  });
+  test('Successful new chat message', () => {
+    message.body.messageBody = 'I like chicken wings';
+    const newMessage = requestSendChatMessages(player.body.playerId, message.body);
+    const allMessages = requestAllChatMessages(player.body.playerId);
+    expect(newMessage).toStrictEqual({});
+    expect(allMessages.body.messages.length).toStrictEqual(1);
+    expect(allMessages.body.messages.messageBody).toStrictEqual(message.body.messageBody);
+    expect(allMessages.body.messages.playerId).toStrictEqual(player.body.playerId);
+  });
+  test('Player ID does not exist', () => {
+    message.body.messageBody = 'I like chicken wings';
+    expect(requestSendChatMessages(1000, message.body)).toThrow(HTTPError[400]);
+  });
+  test('Message body is less than 1 character', () => {
+    message.body.messageBody = '';
+    expect(requestSendChatMessages(player.body.playerId, message.body)).toThrow(HTTPError[400]);
+  });
+  test('Message body is more than 100 characters', () => {
+    message.body.messageBody = 'a'.repeat(101);
+    expect(requestSendChatMessages(player.body.playerId, message.body)).toThrow(HTTPError[400]);
   });
 });

@@ -13,6 +13,7 @@ import {
   requestAdminQuizQuestionMove,
   requestAdminQuizQuestionUpdate,
   requestAdminQuizTrashRestore,
+  requestNewSessionQuiz,
   clear,
 } from '../test-helpers';
 
@@ -309,6 +310,16 @@ describe('Testing adminQuizTransfer', () => {
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
   });
+
+  test('Unsuccessful adminQuizTransfer, a session is NOT in END state', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const response = requestAdminQuizTransfer(user.body.token, VD.EMAIL2, quiz.body.quizId);
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
+  });
 });
 
 describe('Tests for adminQuizQuestionCreate', () => {
@@ -335,7 +346,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
     expect(quizInfo.body).toStrictEqual(
       {
         quizId: quiz.body.quizId,
-        thumbnailUrl: '',
         name: expect.any(String),
         timeCreated: expect.any(Number),
         timeLastEdited: expect.any(Number),
@@ -362,7 +372,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
                 correct: expect.any(Boolean),
               }
             ],
-            thumbnailUrl: VD.IMAGEURL,
           },
           {
             questionId: quizQuestion2.body.questionId,
@@ -384,7 +393,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
                 correct: expect.any(Boolean),
               }
             ],
-            thumbnailUrl: VD.IMAGEURL,
           }
         ],
         duration: expect.any(Number),
@@ -924,6 +932,15 @@ describe('Tests for adminQuizQuestionDelete', () => {
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(403);
   });
+  test('Unsuccessful adminQuizDelete, a session is NOT in END state', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreate(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = requestAdminQuizQuestionCreate(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const response = requestAdminQuizQuestionDelete(quiz.body.quizId, question.body.questionId, user.body.token);
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
+  });
 });
 
 describe('Tests for adminQuizQuestionDuplicate', () => {
@@ -977,7 +994,6 @@ describe('Tests for adminQuizQuestionDuplicate', () => {
               correct: expect.any(Boolean),
             }
           ],
-          thumbnailUrl: VD.IMAGEURL,
         },
         {
           questionId: expect.any(Number), // Should now be question 1's duplicate
@@ -998,7 +1014,6 @@ describe('Tests for adminQuizQuestionDuplicate', () => {
               correct: expect.any(Boolean),
             }
           ],
-          thumbnailUrl: VD.IMAGEURL,
         },
       ]
     );
@@ -1121,7 +1136,6 @@ describe('Tests for adminQuizQuestionMove', () => {
               correct: expect.any(Boolean),
             }
           ],
-          thumbnailUrl: VD.IMAGEURL,
         },
         {
           questionId: quizQuestion.body.questionId, // Should now be question 1
@@ -1142,7 +1156,6 @@ describe('Tests for adminQuizQuestionMove', () => {
               correct: expect.any(Boolean),
             }
           ],
-          thumbnailUrl: VD.IMAGEURL,
         },
       ]
     );
@@ -1298,7 +1311,6 @@ describe('Tests for adminQuizQuestionUpdate', () => {
               correct: expect.any(Boolean),
             }
           ],
-          thumbnailUrl: VD.IMAGEURL,
         },
       ]
     );

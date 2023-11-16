@@ -15,6 +15,7 @@ import {
   requestAdminQuizQuestionDeleteV2,
   requestAdminQuizQuestionMoveV2,
   requestAdminQuizQuestionDuplicateV2,
+  requestNewSessionQuiz,
   clear,
 } from '../test-helpers';
 
@@ -585,6 +586,12 @@ describe('Testing adminQuizTransfer', () => {
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
     const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     expect(() => requestAdminQuizTransferV2(user2.body.token, VD.EMAIL2, quiz.body.quizId)).toThrow(HTTPError[403]);
+  });
+  test('Unsuccessful adminQuizTransfer, a session is NOT in END state', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    expect(() => requestAdminQuizTransferV2(user.body.token, VD.EMAIL2, quiz.body.quizId)).toThrow(HTTPError[400]);
   });
 });
 
@@ -1166,6 +1173,13 @@ describe('Tests for adminQuizQuestionDelete', () => {
     };
     const quizQuestionId = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody);
     expect(() => requestAdminQuizQuestionDeleteV2(quiz.body.quizId, quizQuestionId.body.questionId, user2.body.token)).toThrow(HTTPError[403]);
+  });
+  test('Unsuccessful adminQuizDelete, a session is NOT in END state', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    expect(() => requestAdminQuizQuestionDeleteV2(quiz.body.quizId, question.body.questionId, user.body.token)).toThrow(HTTPError[400]);
   });
 });
 
@@ -1813,6 +1827,91 @@ describe('Tests for adminQuizQuestionUpdate', () => {
     const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     const quizQuestion = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
     expect(() => requestAdminQuizQuestionUpdateV2(quiz.body.quizId, quizQuestion.body.questionId, user2.body.token, sampleQuestion2)).toThrow(HTTPError[403]);
+  });
+
+  test('Url is not a valid URL', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+      thumbnailUrl: '',
+    };
+    expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
+  });
+  test('Url is an empty string', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+      thumbnailUrl: 'https://www.mywalletisstuckinpeanutbutter.com/',
+    };
+    expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
+  });
+  test('Url is not a valid URL', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+      thumbnailUrl: '',
+    };
+    expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
+  });
+  test('Url is not an image', () => {
+    const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    const quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    const question = {
+      question: 'What does KFC sell?',
+      duration: 4,
+      points: 5,
+    };
+    const answers = [
+      { answer: 'Chicken', correct: true },
+      { answer: 'Nuggets', correct: true },
+    ];
+    const questionBody = {
+      question: question.question,
+      duration: question.duration,
+      points: question.points,
+      answers: answers,
+      thumbnailUrl: 'https://www.random.org/',
+    };
+    expect(() => requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, questionBody)).toThrow(HTTPError[400]);
   });
 });
 
