@@ -100,7 +100,7 @@ afterAll(() => {
 /// ///////////////////////////     NEW ITERATION 3      ////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 
-describe.skip('Test: Update the thumbnail for the quiz', () => {
+describe('Test: Update the thumbnail for the quiz', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -149,7 +149,7 @@ describe.skip('Test: Update the thumbnail for the quiz', () => {
   });
 });
 
-describe.skip('Test: View active and inactive sessions', () => {
+describe('Test: View active and inactive sessions', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -197,7 +197,7 @@ describe.skip('Test: View active and inactive sessions', () => {
   });
 });
 
-describe.skip('Tests: Start a new session for a quiz', () => {
+describe('Tests: Start a new session for a quiz', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -270,7 +270,7 @@ describe.skip('Tests: Start a new session for a quiz', () => {
   });
 });
 
-describe.skip('Test: Update a session state', () => {
+describe('Test: Update a session state', () => {
   //  ////////////////note: I HAVE NO IDEA HOW TO GET THE TIME STUFF TO WORK SO I COMMENTED IT OUT////////
   let user: {
     body: {token: string},
@@ -1020,6 +1020,7 @@ describe.skip('Test: Final results for a session', () => {
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
     question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
@@ -1098,6 +1099,7 @@ describe.skip('Test: All chat messages in session', () => {
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
     requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
@@ -1163,6 +1165,7 @@ describe.skip('Test: Send chat message in session', () => {
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
   });
