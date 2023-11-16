@@ -18,7 +18,8 @@ import {
   getHashOf,
   verifyAndGenerateName,
   moveStates,
-  round1DP
+  round1DP,
+  calculateRoundedAverage
 } from './other';
 import { UserScore, QuestionResult } from './quiz';
 
@@ -444,42 +445,61 @@ export const playerAnswers = (answerIds: number[], playerId: number, questionPos
   }
 };
 
-export const questionResults = (playerId: number, questionPostion: number): questionResultsReturn | ErrorObject => {
-  // throw HTTPError(400, 'The player ID does not exist');
-  // throw HTTPError(400, 'The question position is invalid for the session this player is in');
-  // throw HTTPError(400, 'The session is not in ANSWER_SHOW state');
-  // throw HTTPError(400, 'The session is not up to this question yet');
-  return {
-    questionId: 5546,
-    playersCorrectList: [
-      'Hayden'
-    ],
-    averageAnswerTime: 45,
-    percentCorrect: 54
-  };
+export const questionResults = (playerId: number, questionPosition: number): questionResultsReturn | ErrorObject => {
+  const data = getData();
+  const player = data.players.find((p: Player) => p.playerId === playerId);
+  if (!player) {
+    throw HTTPError(400, 'The player ID does not exist');
+  }
+  const session = data.sessions.find((s: Session) => s.players.some((p: Player) => p.playerId === playerId));
+  if (session !== undefined) {
+    if (session.quiz.numQuestions < questionPosition) {
+      throw HTTPError(400, 'The question position is invalid for the session this player is in');
+    }
+    if (session.state !== 'ANSWER_SHOW') {
+      throw HTTPError(400, 'The session is not in ANSWER_SHOW state.');
+    }
+    if (session.atQuestion !== questionPosition) {
+      throw HTTPError(400, 'The session is currently not on this question');
+    }
+    const qnPosition = questionPosition - 1;
+    let qnResult: questionResultsReturn;
+    qnResult.questionId = session.questionResults[qnPosition].questionId;
+    qnResult.playersCorrectList = session.questionResults[qnPosition].playersCorrectList;
+    qnResult.averageAnswerTime = calculateRoundedAverage(session.questionResults[qnPosition].AnswersTimes);
+    qnResult.percentCorrect = Math.round((session.questionResults[qnPosition].playersCorrectList.length / session.players.length) * 100);
+    return qnResult;
+  }
 };
 
 export const finalResults = (playerId: number): finalResultsReturn | ErrorObject => {
-  // throw HTTPError(400, 'The player ID does not exist');
-  // throw HTTPError(400, 'The session is not in FINAL_RESULTS state');
-  return {
-    usersRankedByScore: [
-      {
-        name: 'Hayden',
-        score: 45
-      }
-    ],
-    questionResults: [
-      {
-        questionId: 5546,
-        playersCorrectList: [
-          'Hayden'
-        ],
-        averageAnswerTime: 45,
-        percentCorrect: 54
-      }
-    ]
-  };
+  const data = getData();
+  const player = data.players.find((p: Player) => p.playerId === playerId);
+  if (!player) {
+    throw HTTPError(400, 'The player ID does not exist');
+  }
+  const session = data.sessions.find((s: Session) => s.players.some((p: Player) => p.playerId === playerId));
+  if (session !== undefined) {
+    if (session.state !== 'FINAL_RESULTS') {
+      throw HTTPError(400, 'The session is not in FINAL_RESULTS state.');
+    }
+    const SesResult: finalResultsReturn = {
+      usersRankedByScore: [],
+      questionResults: []
+    };
+
+    for (let i = 0; i < SesResult.questionResults.length; i++) {
+      SesResult.questionResults[i].questionId = session.questionResults[i].questionId;
+      SesResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
+      SesResult.questionResults[i].averageAnswerTime = calculateRoundedAverage(session.questionResults[i].AnswersTimes);
+      SesResult.questionResults[i].percentCorrect = Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100);
+    }
+
+    const unsortedScores: UserScore[] = session.players.map((p: Player) => ({ name: p.name, score: p.score }));
+    SesResult.usersRankedByScore = unsortedScores.sort((a, b) => b.score - a.score);
+
+    return SesResult;
+  }
 };
 
 export const allChatMessages = (playerId: number): allChatMessagesReturn | ErrorObject => {
