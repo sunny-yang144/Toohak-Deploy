@@ -535,6 +535,7 @@ export const sendChatMessages = (playerId: number, message: MessageBody): Record
     playerId,
     messageBody: message.messageBody,
   };
+  playerSession.messages.push(newMessage);
 
   return {};
 };
