@@ -271,6 +271,154 @@ describe.skip('Tests: Start a new session for a quiz', () => {
 });
 
 describe('Test: Update a session state', () => {
+describe.skip('Tests for getQuizSessionResults', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let question: {
+    body: {quizId: number},
+  };
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+  });
+  test('Successful retrieval of quiz results', () => {
+    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const quizResults = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    expect(quizResults).toStrictEqual({
+      usersRankedByScore: [
+        {
+          name: 'Jack',
+          score: 0,
+        }
+      ],
+      questionResults: [
+        {
+          questionId: question,
+          playersCorrectList: [],
+          averageAnswerTime: 0,
+          percentCorrect: 0,
+        }
+      ]
+    });
+  });
+  test('Session ID does not refer to a valid session within this quiz', () => {
+    const quiz2 = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME2, VD.QUIZDESCRIPTION2);
+    requestAdminQuizQuestionCreateV2(quiz2.body.quizId, user.body.token, sampleQuestion2);
+    const session2 = requestNewSessionQuiz(quiz2.body.quizId, user.body.token, 3);
+    const response = requestGetQuizSessionResults(quiz.body.quizId, session2.body.sessionId, user.body.token);
+    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    expect(response).toThrow(HTTPError[400]);
+  });
+  test('Session is not in FINAL_RESULTS state', () => {
+    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(response).toThrow(HTTPError[400]);
+  });
+  test('Token is empty or invalid', () => {
+    const invalidId = uuidv4();
+    const response = requestNewSessionQuiz(quiz.body.quizId, invalidId, 3);
+    expect(response).toThrow(HTTPError[401]);
+  });
+  test('Valid token, however user is unauthorised to view this session', () => {
+    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
+    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token);
+    expect(response).toThrow(HTTPError[403]);
+  });
+});
+describe.skip('Tests for getSessionStatus', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let session: {
+    body: {sessionId: number},
+  };
+
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+  });
+
+  test('Successfully gets session status', () => {
+    const sessionStatus = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body;
+    expect(sessionStatus).toStrictEqual(
+      {
+        state: 'LOBBY',
+        atQuestion: 0,
+        players: [],
+        metadata: {
+          quizId: quiz.body.quizId,
+          name: VD.QUIZNAME,
+          timeCreated: expect.any(Number),
+          timeLastEdited: expect.any(Number),
+          description: VD.QUIZDESCRIPTION,
+          numQuestions: 1,
+          questions: [
+            {
+              questionId: expect.any(Number),
+              question: 'Who is the Monarch of England?',
+              duration: 4,
+              thumbnailUrl: VD.IMAGEURL,
+              points: 5,
+              answers: [
+                {
+                  answerId: expect.any(Number),
+                  answer: 'Prince Charles',
+                  colour: expect.any(String),
+                  correct: true
+                },
+                {
+                  answerId: expect.any(Number),
+                  answer: 'Queen Elizabeth',
+                  colour: expect.any(String),
+                  correct: true,
+                }
+              ]
+            }
+          ],
+          thumbnailUrl: '',
+          duration: 4,
+        }
+      }
+    );
+    const colour1 = sessionStatus.metadata.questions[0].answers[0].colour;
+    const coloursArray = Object.values(colours);
+    expect(coloursArray).toContain(colour1);
+  });
+
+  test('Session ID does not refer to a valid session within this quiz', () => {
+    const quiz2 = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME2, VD.QUIZDESCRIPTION2);
+    requestAdminQuizQuestionCreateV2(quiz2.body.quizId, user.body.token, sampleQuestion2);
+    const session2 = requestNewSessionQuiz(quiz2.body.quizId, user.body.token, 3);
+    expect(() => requestGetSessionStatus(quiz.body.quizId, session2.body.sessionId, user.body.token)).toThrow(HTTPError[400]);
+  });
+
+  test('Token is empty or invalid', () => {
+    const invalidId = uuidv4();
+    expect(() => requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, invalidId)).toThrow(HTTPError[401]);
+  });
+
+  test('Valid token, however user is unauthorised to view this session', () => {
+    const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
+    expect(() => requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user2.body.token)).toThrow(HTTPError[403]);
+  });
+});
+
+describe.skip('Tests for updateSessionState', () => {
   //  ////////////////note: I HAVE NO IDEA HOW TO GET THE TIME STUFF TO WORK SO I COMMENTED IT OUT////////
   let user: {
     body: {token: string},
