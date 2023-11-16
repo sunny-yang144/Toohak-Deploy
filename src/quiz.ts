@@ -56,7 +56,7 @@ export interface adminQuizInfoReturn {
   numQuestions: number,
   questions: Question[],
   duration: number,
-  thumbnailUrl: string
+  thumbnailUrl?: string
 }
 interface adminQuizTrashReturn {
   quizzes: quizObject[];
@@ -214,7 +214,7 @@ export const adminQuizCreate = (token: string, name: string, description: string
  * @returns adminQuizInfoReturn | ErrorObject
  */
 
-export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoReturn | ErrorObject => {
+export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoReturn | ErrorObject | undefined => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -231,7 +231,7 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
   // Find quiz with the inputted Id
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (quiz !== undefined) {
-    const quizInfo = {
+    const quizInfo: adminQuizInfoReturn = {
       quizId: quiz.quizId,
       name: quiz.name,
       timeCreated: quiz.timeCreated,
@@ -255,7 +255,7 @@ export const adminQuizInfo = (token: string, quizId: number): adminQuizInfoRetur
  * @returns Empty | ErrorObject
  */
 
-export const adminQuizRemove = (token: string, quizId: number): Record<string, never> | ErrorObject => {
+export const adminQuizRemove = (token: string, quizId: number): Record<string, never> | ErrorObject | undefined => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -300,7 +300,7 @@ export const adminQuizRemove = (token: string, quizId: number): Record<string, n
  * @returns Empty | errorMessage
  */
 
-export const adminQuizNameUpdate = (token: string, quizId: number, name: string): Record<string, never> | ErrorObject => {
+export const adminQuizNameUpdate = (token: string, quizId: number, name: string): Record<string, never> | ErrorObject | undefined => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -365,7 +365,7 @@ function isAlphanumericWithSpaces(str: string) {
  * @returns Empty | errorMessage
  */
 
-export const adminQuizDescriptionUpdate = (token: string, quizId: number, description: string): Record<string, never> | ErrorObject => {
+export const adminQuizDescriptionUpdate = (token: string, quizId: number, description: string): Record<string, never> | ErrorObject | undefined => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -405,7 +405,7 @@ export const adminQuizDescriptionUpdate = (token: string, quizId: number, descri
  * @param token
  * @returns adminQuizTrashReturn | ErrorObject
  */
-export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObject => {
+export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObject | undefined => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -436,7 +436,7 @@ export const adminQuizTrash = (token: string): adminQuizTrashReturn | ErrorObjec
  * @returns Empty | ErrorObject
  */
 
-export const adminQuizRestore = (token: string, quizId: number): Record<string, never> | ErrorObject => {
+export const adminQuizRestore = (token: string, quizId: number): Record<string, never> | ErrorObject | undefined => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -682,7 +682,7 @@ export const adminQuizQuestionCreate = async (quizId: number, token: string, que
     return { error: 'No answers are correct.', statusCode: 400 };
   }
 
-  if (questionBody.thumbnailUrl.length === 0) {
+  if (questionBody.thumbnailUrl === undefined) {
     return { error: 'No thumbnail url provided', statusCode: 400 };
   }
   try {
@@ -818,7 +818,7 @@ export const adminQuizQuestionUpdate = (quizId: number, questionId: number, toke
     return { error: 'No correct answers.', statusCode: 400 };
   }
 
-  if (questionBody.thumbnailUrl.length === 0) {
+  if (questionBody.thumbnailUrl === undefined) {
     return { error: 'No thumbnail url provided', statusCode: 400 };
   }
   try {
@@ -931,7 +931,7 @@ export const adminQuizQuestionDelete = (quizId: number, questionId: number, toke
  * @returns Empty | ErrorObject
  */
 
-export const adminQuizQuestionMove = (quizId: number, questionId: number, token: string, newPosition: number): Record<string, never> | ErrorObject => {
+export const adminQuizQuestionMove = (quizId: number, questionId: number, token: string, newPosition: number): Record<string, never> | ErrorObject | undefined => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
@@ -941,7 +941,9 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
     return { error: `This quiz ${quizId} is not owned by this User!`, statusCode: 403 };
   }
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-
+  if (!quiz) {
+    return { error: 'This quizId is invalid.', statusCode: 401 };
+  }
   const question = quiz.questions.find((q) => q.questionId === questionId);
   if (!question) {
     return { error: 'The question Id is invalid', statusCode: 400 };
@@ -981,14 +983,13 @@ export const adminQuizQuestionMove = (quizId: number, questionId: number, token:
  * @returns adminQuizQuestionDuplicateReturn | ErrorObject
  */
 
-export const adminQuizQuestionDuplicate = async (quizId: number, questionId: number, token: string): Promise<ErrorObject | adminQuizQuestionDuplicateReturn> => {
+export const adminQuizQuestionDuplicate = async (quizId: number, questionId: number, token: string): Promise<ErrorObject | adminQuizQuestionDuplicateReturn | undefined> => {
   const data = getData();
   const user = getUserViaToken(token, data);
   if (!user) {
     return { error: 'This is not a valid user token.', statusCode: 401 };
   }
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-
   if (quiz !== undefined) {
     const question = quiz.questions.find((question) => question.questionId === questionId);
     if (!question) {
@@ -1067,10 +1068,12 @@ export const viewSessionActivity = (token: string, quizId: number): viewSessionA
 export const newSessionQuiz = (quizId: number, token: string, autoStartNum: number): newSessionQuizReturn | ErrorObject => {
   const data = getData();
   const quiz = data.quizzes.find((q: Quiz) => q.quizId === quizId);
-
   const user = getUserViaToken(token, data);
   if (!user) {
     throw HTTPError(401, 'Empty or invalid user token');
+  }
+  if (!quiz) {
+    throw HTTPError(400, 'Quiz is not owned by this user');
   }
 
   if (!user.ownedQuizzes.some(quiz => quiz === quizId) && !user.trash.some(quiz => quiz === quizId)) {

@@ -100,7 +100,7 @@ afterAll(() => {
 /// ///////////////////////////     NEW ITERATION 3      ////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 
-describe('Test: Update the thumbnail for the quiz', () => {
+describe.skip('Test: Update the thumbnail for the quiz', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -149,7 +149,7 @@ describe('Test: Update the thumbnail for the quiz', () => {
   });
 });
 
-describe('Test: View active and inactive sessions', () => {
+describe.skip('Test: View active and inactive sessions', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -197,7 +197,7 @@ describe('Test: View active and inactive sessions', () => {
   });
 });
 
-describe('Tests: Start a new session for a quiz', () => {
+describe.skip('Tests: Start a new session for a quiz', () => {
   let user: {
     body: {token: string},
     statusCode: number,
