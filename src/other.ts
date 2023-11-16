@@ -169,7 +169,7 @@ export function getRandomColour(): colours {
   return coloursObject[randomIndex];
 }
 
-export function getUserViaToken(token: string, data: DataStore): User {
+export function getUserViaToken(token: string, data: DataStore): User | undefined {
   return data.users.find(u => u.tokens.some((t: Token) => t.sessionId === token));
 }
 
@@ -197,7 +197,7 @@ export function isValidAction(action: string, state: states) {
   if (!(['NEXT_QUESTION', 'SKIP_COUNTDOWN', 'GO_TO_ANSWER', 'GO_TO_FINAL_RESULTS', 'END'] as const).includes(action as actions)) {
     throw HTTPError(400, 'Action provided is not a valid Action');
   }
-  let validActions: actions[];
+  let validActions: actions[] = [];
   if (state === 'LOBBY') {
     validActions = ['NEXT_QUESTION', 'END'];
   } else if (state === 'QUESTION_COUNTDOWN') {
