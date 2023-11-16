@@ -528,17 +528,13 @@ export const sendChatMessages = (playerId: number, message: MessageBody): Record
   if (message.messageBody.length === 0) {
     throw HTTPError(400, 'Message body is less than 1 character');
   }
-
   if (message.messageBody.length > 100) {
     throw HTTPError(400, 'Message body is greater than 100 characters');
   }
-  const allMessages: allChatMessagesReturn = {
-    messages: [],
+  const newMessage: Message = {
+    playerId,
+    messageBody: message.messageBody,
   };
-  for (let i = 0; i < playerSession.messages.length; i++) {
-    allMessages.messages.push(playerSession.messages[i]);
-  }
-  return allMessages;
 
   return {};
 };
