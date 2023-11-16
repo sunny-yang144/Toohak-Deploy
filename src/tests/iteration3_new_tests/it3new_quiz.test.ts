@@ -333,6 +333,7 @@ describe.skip('Test for getQuizSessionResults', () => {
     expect(response).toThrow(HTTPError[403]);
   });
 });
+
 describe.skip('Tests for getSessionStatus', () => {
   let user: {
     body: {token: string},
@@ -727,7 +728,8 @@ describe.skip('Test: Get session status', () => {
   });
 });
 
-describe.skip('Test: Get quiz session final results', () => {
+describe.skip('Tests for updateSessionState', () => {
+  //  ////////////////note: I HAVE NO IDEA HOW TO GET THE TIME STUFF TO WORK SO I COMMENTED IT OUT////////
   let user: {
     body: {token: string},
     statusCode: number,
