@@ -986,6 +986,12 @@ describe.skip('Tests for all messages displayed', () => {
   let player: {
     body: {playerId: number},
   };
+  let message: {
+    body: {messageBody: string},
+  };
+  let message2: {
+    body: {messageBody: string},
+  };
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
@@ -993,24 +999,46 @@ describe.skip('Tests for all messages displayed', () => {
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
     requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
   });
+
   test('Successful return of all messages sent in same session as player', () => {
     // Send a message
+    message.body.messageBody = 'First Message';
+    requestSendChatMessages(player.body.playerId, message.body);
+    const currentTime1 = new Date();
+    const unixtimeFirstMessage = Math.floor(currentTime1.getTime() / 1000);
+
+    message2.body.messageBody = 'Second Message';
+    requestSendChatMessages(player.body.playerId, message2.body);
+    const currentTime2 = new Date();
+    const unixtimeSecondMessage = Math.floor(currentTime2.getTime() / 1000);
+
     const chatLog = requestAllChatMessages(player.body.playerId);
     expect(chatLog).toStrictEqual(
       {
         messages: [
           {
-            messageBody: 'This is a message body',
-            playerId: 5546,
-            playerName: 'Yuchao Jiang',
-            timeSent: 1683019484
+            messageBody: 'First Message',
+            playerId: player.body.playerId,
+            playerName: VD.GUESTNAME,
+            timeSent: expect.any(Number)
+          },
+          {
+            messageBody: 'Second Message',
+            playerId: player.body.playerId,
+            playerName: VD.GUESTNAME,
+            timeSent: expect.any(Number)
           }
         ]
       }
     );
+    // Check if time stamp is within 1 second of recorded time stamp
+    expect(chatLog.body.messages[0].timeSent).toBeLessThanOrEqual(unixtimeFirstMessage + 1);
+    expect(chatLog.body.messages[0].timeSent + 1).toBeGreaterThanOrEqual(unixtimeFirstMessage);
+    expect(chatLog.body.messages[1].timeSent).toBeLessThanOrEqual(unixtimeSecondMessage + 1);
+    expect(chatLog.body.messages[1].timeSent + 1).toBeGreaterThanOrEqual(unixtimeFirstMessage);
   });
   test('Player ID does not exist', () => {
-    expect(() => requestGetGuestPlayerStatus(1000).body).toThrow(HTTPError[400]);
+    expect(() => requestAllChatMessages(1000)).toThrow(HTTPError[400]);
   });
 });
 
