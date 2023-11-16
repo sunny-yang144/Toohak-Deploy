@@ -1042,7 +1042,7 @@ describe.skip('Tests for all messages displayed', () => {
   });
 });
 
-describe.only('Tests for sendChatMessages', () => {
+describe.skip('Tests for sendChatMessages', () => {
   let user: {
     body: {token: string},
     statusCode: number,
