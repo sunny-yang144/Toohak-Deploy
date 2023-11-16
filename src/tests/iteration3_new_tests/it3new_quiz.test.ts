@@ -115,7 +115,7 @@ describe.skip('Test: Update the thumbnail for the quiz', () => {
   });
 
   test('Successful change of thumbnail', () => {
-    expect(requestUpdateQuizThumbNail(quiz.body.quizId, user.body.token, VD.IMAGEURL)).toStrictEqual({});
+    expect(requestUpdateQuizThumbNail(quiz.body.quizId, user.body.token, VD.IMAGEURL).body).toStrictEqual({});
     const quizInfo = requestAdminQuizInfoV2(user.body.token, quiz.body.quizId);
     expect(quizInfo.body).toStrictEqual(
       {
@@ -270,7 +270,7 @@ describe.skip('Tests: Start a new session for a quiz', () => {
   });
 });
 
-describe.skip('Test for getQuizSessionResults', () => {
+describe.only('Test for getQuizSessionResults', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -279,17 +279,23 @@ describe.skip('Test for getQuizSessionResults', () => {
     body: {quizId: number},
   };
   let question: {
-    body: {quizId: number},
+    body: {questionId: number},
   };
+  let session: {
+    body: {sessionId: number},
+  }
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
   });
   test('Successful retrieval of quiz results', () => {
-    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    const quizResults = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    const quizResults = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token).body;
     expect(quizResults).toStrictEqual({
       usersRankedByScore: [
         {
@@ -299,7 +305,7 @@ describe.skip('Test for getQuizSessionResults', () => {
       ],
       questionResults: [
         {
-          questionId: question,
+          questionId: question.body.questionId,
           playersCorrectList: [],
           averageAnswerTime: 0,
           percentCorrect: 0,
@@ -311,26 +317,19 @@ describe.skip('Test for getQuizSessionResults', () => {
     const quiz2 = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME2, VD.QUIZDESCRIPTION2);
     requestAdminQuizQuestionCreateV2(quiz2.body.quizId, user.body.token, sampleQuestion2);
     const session2 = requestNewSessionQuiz(quiz2.body.quizId, user.body.token, 3);
-    const response = requestGetQuizSessionResults(quiz.body.quizId, session2.body.sessionId, user.body.token);
-    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    expect(response).toThrow(HTTPError[400]);
+    expect(() => requestGetQuizSessionResults(quiz.body.quizId, session2.body.sessionId, user.body.token)).toThrow(HTTPError[400]);
   });
   test('Session is not in FINAL_RESULTS state', () => {
-    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    expect(response).toThrow(HTTPError[400]);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
+    expect(() => requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token)).toThrow(HTTPError[400]);
   });
   test('Token is empty or invalid', () => {
     const invalidId = uuidv4();
-    const response = requestNewSessionQuiz(quiz.body.quizId, invalidId, 3);
-    expect(response).toThrow(HTTPError[401]);
+    expect(() => requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, invalidId)).toThrow(HTTPError[401]);
   });
   test('Valid token, however user is unauthorised to view this session', () => {
-    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
-    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token);
-    expect(response).toThrow(HTTPError[403]);
+    expect(() => requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token)).toThrow(HTTPError[403]);
   });
 });
 
