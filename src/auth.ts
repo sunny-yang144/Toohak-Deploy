@@ -531,6 +531,7 @@ export const sendChatMessages = (playerId: number, message: MessageBody): Record
   if (message.messageBody.length > 100) {
     throw HTTPError(400, 'Message body is greater than 100 characters');
   }
+  const playerSession = data.sessions.find(session => session.players.some(player => player.playerId === playerId));
   const newMessage: Message = {
     playerId,
     messageBody: message.messageBody,
