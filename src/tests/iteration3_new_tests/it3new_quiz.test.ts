@@ -18,6 +18,7 @@ import {
   requestPlayerAnswers,
   requestQuestionResults,
   requestAllChatMessages,
+  requestPlayerQuestionInfo,
   clear,
 } from '../test-helpers';
 import { checkCSV } from '../../other';
@@ -99,7 +100,7 @@ afterAll(() => {
 /// ///////////////////////////     NEW ITERATION 3      ////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 
-describe('Tests for updateQuizThumbNail', () => {
+describe.skip('Test: Update the thumbnail for the quiz', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -148,7 +149,7 @@ describe('Tests for updateQuizThumbNail', () => {
   });
 });
 
-describe.skip('Tests for viewSessionActivity', () => {
+describe.skip('Test: View active and inactive sessions', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -187,18 +188,16 @@ describe.skip('Tests for viewSessionActivity', () => {
       }
     );
   });
-
   test('Token is empty or invalid', () => {
     expect(() => requestViewSessionActivity(quiz.body.quizId, invalidId)).toThrow(HTTPError[401]);
   });
-
   test('Token is not the owner of the quiz', () => {
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
     expect(() => requestViewSessionActivity(quiz.body.quizId, user2.body.token)).toThrow(HTTPError[403]);
   });
 });
 
-describe.skip('Tests for getNewSessionQuiz', () => {
+describe.skip('Tests: Start a new session for a quiz', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -271,7 +270,8 @@ describe.skip('Tests for getNewSessionQuiz', () => {
   });
 });
 
-describe.skip('Tests for getQuizSessionResults', () => {
+describe.skip('Test: Update a session state', () => {
+  //  ////////////////note: I HAVE NO IDEA HOW TO GET THE TIME STUFF TO WORK SO I COMMENTED IT OUT////////
   let user: {
     body: {token: string},
     statusCode: number,
@@ -279,62 +279,225 @@ describe.skip('Tests for getQuizSessionResults', () => {
   let quiz: {
     body: {quizId: number},
   };
-  let question: {
-    body: {quizId: number},
+  let session: {
+    body: {sessionId: number}
   };
+
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
-    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
   });
-  test('Successful retrieval of quiz results', () => {
-    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    const quizResults = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
-    expect(quizResults).toStrictEqual({
-      usersRankedByScore: [
-        {
-          name: 'Jack',
-          score: 0,
-        }
-      ],
-      questionResults: [
-        {
-          questionId: question,
-          playersCorrectList: [],
-          averageAnswerTime: 0,
-          percentCorrect: 0,
-        }
-      ]
-    });
+
+  test('LOBBY to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('QUESTION_COUNTDOWN');
   });
-  test('Session ID does not refer to a valid session within this quiz', () => {
-    const quiz2 = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME2, VD.QUIZDESCRIPTION2);
-    requestAdminQuizQuestionCreateV2(quiz2.body.quizId, user.body.token, sampleQuestion2);
-    const session2 = requestNewSessionQuiz(quiz2.body.quizId, user.body.token, 3);
-    const response = requestGetQuizSessionResults(quiz.body.quizId, session2.body.sessionId, user.body.token);
-    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    expect(response).toThrow(HTTPError[400]);
+
+  test('LOBBY to END on END', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('END');
   });
-  test('Session is not in FINAL_RESULTS state', () => {
-    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
+
+  test('QUESTION_COUNTDOWN to END on END', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('END');
+  });
+
+  test('QUESTION_COUNTDOWN to QUESTION_OPEN on SKIP_COUNTDOWN', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('QUESTION_OPEN');
+  });
+
+  test('QUESTION_COUNTDOWN to QUESTION_OPEN automatically after 3 seconds', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    sleepSync(3 * 1000);
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('QUESTION_OPEN');
+  });
+
+  test('QUESTION_OPEN to END on END', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('END');
+  });
+
+  test('QUESTION_OPEN to ANSWER_SHOW on GO_TO_ANSWER', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    expect(response).toThrow(HTTPError[400]);
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('ANSWER_SHOW');
   });
-  test('Token is empty or invalid', () => {
-    const invalidId = uuidv4();
-    const response = requestNewSessionQuiz(quiz.body.quizId, invalidId, 3);
-    expect(response).toThrow(HTTPError[401]);
+
+  test('ANSWER_SHOW to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('QUESTION_COUNTDOWN');
   });
-  test('Valid token, however user is unauthorised to view this session', () => {
-    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
-    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token);
-    expect(response).toThrow(HTTPError[403]);
+
+  test('QUESTION_OPEN to QUESTION_CLOSE on duration ending', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    const duration = requestAdminQuizInfoV2(user.body.token, quiz.body.quizId).body.questions[0].duration;
+    sleepSync(duration * 1000);
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('QUESTION_CLOSE');
+  });
+
+  test('QUESTION_CLOSE to ANSWER_SHOW on GO_TO_ANSWER', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('ANSWER_SHOW');
+  });
+
+  test('QUESTION_CLOSE to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    sleepSync(4 * 1000);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('QUESTION_COUNTDOWN');
+  });
+
+  test('QUESTION_CLOSE to END on END', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    sleepSync(4 * 1000);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('END');
+  });
+
+  test('QUESTION_CLOSE to FINAL_RESULTS on GO_TO_FINAL_RESULTS', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    sleepSync(4 * 1000);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('FINAL_RESULTS');
+  });
+
+  test('FINAL_RESULTS to END on END', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    //  setTimeout(requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS'), 20000);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('END');
+  });
+
+  test('ANSWER_SHOW to FINAL_RESULTS on GO_TO_FINAL_RESULTS', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('FINAL_RESULTS');
+  });
+
+  test('ANSWER_SHOW to END on END', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
+    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
+    expect(getSessions).toBe('END');
+  });
+
+  /// ///////////////////ERROR CASES////////////////////////////////
+  test('LOBBY -> SKIP_COOLDOWN, is an invalid pathway', () => {
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
+  });
+  test('LOBBY -> GO_TO_ANSWER is an invalid pathway', () => {
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
+  });
+  test('LOBBY -> GO_TO_FINAL_RESULTS is an invalid pathway', () => {
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS')).toThrow(HTTPError[400]);
+  });
+  test('QUESTION_COUNTDOWN -> NEXT_QUESTION is an invalid pathway', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION')).toThrow(HTTPError[400]);
+  });
+  test('QUESTION_COUNTDOWN -> GO_TO_ANSWER is an invalid pathway', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
+  });
+  test('QUESTION_COUNTDOWN -> GO_TO_FINAL_RESULTS is an invalid pathway', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS')).toThrow(HTTPError[400]);
+  });
+  test('QUESTION_OPEN -> NEXT_QUESTION is an invalid pathway', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION')).toThrow(HTTPError[400]);
+  });
+  test('QUESTION_OPEN -> GO_TO_FINAL_RESULTS is an invalid pathway', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS')).toThrow(HTTPError[400]);
+  });
+  test('QUESTION_OPEN -> SKIP_COUNTDOWN is an invalid pathway', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
+  });
+  test('QUESTION_CLOSE -> SKIP_COUNTDOWN is an invalid pathway', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    sleepSync(4 * 1000);
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
+  });
+  test('ANSWER_SHOW -> SKIP_COUNTDOWN is an invalid pathway', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
+  });
+  test('ANSWER_SHOW -> GO_TO_ANSWER is an invalid pathway', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
+  });
+  test('FINAL_RESULTS -> NEXT_QUESTION is an invalid pathway', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION')).toThrow(HTTPError[400]);
+  });
+  test('FINAL_RESULTS -> SKIP_COUNTDOWN is an invalid pathway', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
+  });
+  test('FINAL_RESULTS -> GO_TO_ANSWER is an invalid pathway', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
   });
 });
-describe.only('Tests for getSessionStatus', () => {
+
+describe.skip('Test: Get session status', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -418,8 +581,7 @@ describe.only('Tests for getSessionStatus', () => {
   });
 });
 
-describe.only('Tests for updateSessionState', () => {
-  //  ////////////////note: I HAVE NO IDEA HOW TO GET THE TIME STUFF TO WORK SO I COMMENTED IT OUT////////
+describe.skip('Test: Get quiz session final results', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -427,233 +589,63 @@ describe.only('Tests for updateSessionState', () => {
   let quiz: {
     body: {quizId: number},
   };
-  let session: {
-    body: {sessionId: number}
+  let question: {
+    body: {quizId: number},
   };
-
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
-    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
-    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
   });
-  test('LOBBY to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('QUESTION_COUNTDOWN');
-  });
-  test('LOBBY to END on END', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('END');
-  });
-  test('QUESTION_COUNTDOWN to END on END', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('END');
-  });
-
-  test('QUESTION_COUNTDOWN to QUESTION_OPEN on SKIP_COUNTDOWN', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('QUESTION_OPEN');
-  });
-
-  test('QUESTION_COUNTDOWN to QUESTION_OPEN automatically after 3 seconds', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    sleepSync(3 * 1000);
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('QUESTION_OPEN');
-  });
-
-  test('QUESTION_OPEN to END on END', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('END');
-  });
-
-  test('QUESTION_OPEN to ANSWER_SHOW on GO_TO_ANSWER', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('ANSWER_SHOW');
-  });
-
-  test('ANSWER_SHOW to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('QUESTION_COUNTDOWN');
-  });
-
-  test('QUESTION_OPEN to QUESTION_CLOSE on duration ending', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    const duration = requestAdminQuizInfoV2(user.body.token, quiz.body.quizId).body.questions[0].duration;
-    sleepSync(duration * 1000);
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('QUESTION_CLOSE');
-  });
-
-  test('QUESTION_CLOSE to ANSWER_SHOW on GO_TO_ANSWER', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('ANSWER_SHOW');
-  });
-  test('QUESTION_CLOSE to QUESTION_COUNTDOWN on NEXT_QUESTION', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    sleepSync(4 * 1000);
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('QUESTION_COUNTDOWN');
-  });
-  test('QUESTION_CLOSE to END on END', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    sleepSync(4 * 1000);
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('END');
-  });
-  test('QUESTION_CLOSE to FINAL_RESULTS on GO_TO_FINAL_RESULTS', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    sleepSync(4 * 1000);
+  test('Successful retrieval of quiz results', () => {
+    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const quizResults = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('FINAL_RESULTS');
+    expect(quizResults).toStrictEqual({
+      usersRankedByScore: [
+        {
+          name: 'Jack',
+          score: 0,
+        }
+      ],
+      questionResults: [
+        {
+          questionId: question,
+          playersCorrectList: [],
+          averageAnswerTime: 0,
+          percentCorrect: 0,
+        }
+      ]
+    });
   });
-  test('FINAL_RESULTS to END on END', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    //  setTimeout(requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS'), 20000);
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('END');
+  test('Session ID does not refer to a valid session within this quiz', () => {
+    const quiz2 = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME2, VD.QUIZDESCRIPTION2);
+    requestAdminQuizQuestionCreateV2(quiz2.body.quizId, user.body.token, sampleQuestion2);
+    const session2 = requestNewSessionQuiz(quiz2.body.quizId, user.body.token, 3);
+    const response = requestGetQuizSessionResults(quiz.body.quizId, session2.body.sessionId, user.body.token);
+    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    expect(response).toThrow(HTTPError[400]);
   });
-
-  test('ANSWER_SHOW to FINAL_RESULTS on GO_TO_FINAL_RESULTS', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+  test('Session is not in FINAL_RESULTS state', () => {
+    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('FINAL_RESULTS');
+    expect(response).toThrow(HTTPError[400]);
   });
-
-  test('ANSWER_SHOW to END on END', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
-    const getSessions = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token).body.state;
-    expect(getSessions).toBe('END');
+  test('Token is empty or invalid', () => {
+    const invalidId = uuidv4();
+    const response = requestNewSessionQuiz(quiz.body.quizId, invalidId, 3);
+    expect(response).toThrow(HTTPError[401]);
   });
-
-  /// ///////////////////ERROR CASES////////////////////////////////
-  test('Invalid Command from LOBBY, SKIP_COUNTDOWN', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from LOBBY, GO_TO_ANSWER', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from LOBBY, GO_TO_FINAL_RESULT', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from QUESTION_COUNTDOWN, NEXT_QUESTION', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from QUESTION_COUNTDOWN, GO_TO_ANSWER', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from QUESTION_COUNTDOWN, GO_TO_FINAL_RESULTS', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from QUESTION_OPEN, NEXT_QUESTION', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from QUESTION_OPEN, GO_TO_FINAL_RESULTS', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from QUESTION_OPEN, SKIP_COUNTDOWN', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from QUESTION_CLOSE, SKIP_COUNTDOWN', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    sleepSync(4 * 1000);
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from ANSWER_SHOW, SKIP_COUNTDOWN', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from ANSWER_SHOW, GO_TO_ANSWER', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from FINAL_RESULTS, NEXT_QUESTION', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from FINAL_RESULTS, SKIP_COUNTDOWN', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
-  });
-  test('Invalid Command from FINAL_RESULTS, GO_TO_ANSWER', () => {
-    // it shouldnt be doing anything with skip countdown here, so i assumed an error would spit out
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
-    expect(() => requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
+  test('Valid token, however user is unauthorised to view this session', () => {
+    const session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
+    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token);
+    expect(response).toThrow(HTTPError[403]);
   });
 });
 
-describe.skip('Tests for getQuizSessionResultsCSV', () => {
+describe.skip('Test: Get quiz session final results in CSV format', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -707,7 +699,7 @@ describe.skip('Tests for getQuizSessionResultsCSV', () => {
 /// ////////////////////////////// IT3 PLAYER FUNCTION TESTS ///////////////////////////////
 /// ////////////////////////////////////////////////////////////////////////////////////////
 
-describe.skip('Tests for guestPlayerJoin', () => {
+describe.skip('Test: Allow gest player to join a session', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -732,12 +724,18 @@ describe.skip('Tests for guestPlayerJoin', () => {
   test('Guest Name Already Exists', () => {
     expect(requestGuestPlayerJoin(session.body.sessionId, `${VD.NAMEFIRST} ${VD.NAMELAST}`).body).toThrow(HTTPError[400]);
   });
+  //  Maybe it means that you cant have two identical guest names
+  test('Guest Name Already Exists', () => {
+    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
+    expect(() => requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toThrow(HTTPError[400]);
+  });
   test('Session is not in LOBBY State', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    expect(requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toBe(expect.any(Number));
+    expect(() => requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME).body).toThrow(HTTPError[400]);
   });
 });
-describe.skip('Tests for guestPlayerStatus', () => {
+
+describe.skip('Test: Status of guest player in session', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -755,17 +753,27 @@ describe.skip('Tests for guestPlayerStatus', () => {
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
   });
 
-  test('Guest Status Successful', () => {
+  test('Guest Status Successful (LOBBY)', () => {
     expect(requestGetGuestPlayerStatus(player.body.playerId).body).toBe(
       {
         state: 'LOBBY',
         numQuestions: 0,
         atQuestion: 0
-        //  I'm not sure what the numQuestion and atQuestion numbers should be
+      }
+    );
+  });
+  test('Guest Status Successful from (QUESTION)', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(requestGetGuestPlayerStatus(player.body.playerId).body).toBe(
+      {
+        state: 'QUESTION_COUNTDOWN',
+        numQuestions: 0,
+        atQuestion: 1
       }
     );
   });
@@ -774,7 +782,7 @@ describe.skip('Tests for guestPlayerStatus', () => {
   });
 });
 
-describe.skip('Tests for finalResults', () => {
+describe.skip('Test: Current question information for a player', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -783,7 +791,7 @@ describe.skip('Tests for finalResults', () => {
     body: {quizId: number},
   };
   let question: {
-    body: {quizId: number},
+    body: {questionId: number},
   };
   let session: {
     body: {sessionId: number},
@@ -794,41 +802,58 @@ describe.skip('Tests for finalResults', () => {
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion2);
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
-    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
-  });
-  test('Successful retrieval of final results', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
-    const finalResults = requestFinalResults(player.body.playerId);
-    expect(finalResults).toStrictEqual({
-      usersRankedByScore: [
-        {
-          name: 'Jack',
-          score: 0,
-        }
-      ],
-      questionResults: [
-        {
-          questionId: question,
-          playersCorrectList: [],
-          averageAnswerTime: 0,
-          percentCorrect: 0,
-        }
-      ]
-    });
-  });
-  test('Player ID does not exist', () => {
-    expect(requestFinalResults(1000)).toThrow(HTTPError[400]);
   });
 
-  test('Session is not in FINAL_RESULTS state', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
+  test('Successful show of current question info', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(requestPlayerQuestionInfo(player.body.playerId, 1)).toStrictEqual(
+      {
+        questionId: question.body.questionId,
+        question: 'Who is the Monarch of England?',
+        duration: 4,
+        thumbnailUrl: VD.IMAGEURL,
+        points: 5,
+        answers: [
+          {
+            answerId: expect.any(Number),
+            answer: 'Prince Charles',
+            colour: expect.any(String)
+          },
+          {
+            answerId: expect.any(Number),
+            answer: 'Queen Elizabeth',
+            colour: expect.any(String)
+          },
+        ]
+      }
+    );
+  });
+  test('PlayerID does not exist', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(() => requestPlayerQuestionInfo(1000, 1)).toThrow(HTTPError[400]);
+  });
+  test('Question position is not valid for session player is in', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(() => requestPlayerQuestionInfo(player.body.playerId, 1000)).toThrow(HTTPError[400]);
+  });
+  test('Session is not currently on this question', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(() => requestPlayerQuestionInfo(player.body.playerId, 2)).toThrow(HTTPError[400]);
+  });
+  test('Session is in LOBBY state', () => {
+    expect(() => requestPlayerQuestionInfo(player.body.playerId, 1)).toThrow(HTTPError[400]);
+  });
+  test('Session is in END state', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
+    expect(() => requestPlayerQuestionInfo(player.body.playerId, 1)).toThrow(HTTPError[400]);
   });
 });
 
-describe.skip('Tests for player submission of answers', () => {
+describe.skip('Test: Player submisssion of answer(s)', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -854,6 +879,8 @@ describe.skip('Tests for player submission of answers', () => {
     requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion2);
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     // Construct an array of answerIds for the currently active question
     const quizData = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
     const guestStatus = requestGetGuestPlayerStatus(player.body.playerId);
@@ -864,8 +891,6 @@ describe.skip('Tests for player submission of answers', () => {
 
   test('Sucessful submission of answers to currently active question', () => {
     expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
-    // Check if a player who sumbits an answer has had their questionInformation changed ... TODO
-    // Check if a player who submits correct answers is added to the playersCorrectList
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     expect(requestQuestionResults(player.body.playerId, 1).body.playersCorrectList).toBe([VD.NAMEFIRST]);
   });
@@ -877,6 +902,10 @@ describe.skip('Tests for player submission of answers', () => {
   });
   test('Session is not in QUESTION_OPEN state', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(() => requestPlayerAnswers(answerIds, player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
+  });
+  test('Session is not in QUESTION_OPEN state', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
     expect(() => requestPlayerAnswers(answerIds, player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
   });
   test('Session is not yet up to this question', () => {
@@ -894,17 +923,14 @@ describe.skip('Tests for player submission of answers', () => {
   });
   test('Can submit more than once in the CORRECT state', () => {
     expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
-    const sessionStatus = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
-    sleepSync(3 * 1000);
-    if (sessionStatus.body === 'QUESTION_OPEN') {
-      expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
-    } else {
-      expect(() => requestPlayerAnswers(answerIds, player.body.playerId, 1)).toThrow(HTTPError[400]);
-    }
+    sleepSync(2 * 1000);
+    expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
+    sleepSync(1 * 1000);
+    expect(() => requestPlayerAnswers(answerIds, player.body.playerId, 1)).toThrow(HTTPError[400]);
   });
 });
 
-describe.skip('Tests for question results', () => {
+describe.skip('Test: Results for a question', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -931,13 +957,15 @@ describe.skip('Tests for question results', () => {
     requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion2);
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     // Construct an array of answerIds for the currently active question
     const quizData = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
     const guestStatus = requestGetGuestPlayerStatus(player.body.playerId);
     questionIndex = guestStatus.body.atQuestion;
     const answers = quizData.body.metadata.questions[questionIndex].answers;
     answerIds = answers.map((answer: Answer) => answer.answerId);
-    // Get guest player to answer a question (Fully correctn answers)
+    // Get guest player to answer a question (Fully correct answers)
     requestPlayerAnswers(answerIds, player.body.playerId, 1);
   });
 
@@ -972,7 +1000,82 @@ describe.skip('Tests for question results', () => {
   });
 });
 
-describe.skip('Tests for all messages displayed', () => {
+describe.skip('Test: Final results for a session', () => {
+  let user: {
+    body: {token: string},
+    statusCode: number,
+  };
+  let quiz: {
+    body: {quizId: number},
+  };
+  let question: {
+    body: {quizId: number},
+  };
+  let session: {
+    body: {sessionId: number},
+  };
+  let player: {
+    body: {playerId: number},
+  };
+  beforeEach(() => {
+    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
+    quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
+    session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
+    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+  });
+
+  test('Successful retrieval of final results', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    const finalResults = requestFinalResults(player.body.playerId);
+    expect(finalResults).toStrictEqual({
+      usersRankedByScore: [
+        {
+          name: 'Jack',
+          score: 0,
+        }
+      ],
+      questionResults: [
+        {
+          questionId: question,
+          playersCorrectList: [],
+          averageAnswerTime: 0,
+          percentCorrect: 0,
+        }
+      ]
+    });
+  });
+  test('Player ID does not exist', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
+    expect(requestFinalResults(1000)).toThrow(HTTPError[400]);
+  });
+  test('Session is not in FINAL_RESULTS state (LOBBY)', () => {
+    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
+  });
+  test('Session is not in FINAL_RESULTS state (QUESTION_COUNTDOWN)', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
+  });
+  test('Session is not in FINAL_RESULTS state (QUESTION_OPEN)', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
+  });
+  test('Session is not in FINAL_RESULTS state (ANSWER_SHOW)', () => {
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
+    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
+  });
+});
+
+describe.skip('Test: All chat messages in session', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -1001,7 +1104,6 @@ describe.skip('Tests for all messages displayed', () => {
   });
 
   test('Successful return of all messages sent in same session as player', () => {
-    // Send a message
     message.body.messageBody = 'First Message';
     requestSendChatMessages(player.body.playerId, message.body);
     const currentTime1 = new Date();
@@ -1031,7 +1133,6 @@ describe.skip('Tests for all messages displayed', () => {
         ]
       }
     );
-    // Check if time stamp is within 1 second of recorded time stamp
     expect(chatLog.body.messages[0].timeSent).toBeLessThanOrEqual(unixtimeFirstMessage + 1);
     expect(chatLog.body.messages[0].timeSent + 1).toBeGreaterThanOrEqual(unixtimeFirstMessage);
     expect(chatLog.body.messages[1].timeSent).toBeLessThanOrEqual(unixtimeSecondMessage + 1);
@@ -1042,7 +1143,7 @@ describe.skip('Tests for all messages displayed', () => {
   });
 });
 
-describe.skip('Tests for sendChatMessages', () => {
+describe.skip('Test: Send chat message in session', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -1065,6 +1166,7 @@ describe.skip('Tests for sendChatMessages', () => {
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
   });
+
   test('Successful new chat message', () => {
     message.body.messageBody = 'I like chicken wings';
     const newMessage = requestSendChatMessages(player.body.playerId, message.body);

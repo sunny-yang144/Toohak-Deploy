@@ -866,7 +866,7 @@ export function requestPlayerAnswers (answerIds: number[], playerId: number, que
 export function requestQuestionResults (playerId: number, questionPosition: number) {
   return requestHelper('GET', `/v1/player/${playerId}/question/${questionPosition}/results`, {});
 }
-export function requestCurrentQuestionInfoPlayer (playerId: number, questionPosition: number) {
+export function requestPlayerQuestionInfo (playerId: number, questionPosition: number) {
   return requestHelper('GET', `/v1/player/${playerId}/question/${questionPosition}`, {});
 }
 export function requestAllChatMessages (playerId: number) {
