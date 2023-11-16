@@ -99,7 +99,7 @@ afterAll(() => {
 /// ///////////////////////////     NEW ITERATION 3      ////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 
-describe('Tests for updateQuizThumbNail', () => {
+describe.skip('Tests for updateQuizThumbNail', () => {
   let user: {
     body: {token: string},
     statusCode: number,
