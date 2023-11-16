@@ -519,8 +519,29 @@ export const allChatMessages = (playerId: number): allChatMessagesReturn | Error
 };
 
 export const sendChatMessages = (playerId: number, message: MessageBody): Record<string, never> | ErrorObject => {
-  // throw HTTPError(400, 'The player ID does not exist');
-  // throw HTTPError(400, 'Message body is less than 1 character');
-  // throw HTTPError(400, 'Message body is greater than 100 characters');
+  //  When I run stuff it says the quiz does not have any questions in it
+  const data = getData();
+  const existingPlayerId = data.players.map((p: Player) => p.playerId).includes(playerId);
+  if (!existingPlayerId) {
+    throw HTTPError(400, 'Player ID does not exist!');
+  }
+  if (message.messageBody.length === 0) {
+    throw HTTPError(400, 'Message body is less than 1 character');
+  }
+  if (message.messageBody.length > 100) {
+    throw HTTPError(400, 'Message body is greater than 100 characters');
+  }
+  const playerSession = data.sessions.find(session => session.players.some(player => player.playerId === playerId));
+  const player = playerSession.players.find((p: Player) => p.playerId === playerId);
+  const currentTime = new Date();
+  const unixtimeSeconds = Math.floor(currentTime.getTime() / 1000);
+  const newMessage: Message = {
+    playerId,
+    messageBody: message.messageBody,
+    playerName: player.name,
+    timeSent: unixtimeSeconds,
+  };
+  playerSession.messages.push(newMessage);
+
   return {};
 };
