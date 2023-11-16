@@ -1033,7 +1033,9 @@ describe.skip('Tests for all messages displayed', () => {
     );
     // Check if time stamp is within 1 second of recorded time stamp
     expect(chatLog.body.messages[0].timeSent).toBeLessThanOrEqual(unixtimeFirstMessage + 1);
+    expect(chatLog.body.messages[0].timeSent + 1).toBeGreaterThanOrEqual(unixtimeFirstMessage);
     expect(chatLog.body.messages[1].timeSent).toBeLessThanOrEqual(unixtimeSecondMessage + 1);
+    expect(chatLog.body.messages[1].timeSent + 1).toBeGreaterThanOrEqual(unixtimeFirstMessage);
   });
   test('Player ID does not exist', () => {
     expect(() => requestAllChatMessages(1000)).toThrow(HTTPError[400]);
