@@ -10,7 +10,8 @@ import {
   // colours,
   Session,
   actions,
-  Player
+  Player,
+  Message
 } from './dataStore';
 import {
   generateQuizId,
@@ -29,6 +30,7 @@ import HTTPError from 'http-errors';
 import * as fs from 'fs';
 import path from 'path';
 import { port, url } from './config.json';
+import { Session } from 'inspector';
 
 type EmptyObject = Record<string, never>;
 
@@ -101,6 +103,10 @@ interface getQuizSessionResultsReturn {
 
 interface getQuizSessionResultsCSVReturn {
   url: string;
+}
+
+interface getAllChatMessagesResults {
+  messages: Message[];
 }
 
 interface playerResults {
@@ -1260,3 +1266,26 @@ export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, toke
     url: `${url}:${port}/csv/uploads/${filename}`,
   };
 };
+
+const allChatMessages = (playerId: number): getAllChatMessagesResults | ErrorObject => {
+  const data = getData();
+  const existingPlayerId = data.players.map((p: Player) => p.playerId).includes(playerId);
+  if (!existingPlayerId) {
+    throw HTTPError(400, 'Player ID does not exist!');
+  }
+
+  const playerSession = data.sessions.find(session => session.players.some(player => player.playerId === playerSession));
+
+  const allMessages: getAllChatMessagesResults = {
+    messages: [],
+  }
+  
+  for (let i = 0; i < playerSession.messages.length; i++) {
+    allMessages.messages.push(playerSession.messages[i]);
+  }
+
+  return allMessages;
+  
+
+};
+
