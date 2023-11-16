@@ -470,16 +470,6 @@ export const questionResults = (playerId: number, questionPosition: number): que
     qnResult.percentCorrect = Math.round((session.questionResults[qnPosition].playersCorrectList.length / session.players.length) * 100);
     return qnResult;
   }
-
-  // throw HTTPError(400, 'The session is not up to this question yet');
-  return {
-    questionId: 5546,
-    playersCorrectList: [
-      'Hayden'
-    ],
-    averageAnswerTime: 45,
-    percentCorrect: 54
-  };
 };
 
 export const finalResults = (playerId: number): finalResultsReturn | ErrorObject => {
