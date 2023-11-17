@@ -435,7 +435,8 @@ describe('Tests for adminQuizQuestionCreate', () => {
     { answer: 'Nuggets', correct: true },
   ];
   test.each([
-    { questionBody: 
+    {
+      questionBody:
       {
         question: 'abcd',
         duration: question.duration,
@@ -444,7 +445,8 @@ describe('Tests for adminQuizQuestionCreate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: 'a'.repeat(51),
         duration: question.duration,
@@ -453,7 +455,8 @@ describe('Tests for adminQuizQuestionCreate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question.question,
         duration: question.duration,
@@ -469,8 +472,9 @@ describe('Tests for adminQuizQuestionCreate', () => {
         ],
         thumbnailUrl: VD.IMAGEURL,
       }
-    }, 
-    { questionBody: 
+    },
+    {
+      questionBody:
       {
         question: question.question,
         duration: question.duration,
@@ -479,7 +483,8 @@ describe('Tests for adminQuizQuestionCreate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question.question,
         duration: question.duration,
@@ -488,7 +493,8 @@ describe('Tests for adminQuizQuestionCreate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question.question,
         duration: question.duration,
@@ -497,7 +503,8 @@ describe('Tests for adminQuizQuestionCreate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question.question,
         duration: question.duration,
@@ -506,7 +513,8 @@ describe('Tests for adminQuizQuestionCreate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question.question,
         duration: question.duration,
@@ -518,7 +526,8 @@ describe('Tests for adminQuizQuestionCreate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question.question,
         duration: question.duration,
@@ -530,7 +539,8 @@ describe('Tests for adminQuizQuestionCreate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question.question,
         duration: question.duration,
@@ -542,7 +552,8 @@ describe('Tests for adminQuizQuestionCreate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question.question,
         duration: question.duration,
@@ -559,7 +570,6 @@ describe('Tests for adminQuizQuestionCreate', () => {
     expect(quizQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(quizQuestion.statusCode).toStrictEqual(400);
   });
-
 
   test('The sum of the question durations in quiz exceeds 3 minutes', () => {
     const question1 = {
@@ -835,7 +845,7 @@ describe('Tests for adminQuizQuestionMove', () => {
     // Check if parameters were updated
     const quizInfoNew = requestAdminQuizInfo(user.body.token, quiz.body.quizId);
     expect(quizInfoNew.body.questions).toStrictEqual(
-      [ 
+      [
         {
           questionId: question2.body.questionId,
           question: sampleQuestion2.question,
@@ -1016,7 +1026,8 @@ describe('Tests for adminQuizQuestionUpdate', () => {
   };
 
   test.each([
-    { questionBody: 
+    {
+      questionBody:
       {
         question: 'abcd',
         duration: question2.duration,
@@ -1025,7 +1036,8 @@ describe('Tests for adminQuizQuestionUpdate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: 'a'.repeat(51),
         duration: question2.duration,
@@ -1034,7 +1046,8 @@ describe('Tests for adminQuizQuestionUpdate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question2.question,
         duration: question2.duration,
@@ -1050,8 +1063,9 @@ describe('Tests for adminQuizQuestionUpdate', () => {
         ],
         thumbnailUrl: VD.IMAGEURL,
       }
-    }, 
-    { questionBody: 
+    },
+    {
+      questionBody:
       {
         question: question2.question,
         duration: question2.duration,
@@ -1060,7 +1074,8 @@ describe('Tests for adminQuizQuestionUpdate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question2.question,
         duration: question2.duration,
@@ -1069,7 +1084,8 @@ describe('Tests for adminQuizQuestionUpdate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question2.question,
         duration: question2.duration,
@@ -1078,7 +1094,8 @@ describe('Tests for adminQuizQuestionUpdate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question2.question,
         duration: question2.duration,
@@ -1087,7 +1104,8 @@ describe('Tests for adminQuizQuestionUpdate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question2.question,
         duration: question2.duration,
@@ -1099,7 +1117,8 @@ describe('Tests for adminQuizQuestionUpdate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question2.question,
         duration: question2.duration,
@@ -1111,7 +1130,8 @@ describe('Tests for adminQuizQuestionUpdate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question2.question,
         duration: question2.duration,
@@ -1123,7 +1143,8 @@ describe('Tests for adminQuizQuestionUpdate', () => {
         thumbnailUrl: VD.IMAGEURL,
       }
     },
-    { questionBody: 
+    {
+      questionBody:
       {
         question: question2.question,
         duration: question2.duration,
@@ -1174,7 +1195,7 @@ describe('Tests for adminQuizQuestionUpdate', () => {
   });
 });
 
-describe.only('Tests for adminQuizTrashRestore', () => {
+describe('Tests for adminQuizTrashRestore', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -1182,12 +1203,11 @@ describe.only('Tests for adminQuizTrashRestore', () => {
   let quiz: {
     body: {quizId: number},
     statusCode: number,
-  }
+  };
 
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreate(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
-    
   });
   test('Successful adminQuizTrashRestore', () => {
     requestAdminQuizRemove(user.body.token, quiz.body.quizId);
