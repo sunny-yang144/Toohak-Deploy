@@ -32,7 +32,6 @@ import HTTPError from 'http-errors';
 import * as fs from 'fs';
 import path from 'path';
 import { port, url } from './config.json';
-import { questionResults } from './auth';
 // import { Session } from 'inspector';
 
 type EmptyObject = Record<string, never>;
