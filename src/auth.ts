@@ -321,10 +321,10 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
 
 /**
   * Create a player, someone who doesn’t have an account and allow them to join a quiz.
-  * 
+  *
   * @param {number} sessionId
   * @param {string} name
-  * 
+  *
   * @returns {number} playerId
 */
 export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoinReturn => {
@@ -360,10 +360,10 @@ export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoi
 
 /**
   * Get the status of a guest player.
-  * 
+  *
   * @param {number} playerId
-  * 
-  * @returns {object} 
+  *
+  * @returns {object}
 */
 export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn => {
   const data = getData();
@@ -384,11 +384,11 @@ export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn => 
 
 /**
   * Information about the question the guest player is on.
-  * 
+  *
   * @param {number} playerId
   * @param {number} questionPosition
   * ...
-  * 
+  *
   * @returns {object} - Containing properties: questionId, question, duration, thumbnailUrl, points, answers[]
 */
 export const currentQuestionInfoPlayer = (playerId: number, questionPosition: number): currentQuestionInfoPlayerReturn => {
@@ -429,11 +429,11 @@ export const currentQuestionInfoPlayer = (playerId: number, questionPosition: nu
 
 /**
   * Allow player to answer/submit answers to the question.
-  * 
+  *
   * @param {array} answerIds
   * @param {number} playerId
   * @param {number} questionPosition
-  * 
+  *
   * @returns {}
 */
 export const playerAnswers = (answerIds: number[], playerId: number, questionPosition: number): EmptyObject | undefined => {
@@ -500,10 +500,10 @@ export const playerAnswers = (answerIds: number[], playerId: number, questionPos
 
 /**
   * All the results for a specific question.
-  * 
+  *
   * @param {number} playerId
   * @param {number} questionPosition
-  * 
+  *
   * @returns {object} qnResult - Containing properties: questionId, playersCorrectList[], averageAnswertime, percentCorrect
 */
 export const questionResults = (playerId: number, questionPosition: number): questionResultsReturn | ErrorObject => {
@@ -536,9 +536,9 @@ export const questionResults = (playerId: number, questionPosition: number): que
 
 /**
   * Final results for the session that the player is in
-  * 
+  *
   * @param {number} playerId
-  * 
+  *
   * @returns {object} SesResult - Containing objects: usersRankedByScore, questionResults
 */
 export const finalResults = (playerId: number): finalResultsReturn | ErrorObject => {
@@ -572,9 +572,9 @@ export const finalResults = (playerId: number): finalResultsReturn | ErrorObject
 
 /**
   * Get all chat messages
-  * 
+  *
   * @param {number} playerId
-  * 
+  *
   * @returns {object} - Containing property: messages
   * Which contains an array of objects, each containing properties: messageBody, playerId, playerName, timeSent
 */
@@ -596,10 +596,10 @@ export const allChatMessages = (playerId: number): allChatMessagesReturn | Error
 
 /**
   * Send a message to the chat.
-  * 
+  *
   * @param {number} playerId
   * @param {string} message
-  * 
+  *
   * @returns {}
 */
 export const sendChatMessages = (playerId: number, message: MessageBody): Record<string, never> | ErrorObject => {

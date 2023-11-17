@@ -1028,12 +1028,12 @@ export const adminQuizQuestionDuplicate = async (quizId: number, questionId: num
 /**
   * Updates the thumbnail for the quiz.
   * Ensures the image url does not end with file types: jpg, jpeg, png
-  * 
+  *
   * @param { number } quizId - Identifies the quiz to change the thumbnail of.
-  * @param { number } token 
-  * @param { string } imgUrl 
-  * 
-  * @returns {} 
+  * @param { number } token
+  * @param { string } imgUrl
+  *
+  * @returns {}
 */
 export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: string): EmptyObject => {
   const data = getData();
@@ -1054,12 +1054,12 @@ export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: strin
 
 /**
   * Gets sessionId from both active and inactive sessions.
-  * 
+  *
   * @param {string} token - session token
-  * @param {number} quizId - 
+  * @param {number} quizId -
   * ...
-  * 
-  * @returns {object} quizSessions  
+  *
+  * @returns {object} quizSessions
 */
 
 export const viewSessionActivity = (token: string, quizId: number): viewSessionActivityReturn | ErrorObject => {
@@ -1091,11 +1091,11 @@ export const viewSessionActivity = (token: string, quizId: number): viewSessionA
 
 /**
   * Creates a new session for quizzes.
-  * 
+  *
   * @param {number} quizId
   * @param {string} token
   * @param {number} autoStartNum
-  * 
+  *
   * @returns {number} sessionId
 */
 
@@ -1168,12 +1168,12 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
 
 /**
   * Changes the state of the session while a quiz is running.
-  * 
+  *
   * @param {number} quizId
   * @param {number} sessionId
   * @param {string} token
   * @param {string} action
-  * 
+  *
   * @returns {}
 */
 
@@ -1199,11 +1199,11 @@ export const updateSessionState = (quizId: number, sessionId: number, token: str
 
 /**
   * Get the status of a quiz session.
-  * 
+  *
   * @param {number} quizId
   * @param {number} sessionId
   * @param {string} token
-  * 
+  *
   * @returns {object} - containing properties: state, atQuestion, players, metadata
 */
 
@@ -1234,11 +1234,11 @@ export const getSessionStatus = (quizId: number, sessionId: number, token: strin
 
 /**
   * Get the results for the quiz in the session.
-  * 
+  *
   * @param {number} quizId
   * @param {number} sessionId
   * @param {string} token
-  * 
+  *
   * @returns {object} - SesResult, containing objects: usersRankedByScore, questionResults
 */
 
@@ -1283,12 +1283,12 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
 
 /**
   * Get the results for the quiz in the session in a CSV format.
-  * 
+  *
   * @param {number} quizId
   * @param {number} sessionId
   * @param {string} token
-  * 
-  * @returns {object} - Containing property: url 
+  *
+  * @returns {object} - Containing property: url
 */
 export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, token: string): getQuizSessionResultsCSVReturn | ErrorObject => {
   const data = getData();
