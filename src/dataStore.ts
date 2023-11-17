@@ -34,10 +34,22 @@ export interface Token {
   userId: number; // Associate a user from a inputted token.
 }
 
+// Store timeOuts in memory to prevent JSON.stringify errors
 export interface NodeJS {
   Timeout: number;
 }
+export interface timerIDs {
+  sessionId: number;
+  timeout: NodeJS.Timeout;
+}
+export interface Timers {
+  timeouts: timerIDs[];
+}
+const timerStorage: Timers = {
+  timeouts: []
+};
 
+export const getTimers = (): Timers => timerStorage;
 export interface User {
   userId: number;
   email: string;
@@ -112,7 +124,6 @@ export interface Session {
   state: states;
   questionResults: SessionQuestionResults[];
   autoStartNum: number;
-  qnTimeout?: NodeJS.Timeout;
   qnStartTime?: number;
   messages: Message[];
 }

@@ -11,6 +11,8 @@ import {
   Session,
   actions,
   Player,
+  SessionQuestionResults,
+  getTimers,
   // Message
 } from './dataStore';
 import {
@@ -1103,6 +1105,17 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
   if (quiz.questions.length === 0) {
     throw HTTPError(400, 'The quiz does not have any questions in it');
   }
+  // This initialises a default value for questionResults to access in other functions
+  // ASSUMPTION: QuestionId is not a negative number
+  const defaultResults: SessionQuestionResults = {
+    questionId: -1,
+    playersCorrectList: [],
+    AnswersTimes: []
+  };
+  const questionResults: SessionQuestionResults[] = [];
+  for (let i = 0; i < quiz.numQuestions; i++) {
+    questionResults.push(defaultResults);
+  }
 
   const newSessionId = generateSessionId(data.sessions);
   const sessionObject: Session = {
@@ -1111,13 +1124,13 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
     players: [],
     atQuestion: 0,
     state: 'LOBBY',
-    questionResults: [],
+    questionResults: questionResults,
     autoStartNum: autoStartNum,
     messages: []
   };
 
   data.sessions.push(sessionObject);
-
+  setData(data);
   return {
     sessionId: newSessionId,
   };
@@ -1138,7 +1151,8 @@ export const updateSessionState = (quizId: number, sessionId: number, token: str
   if (session === undefined || session.quiz.quizId !== quizId) {
     throw HTTPError(400, 'Session ID does not refer to a valid session within this quiz or is invalid');
   }
-  moveStates(session, action as actions);
+  const timers = getTimers();
+  moveStates(timers, session, action as actions);
   return {};
 };
 
@@ -1191,11 +1205,13 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
     questionResults: []
   };
 
-  for (let i = 0; i < session.quiz.numQuestions; i++) {
-    SesResult.questionResults[i].questionId = session.questionResults[i].questionId;
-    SesResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
-    SesResult.questionResults[i].averageAnswerTime = calculateRoundedAverage(session.questionResults[i].AnswersTimes);
-    SesResult.questionResults[i].percentCorrect = Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100);
+  for (let i = 0; i < session.atQuestion; i++) {
+    SesResult.questionResults.push({
+      questionId: session.questionResults[i].questionId,
+      playersCorrectList: session.questionResults[i].playersCorrectList,
+      averageAnswerTime: Math.floor(calculateRoundedAverage(session.questionResults[i].AnswersTimes) / 1000),
+      percentCorrect: Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100)
+    });
   }
 
   const unsortedScores: UserScore[] = session.players.map((p: Player) => ({ name: p.name, score: p.score }));
@@ -1260,7 +1276,7 @@ export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, toke
   const filename = `csv-${Date.now()}.csv`;
   const filepath = path.join(__dirname, 'src', 'csv_files', filename);
   fs.writeFileSync(filepath, csv);
-
+  setData(data);
   return {
     url: `${url}:${port}/csv/uploads/${filename}`,
   };

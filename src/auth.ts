@@ -10,6 +10,7 @@ import {
   Message,
   MessageBody,
   Player,
+  getTimers,
 } from './dataStore';
 import {
   generateToken,
@@ -321,6 +322,9 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
 export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoinReturn => {
   const data = getData();
   const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
+  if (session === undefined) {
+    throw HTTPError(400, 'Could not find session');
+  }
   const newName = verifyAndGenerateName(name, session.players);
   if (session.state !== 'LOBBY') {
     throw HTTPError(400, 'Session is not in lobby state');
@@ -339,7 +343,8 @@ export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoi
   data.players.push(newPlayer);
   if (session.autoStartNum !== 0) {
     if (data.players.length >= session.autoStartNum) {
-      moveStates(session, 'NEXT_QUESTION');
+      const timers = getTimers();
+      moveStates(timers, session, 'NEXT_QUESTION');
     }
   }
   return { playerId };
@@ -381,7 +386,21 @@ export const currentQuestionInfoPlayer = (playerId: number, questionPosition: nu
   if (session.state === 'LOBBY' || session.state === 'END') {
     throw HTTPError(400, 'The session is in lobby or end state(invalid).');
   }
-  return session.quiz.questions[questionPosition - 1];
+  const questionInfo = session.quiz.questions[questionPosition - 1];
+  const questionInfoMapped = questionInfo.answers.map(answer => ({
+    answerId: answer.answerId,
+    answer: answer.answer,
+    colour: answer.colour
+  }));
+
+  return {
+    questionId: questionInfo.questionId,
+    question: questionInfo.question,
+    duration: questionInfo.duration,
+    thumbnailUrl: questionInfo.thumbnailUrl,
+    points: questionInfo.points,
+    answers: questionInfoMapped
+  };
 };
 
 export const playerAnswers = (answerIds: number[], playerId: number, questionPosition: number): EmptyObject | undefined => {
@@ -437,12 +456,11 @@ export const playerAnswers = (answerIds: number[], playerId: number, questionPos
       const score = round1DP(question.points / (index + 1));
       const rank = index + 1;
 
-      const sesPlayer = session.players.find((p: Player) => p.playerId === playerId);
-      sesPlayer.questionResults.questionScore[qnPosition] = score;
-      sesPlayer.questionResults.questionRank[qnPosition] = rank;
       player.questionResults.questionScore[qnPosition] = score;
       player.questionResults.questionRank[qnPosition] = rank;
+      player.score += score;
     }
+    setData(data);
     return {};
   }
 };
@@ -465,11 +483,12 @@ export const questionResults = (playerId: number, questionPosition: number): que
       throw HTTPError(400, 'The session is currently not on this question');
     }
     const qnPosition = questionPosition - 1;
-    let qnResult: questionResultsReturn;
-    qnResult.questionId = session.questionResults[qnPosition].questionId;
-    qnResult.playersCorrectList = session.questionResults[qnPosition].playersCorrectList;
-    qnResult.averageAnswerTime = calculateRoundedAverage(session.questionResults[qnPosition].AnswersTimes);
-    qnResult.percentCorrect = Math.round((session.questionResults[qnPosition].playersCorrectList.length / session.players.length) * 100);
+    const qnResult: questionResultsReturn = {
+      questionId: session.questionResults[qnPosition].questionId,
+      playersCorrectList: session.questionResults[qnPosition].playersCorrectList,
+      averageAnswerTime: calculateRoundedAverage(session.questionResults[qnPosition].AnswersTimes),
+      percentCorrect: Math.round((session.questionResults[qnPosition].playersCorrectList.length / session.players.length) * 100),
+    };
     return qnResult;
   }
 };
@@ -489,17 +508,16 @@ export const finalResults = (playerId: number): finalResultsReturn | ErrorObject
       usersRankedByScore: [],
       questionResults: []
     };
-
-    for (let i = 0; i < SesResult.questionResults.length; i++) {
-      SesResult.questionResults[i].questionId = session.questionResults[i].questionId;
-      SesResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
-      SesResult.questionResults[i].averageAnswerTime = calculateRoundedAverage(session.questionResults[i].AnswersTimes);
-      SesResult.questionResults[i].percentCorrect = Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100);
+    for (let i = 0; i < session.atQuestion; i++) {
+      SesResult.questionResults.push({
+        questionId: session.questionResults[i].questionId,
+        playersCorrectList: session.questionResults[i].playersCorrectList,
+        averageAnswerTime: Math.floor(calculateRoundedAverage(session.questionResults[i].AnswersTimes)) / 1000,
+        percentCorrect: Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100)
+      });
     }
-
     const unsortedScores: UserScore[] = session.players.map((p: Player) => ({ name: p.name, score: p.score }));
     SesResult.usersRankedByScore = unsortedScores.sort((a, b) => b.score - a.score);
-
     return SesResult;
   }
 };
@@ -521,7 +539,6 @@ export const allChatMessages = (playerId: number): allChatMessagesReturn | Error
 };
 
 export const sendChatMessages = (playerId: number, message: MessageBody): Record<string, never> | ErrorObject => {
-  //  When I run stuff it says the quiz does not have any questions in it
   const data = getData();
   const existingPlayerId = data.players.map((p: Player) => p.playerId).includes(playerId);
   if (!existingPlayerId) {
@@ -544,6 +561,6 @@ export const sendChatMessages = (playerId: number, message: MessageBody): Record
     timeSent: unixtimeSeconds,
   };
   playerSession.messages.push(newMessage);
-
+  setData(data);
   return {};
 };
