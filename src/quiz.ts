@@ -1206,6 +1206,7 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
   };
 
   for (let i = 0; i < session.atQuestion; i++) {
+    console.log(SesResult.questionResults);
     SesResult.questionResults[i].questionId = session.questionResults[i].questionId;
     SesResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
     SesResult.questionResults[i].averageAnswerTime = calculateRoundedAverage(session.questionResults[i].AnswersTimes);

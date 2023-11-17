@@ -96,7 +96,6 @@ afterAll(() => {
   clear();
 });
 
-
 /// /////////////////////////////////////////////////////////////////////////////////////
 /// ///////////////////////////     NEW ITERATION 3      ////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
@@ -272,7 +271,7 @@ describe('Tests: Start a new session for a quiz', () => {
 });
 
 // FAIL
-describe.skip('Test for getQuizSessionResults', () => {
+describe.only('Test for getQuizSessionResults', () => {
   let user: {
     body: {token: string},
     statusCode: number,
