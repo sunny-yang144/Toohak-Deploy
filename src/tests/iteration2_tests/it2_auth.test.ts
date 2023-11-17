@@ -9,8 +9,8 @@ import {
 } from '../test-helpers';
 
 import { v4 as uuidv4 } from 'uuid';
-// Valid Details
-enum VD {
+
+enum validDetails {
   EMAIL = 'helloworld@gmail.com',
   PASSWORD = '1234UNSW',
   NAMEFIRST = 'Jack',
@@ -32,22 +32,17 @@ afterAll(() => {
 });
 
 describe('Tests for adminAuthLogout', () => {
-  let user: {
-    body: {token: string},
-    statusCode: number,
-  };
-
-  beforeEach(() => {
-    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
-  });
   test('Successful logout', () => {
-    const userLogin = requestAdminAuthLogin(VD.EMAIL, VD.PASSWORD);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const userLogin = requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD);
     // check if user is logged in
     expect(userLogin.body).toStrictEqual({ token: expect.any(String) });
+
     // Logout user
     const logoutReturn = requestAdminAuthLogout(user.body.token);
     expect(logoutReturn.body).toStrictEqual({});
     expect(logoutReturn.statusCode).toStrictEqual(200);
+
     // check if user can use functions
     const getUserDetails = requestAdminUserDetails(user.body.token);
     expect(getUserDetails.body).toStrictEqual({ error: expect.any(String) });
@@ -55,6 +50,7 @@ describe('Tests for adminAuthLogout', () => {
   });
 
   test('Token is empty or invalid', () => {
+    requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
     const response1 = requestAdminAuthLogout('');
     expect(response1.body).toStrictEqual({ error: expect.any(String) });
     expect(response1.statusCode).toStrictEqual(401);
@@ -67,16 +63,9 @@ describe('Tests for adminAuthLogout', () => {
 });
 
 describe('Testing adminUserDetailsUpdate', () => {
-  let user: {
-    body: {token: string},
-    statusCode: number,
-  };
-
-  beforeEach(() => {
-    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
-  });
   test('Successful adminUserDetails Update', () => {
-    const response = requestAdminUserDetailsUpdate(user.body.token, VD.EMAIL2, VD.NAMEFIRST2, VD.NAMELAST2);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserDetailsUpdate(user.body.token, validDetails.EMAIL2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     // Check if function returns any errors
     expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
@@ -88,92 +77,134 @@ describe('Testing adminUserDetailsUpdate', () => {
         user:
         {
           userId: expect.any(Number),
-          name: `${VD.NAMEFIRST2} ${VD.NAMELAST2}`,
-          email: VD.EMAIL2,
+          name: `${validDetails.NAMEFIRST2} ${validDetails.NAMELAST2}`,
+          email: validDetails.EMAIL2,
           numSuccessfulLogins: expect.any(Number),
           numFailedPasswordsSinceLastLogin: expect.any(Number),
         }
       }
     );
   });
-
-  test.each([
-    { email: 'helloworld@VeryLegitEmailscom', firstName: VD.NAMEFIRST2, lastName: VD.NAMELAST2 }, // Invalid email
-    { email: VD.EMAIL2, firstName: 'J&m!e', lastName: VD.NAMELAST2 }, // Firstname contains invalid characters
-    { email: VD.EMAIL2, firstName: 'J', lastName: VD.NAMELAST2 }, // Firstname is less than two characters
-    { email: VD.EMAIL2, firstName: 'j'.repeat(21), lastName: VD.NAMELAST2 }, // Firstname is larger than 20 characters
-    { email: VD.EMAIL2, firstName: VD.NAMEFIRST2, lastName: 'Ol!v#r' }, // Lastname contains invalid characters
-    { email: VD.EMAIL2, firstName: VD.NAMEFIRST2, lastName: 'O' }, // Lastname is less than two characters
-    { email: VD.EMAIL2, firstName: VD.NAMEFIRST2, lastName: 'O'.repeat(21) }, // Lastname is greater than 20 characters
-  ])('Errors for invalid emails and names', ({ email, firstName, lastName }) => {
-    const response = requestAdminUserDetailsUpdate(user.body.token, email, firstName, lastName);
+  test('Unsuccessful call, user is changing to an email in use', () => {
+    requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const user2 = requestAdminAuthRegister(validDetails.EMAIL2, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserDetailsUpdate(user2.body.token, validDetails.EMAIL, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
-
+  test('Unsuccessful call, user is changing to an invalid email', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserDetailsUpdate(user.body.token, 'helloworld@VeryLegitEmailscom', validDetails.NAMEFIRST2, validDetails.NAMELAST2);
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
+  });
+  test('Unsuccessful call, nameFirst contains invalid characters', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserDetailsUpdate(user.body.token, validDetails.EMAIL2, 'J&m!e', validDetails.NAMELAST2);
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
+  });
+  test('Unsuccessful call, nameFirst contains less than 2 characters', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserDetailsUpdate(user.body.token, validDetails.EMAIL2, 'J', validDetails.NAMELAST2);
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
+  });
+  test('Unsuccessful call, nameFirst contains more than 20 characters', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserDetailsUpdate(user.body.token, validDetails.EMAIL2, 'j'.repeat(21), validDetails.NAMELAST2);
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
+  });
+  test('Unsuccessful call, nameLast contains invalid characters', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserDetailsUpdate(user.body.token, validDetails.EMAIL2, validDetails.NAMEFIRST2, 'Ol!v#r');
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
+  });
+  test('Unsuccessful call, nameLast contains less than 2 characters', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserDetailsUpdate(user.body.token, validDetails.EMAIL2, validDetails.NAMEFIRST2, 'O');
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
+  });
+  test('Unsuccessful call, nameLast contains more than 20 characters', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserDetailsUpdate(user.body.token, validDetails.EMAIL2, validDetails.NAMEFIRST2, 'O'.repeat(21));
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
+  });
   test('Unsuccessful call, token is empty', () => {
-    const response = requestAdminUserDetailsUpdate('', VD.EMAIL2, VD.NAMEFIRST2, VD.NAMELAST2);
+    requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserDetailsUpdate('', validDetails.EMAIL2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
   test('Unsuccessful call, token is invalid', () => {
-    const response = requestAdminUserDetailsUpdate('-666', VD.EMAIL2, VD.NAMEFIRST2, VD.NAMELAST2);
+    requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserDetailsUpdate('-666', validDetails.EMAIL2, validDetails.NAMEFIRST2, validDetails.NAMELAST2);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
 });
 
 describe('Testing adminUserPasswordUpdate', () => {
-  let user: {
-    body: {token: string},
-    statusCode: number,
-  };
-
-  beforeEach(() => {
-    user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
-  });
   test('Successful adminUserPasswordUpdate', () => {
-    const response = requestAdminUserPasswordUpdate(user.body.token, VD.PASSWORD, VD.PASSWORD2);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserPasswordUpdate(user.body.token, validDetails.PASSWORD, validDetails.PASSWORD2);
     // Check if function returns any errors
     expect(response.body).toStrictEqual({});
     expect(response.statusCode).toStrictEqual(200);
     // Check if parameters were actually updated
     expect(requestAdminAuthLogout(user.body.token).body).toStrictEqual({});
-    expect(requestAdminAuthLogin(VD.EMAIL, VD.PASSWORD2).body).toStrictEqual({ token: expect.any(String) });
+    expect(requestAdminAuthLogin(validDetails.EMAIL, validDetails.PASSWORD2).body).toStrictEqual({ token: expect.any(String) });
   });
   test('Unsuccessful call, oldPassword is not the correct oldPassword', () => {
-    const response = requestAdminUserPasswordUpdate(user.body.token, 'wrongPassword1', VD.PASSWORD2);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserPasswordUpdate(user.body.token, 'wrongPassword1', validDetails.PASSWORD2);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
   test('Unsuccessful call, oldPassword and newPassword match exactly', () => {
-    const response = requestAdminUserPasswordUpdate(user.body.token, VD.PASSWORD, VD.PASSWORD);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserPasswordUpdate(user.body.token, validDetails.PASSWORD, validDetails.PASSWORD);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
   test('Unsuccessful call, newPassword has already been used before by this user', () => {
-    requestAdminUserPasswordUpdate(user.body.token, VD.PASSWORD, VD.PASSWORD2);
-    const result2 = requestAdminUserPasswordUpdate(user.body.token, VD.PASSWORD2, VD.PASSWORD);
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    requestAdminUserPasswordUpdate(user.body.token, validDetails.PASSWORD, validDetails.PASSWORD2);
+    const result2 = requestAdminUserPasswordUpdate(user.body.token, validDetails.PASSWORD2, validDetails.PASSWORD);
     expect(result2.body).toStrictEqual({ error: expect.any(String) });
     expect(result2.statusCode).toStrictEqual(400);
   });
-  test.each([
-    { password: '2Short' }, // Password less than 8 characters
-    { password: 'noNumbers' }, // Passwords need atleast 1 number
-    { password: '12345678' }, // Passwords must contain atleast 1 letter
-  ])('Errors for invalid emails and names', ({ password }) => {
-    const response = requestAdminUserPasswordUpdate(user.body.token, VD.PASSWORD, password);
+  test('Unsuccessful call, newPassword has less than 8 characters', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserPasswordUpdate(user.body.token, validDetails.PASSWORD, '2Short');
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(400);
   });
-
+  test('Unsuccessful call, newPassword does not contain at least one number', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserPasswordUpdate(user.body.token, validDetails.PASSWORD, 'noNumbers');
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
+  });
+  test('Unsuccessful call, newPassword foes not contain at least one letter', () => {
+    const user = requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserPasswordUpdate(user.body.token, validDetails.PASSWORD, '12345678');
+    expect(response.body).toStrictEqual({ error: expect.any(String) });
+    expect(response.statusCode).toStrictEqual(400);
+  });
   test('Unsuccessful call, token is empty', () => {
-    const response = requestAdminUserPasswordUpdate('', VD.PASSWORD, VD.PASSWORD);
+    requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserPasswordUpdate('', validDetails.PASSWORD, validDetails.PASSWORD);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
   test('Unsuccessful call, token is invalid', () => {
-    const response = requestAdminUserPasswordUpdate('-666', VD.PASSWORD, VD.PASSWORD);
+    requestAdminAuthRegister(validDetails.EMAIL, validDetails.PASSWORD, validDetails.NAMEFIRST, validDetails.NAMELAST);
+    const response = requestAdminUserPasswordUpdate('-666', validDetails.PASSWORD, validDetails.PASSWORD);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
     expect(response.statusCode).toStrictEqual(401);
   });
