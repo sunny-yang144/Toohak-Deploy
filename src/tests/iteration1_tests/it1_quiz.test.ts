@@ -241,7 +241,7 @@ describe('Tests for adminQuizRemove', () => {
   });
 });
 
-describe('Tests for adminQuizInfo', () => {
+describe.only('Tests for adminQuizInfo', () => {
   test('Invalid token', () => {
     const user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     const quiz = requestAdminQuizCreate(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
