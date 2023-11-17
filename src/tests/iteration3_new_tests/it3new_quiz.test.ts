@@ -270,8 +270,7 @@ describe('Tests: Start a new session for a quiz', () => {
   });
 });
 
-// FAIL
-describe.only('Test for getQuizSessionResults', () => {
+describe('Test for getQuizSessionResults', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -285,13 +284,27 @@ describe.only('Test for getQuizSessionResults', () => {
   let session: {
     body: {sessionId: number},
   };
+  let player: {
+    body: {playerId: number},
+  };
+  let questionIndex: number;
+  let answerIds: number[];
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
+    player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    // Construct an array of answerIds for the currently active question
+    const quizData = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
+    const guestStatus = requestGetGuestPlayerStatus(player.body.playerId);
+    questionIndex = guestStatus.body.atQuestion;
+    const answers = quizData.body.metadata.questions[questionIndex - 1].answers;
+    answerIds = answers.map((answer: Answer) => answer.answerId);
+    // Get guest player to answer a question (Fully correct answers)
+    requestPlayerAnswers(answerIds, player.body.playerId, 1);
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
   });
@@ -300,16 +313,16 @@ describe.only('Test for getQuizSessionResults', () => {
     expect(quizResults).toStrictEqual({
       usersRankedByScore: [
         {
-          name: 'Jack',
-          score: 0,
+          name: VD.GUESTNAME,
+          score: 5,
         }
       ],
       questionResults: [
         {
           questionId: question.body.questionId,
-          playersCorrectList: [],
-          averageAnswerTime: 0,
-          percentCorrect: 0,
+          playersCorrectList: [VD.GUESTNAME],
+          averageAnswerTime: expect.any(Number),
+          percentCorrect: 100,
         }
       ]
     });
@@ -1083,8 +1096,8 @@ describe('Test: Results for a question', () => {
     expect(() => requestQuestionResults(player.body.playerId, 2)).toThrow(HTTPError[400]);
   });
 });
-// FAIL
-describe.skip('Test: Final results for a session', () => {
+
+describe('Test: Final results for a session', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -1093,7 +1106,7 @@ describe.skip('Test: Final results for a session', () => {
     body: {quizId: number},
   };
   let question: {
-    body: {quizId: number},
+    body: {questionId: number},
   };
   let session: {
     body: {sessionId: number},
@@ -1120,6 +1133,8 @@ describe.skip('Test: Final results for a session', () => {
   });
 
   test('Successful retrieval of final results', () => {
+    const currentTime = new Date();
+    const unixtimeAnswer = Math.floor(currentTime.getTime() / 1000);
     requestPlayerAnswers(answerIds, player.body.playerId, 1);
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
@@ -1128,34 +1143,40 @@ describe.skip('Test: Final results for a session', () => {
       usersRankedByScore: [
         {
           name: VD.GUESTNAME,
-          score: 0,
+          score: 5,
         }
       ],
       questionResults: [
         {
-          questionId: question,
-          playersCorrectList: [],
-          averageAnswerTime: 0,
-          percentCorrect: 0,
+          questionId: question.body.questionId,
+          playersCorrectList: [VD.GUESTNAME],
+          averageAnswerTime: expect.any(Number),
+          percentCorrect: 100,
         }
       ]
     });
+    // This checks the accuracy of the recorded averageAnswerTime, it accounts for server lag of up to 5 seconds
+    const currentTime2 = new Date();
+    const unixtimeAnswer2 = Math.floor(currentTime2.getTime() / 1000);
+    const totalTime = unixtimeAnswer2 - unixtimeAnswer;
+    expect(finalResults.questionResults[0].averageAnswerTime).toBeLessThanOrEqual(totalTime + 5);
+    expect(finalResults.questionResults[0].averageAnswerTime + 5).toBeGreaterThanOrEqual(totalTime);
   });
   test('Player ID does not exist', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
-    expect(requestFinalResults(1000)).toThrow(HTTPError[400]);
+    expect(() => requestFinalResults(1000)).toThrow(HTTPError[400]);
   });
   test('Session is not in FINAL_RESULTS state (QUESTION_OPEN)', () => {
-    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
+    expect(() => requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
   });
   test('Session is not in FINAL_RESULTS state (ANSWER_SHOW)', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
+    expect(() => requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
   });
 });
-// FAIL
-describe.skip('Test: All chat messages in session', () => {
+
+describe('Test: All chat messages in session', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -1169,12 +1190,6 @@ describe.skip('Test: All chat messages in session', () => {
   let player: {
     body: {playerId: number},
   };
-  let message: {
-    body: {messageBody: string},
-  };
-  let message2: {
-    body: {messageBody: string},
-  };
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
@@ -1185,17 +1200,17 @@ describe.skip('Test: All chat messages in session', () => {
   });
 
   test('Successful return of all messages sent in same session as player', () => {
-    message.body.messageBody = 'First Message';
-    requestSendChatMessages(player.body.playerId, message.body);
+    const message = { messageBody: 'First Message' };
+    requestSendChatMessages(player.body.playerId, message);
     const currentTime1 = new Date();
     const unixtimeFirstMessage = Math.floor(currentTime1.getTime() / 1000);
 
-    message2.body.messageBody = 'Second Message';
-    requestSendChatMessages(player.body.playerId, message2.body);
+    const message2 = { messageBody: 'Second Message' };
+    requestSendChatMessages(player.body.playerId, message2);
     const currentTime2 = new Date();
     const unixtimeSecondMessage = Math.floor(currentTime2.getTime() / 1000);
 
-    const chatLog = requestAllChatMessages(player.body.playerId);
+    const chatLog = requestAllChatMessages(player.body.playerId).body;
     expect(chatLog).toStrictEqual(
       {
         messages: [
@@ -1214,17 +1229,18 @@ describe.skip('Test: All chat messages in session', () => {
         ]
       }
     );
-    expect(chatLog.body.messages[0].timeSent).toBeLessThanOrEqual(unixtimeFirstMessage + 1);
-    expect(chatLog.body.messages[0].timeSent + 1).toBeGreaterThanOrEqual(unixtimeFirstMessage);
-    expect(chatLog.body.messages[1].timeSent).toBeLessThanOrEqual(unixtimeSecondMessage + 1);
-    expect(chatLog.body.messages[1].timeSent + 1).toBeGreaterThanOrEqual(unixtimeFirstMessage);
+    // Checks the accuracy of the time stamps recorded
+    expect(chatLog.messages[0].timeSent).toBeLessThanOrEqual(unixtimeFirstMessage + 5);
+    expect(chatLog.messages[0].timeSent + 5).toBeGreaterThanOrEqual(unixtimeFirstMessage);
+    expect(chatLog.messages[1].timeSent).toBeLessThanOrEqual(unixtimeSecondMessage + 5);
+    expect(chatLog.messages[1].timeSent + 5).toBeGreaterThanOrEqual(unixtimeFirstMessage);
   });
   test('Player ID does not exist', () => {
     expect(() => requestAllChatMessages(1000)).toThrow(HTTPError[400]);
   });
 });
-// FAIL
-describe.skip('Test: Send chat message in session', () => {
+
+describe('Test: Send chat message in session', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -1238,9 +1254,6 @@ describe.skip('Test: Send chat message in session', () => {
   let player: {
     body: {playerId: number},
   };
-  let message: {
-    body: {messageBody: string},
-  };
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
@@ -1250,24 +1263,24 @@ describe.skip('Test: Send chat message in session', () => {
   });
 
   test('Successful new chat message', () => {
-    message.body.messageBody = 'I like chicken wings';
-    const newMessage = requestSendChatMessages(player.body.playerId, message.body);
-    const allMessages = requestAllChatMessages(player.body.playerId);
+    const message = { messageBody: 'I like chicken wings' };
+    const newMessage = requestSendChatMessages(player.body.playerId, message).body;
+    const allMessages = requestAllChatMessages(player.body.playerId).body;
     expect(newMessage).toStrictEqual({});
-    expect(allMessages.body.messages.length).toStrictEqual(1);
-    expect(allMessages.body.messages.messageBody).toStrictEqual(message.body.messageBody);
-    expect(allMessages.body.messages.playerId).toStrictEqual(player.body.playerId);
+    expect(allMessages.messages.length).toStrictEqual(1);
+    expect(allMessages.messages[0].messageBody).toStrictEqual('I like chicken wings');
+    expect(allMessages.messages[0].playerId).toStrictEqual(player.body.playerId);
   });
   test('Player ID does not exist', () => {
-    message.body.messageBody = 'I like chicken wings';
-    expect(requestSendChatMessages(1000, message.body)).toThrow(HTTPError[400]);
+    const message = { messageBody: 'I like chicken wings' };
+    expect(() => requestSendChatMessages(1000, message)).toThrow(HTTPError[400]);
   });
   test('Message body is less than 1 character', () => {
-    message.body.messageBody = '';
-    expect(requestSendChatMessages(player.body.playerId, message.body)).toThrow(HTTPError[400]);
+    const message = { messageBody: '' };
+    expect(() => requestSendChatMessages(player.body.playerId, message)).toThrow(HTTPError[400]);
   });
   test('Message body is more than 100 characters', () => {
-    message.body.messageBody = 'a'.repeat(101);
-    expect(requestSendChatMessages(player.body.playerId, message.body)).toThrow(HTTPError[400]);
+    const message = { messageBody: 'a'.repeat(101) };
+    expect(() => requestSendChatMessages(player.body.playerId, message)).toThrow(HTTPError[400]);
   });
 });

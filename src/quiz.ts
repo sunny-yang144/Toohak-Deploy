@@ -1206,11 +1206,12 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
   };
 
   for (let i = 0; i < session.atQuestion; i++) {
-    console.log(SesResult.questionResults);
-    SesResult.questionResults[i].questionId = session.questionResults[i].questionId;
-    SesResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
-    SesResult.questionResults[i].averageAnswerTime = calculateRoundedAverage(session.questionResults[i].AnswersTimes);
-    SesResult.questionResults[i].percentCorrect = Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100);
+    SesResult.questionResults.push({
+      questionId: session.questionResults[i].questionId,
+      playersCorrectList: session.questionResults[i].playersCorrectList,
+      averageAnswerTime: Math.floor(calculateRoundedAverage(session.questionResults[i].AnswersTimes) / 1000),
+      percentCorrect: Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100)
+    });
   }
 
   const unsortedScores: UserScore[] = session.players.map((p: Player) => ({ name: p.name, score: p.score }));
@@ -1275,7 +1276,7 @@ export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, toke
   const filename = `csv-${Date.now()}.csv`;
   const filepath = path.join(__dirname, 'src', 'csv_files', filename);
   fs.writeFileSync(filepath, csv);
-
+  setData(data);
   return {
     url: `${url}:${port}/csv/uploads/${filename}`,
   };

@@ -456,11 +456,9 @@ export const playerAnswers = (answerIds: number[], playerId: number, questionPos
       const score = round1DP(question.points / (index + 1));
       const rank = index + 1;
 
-      const sesPlayer = session.players.find((p: Player) => p.playerId === playerId);
-      sesPlayer.questionResults.questionScore[qnPosition] = score;
-      sesPlayer.questionResults.questionRank[qnPosition] = rank;
       player.questionResults.questionScore[qnPosition] = score;
       player.questionResults.questionRank[qnPosition] = rank;
+      player.score += score;
     }
     setData(data);
     return {};
@@ -511,10 +509,12 @@ export const finalResults = (playerId: number): finalResultsReturn | ErrorObject
       questionResults: []
     };
     for (let i = 0; i < session.atQuestion; i++) {
-      SesResult.questionResults[i].questionId = session.questionResults[i].questionId;
-      SesResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
-      SesResult.questionResults[i].averageAnswerTime = calculateRoundedAverage(session.questionResults[i].AnswersTimes);
-      SesResult.questionResults[i].percentCorrect = Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100);
+      SesResult.questionResults.push({
+        questionId: session.questionResults[i].questionId,
+        playersCorrectList: session.questionResults[i].playersCorrectList,
+        averageAnswerTime: Math.floor(calculateRoundedAverage(session.questionResults[i].AnswersTimes)) / 1000,
+        percentCorrect: Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100)
+      });
     }
     const unsortedScores: UserScore[] = session.players.map((p: Player) => ({ name: p.name, score: p.score }));
     SesResult.usersRankedByScore = unsortedScores.sort((a, b) => b.score - a.score);
@@ -539,7 +539,6 @@ export const allChatMessages = (playerId: number): allChatMessagesReturn | Error
 };
 
 export const sendChatMessages = (playerId: number, message: MessageBody): Record<string, never> | ErrorObject => {
-  //  When I run stuff it says the quiz does not have any questions in it
   const data = getData();
   const existingPlayerId = data.players.map((p: Player) => p.playerId).includes(playerId);
   if (!existingPlayerId) {
@@ -562,6 +561,6 @@ export const sendChatMessages = (playerId: number, message: MessageBody): Record
     timeSent: unixtimeSeconds,
   };
   playerSession.messages.push(newMessage);
-
+  setData(data);
   return {};
 };

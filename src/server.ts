@@ -753,8 +753,8 @@ app.get('/v1/player/:playerid/chat', (req: Request, res: Response) => {
 
 app.post('/v1/player/:playerid/chat', (req: Request, res: Response) => {
   const playerId = parseInt(req.params.playerid);
-  const { messageBody } = req.body;
-  res.json(sendChatMessages(playerId, messageBody));
+  const { message } = req.body;
+  res.json(sendChatMessages(playerId, message));
 });
 
 // ====================================================================
