@@ -171,18 +171,47 @@ export function getRandomColour(): colours {
   return coloursObject[randomIndex];
 }
 
+/**
+  * Retrieves user via token.
+  *
+  * @param {string} token
+  * @param {object} data - Contains all data
+  *
+  * @returns user
+*/
 export function getUserViaToken(token: string, data: DataStore): User | undefined {
   return data.users.find(u => u.tokens.some((t: Token) => t.sessionId === token));
 }
 
+/**
+  * Returns the sha256 hash of a string.
+  *
+  * @param {string} plaintext
+  *
+  * @returns sha256 hash
+*/
 export function getHashOf(plaintext: string) {
   return crypto.createHash('sha256').update(plaintext).digest('hex');
 }
 
+/**
+  * Checks the file is of .csv type.
+  *
+  * @param {string} url
+  *
+  * @returns true or false
+*/
 export function checkCSV (url: string) {
   return url.endsWith('.csv');
 }
 
+/**
+  * Verifies that the data type of a file is an image by examining headers
+  *
+  * @param {string} url
+  *
+  * @returns true, or errors: ‘'imgUrl when fetched does not return a valid file', 'imgUrl when fetch is not a JPG or PNG image'
+*/
 export function isImageSync(url: string) {
   const response = request('GET', url);
   if (response.statusCode >= 400) {
@@ -195,6 +224,14 @@ export function isImageSync(url: string) {
   }
 }
 
+/**
+  * Allows for checking for valid actions depending on the state.
+  *
+  * @param {string} action
+  * @param {enum} states
+  *
+  * @returns validActions
+*/
 export function isValidAction(action: string, state: states) {
   if (!(['NEXT_QUESTION', 'SKIP_COUNTDOWN', 'GO_TO_ANSWER', 'GO_TO_FINAL_RESULTS', 'END'] as const).includes(action as actions)) {
     throw HTTPError(400, 'Action provided is not a valid Action');
@@ -220,6 +257,13 @@ export function isValidAction(action: string, state: states) {
   }
 }
 
+/**
+  * Allows for the moving of states, using the desired action.
+  *
+  * @param {object} session
+  * @param {enum} action
+  *
+*/
 export function moveStates(timers: Timers, session: Session, action: actions) {
   isValidAction(action, session.state);
   const index = timers.timeouts.findIndex(timer => timer.sessionId === session.sessionId);
@@ -274,6 +318,13 @@ export function moveStates(timers: Timers, session: Session, action: actions) {
   }
 }
 
+/**
+  * Calculates the rounded average of an array of numbers.
+  *
+  * @param {array} numbers
+  *
+  * @returns average of array of numbers
+*/
 export function calculateRoundedAverage(numbers: number[]) {
   if (numbers.length === 0) {
     return 0; // Avoid division by zero for an empty array
@@ -288,12 +339,28 @@ export function calculateRoundedAverage(numbers: number[]) {
   return Math.round(average);
 }
 
+/**
+  * Converts a 2D array into CSV format
+  *
+  * @param {array} array
+  *
+  * @returns csv
+*/
+
 // Takes in a 2d array an converts into CSV
 export function arraytoCSV(array: string[][]) {
   const csv = array.map(row => row.join(',')).join('\n');
   return csv;
 }
 
+/**
+  * Generates a name, once verified to not exist in the current database.
+  *
+  * @param {string} name
+  * @param {array} players
+  *
+  * @returns newName
+*/
 export function verifyAndGenerateName(name: string, players: Player[]) {
   let newName: string;
   if (name === '') {
@@ -311,6 +378,11 @@ export function verifyAndGenerateName(name: string, players: Player[]) {
   return newName;
 }
 
+/**
+  * Generates a random name.
+  *
+  * @returns name
+*/
 function generateName() {
   const alphabet = 'abcdefghijklmnopqrstuvwxyz';
   const availableLetters = alphabet.split('');
@@ -328,10 +400,22 @@ function generateName() {
   return name;
 }
 
+/**
+  * Generates a random number.
+  *
+  * @returns random number
+*/
 function getRandomNumber() {
   return Math.floor(Math.random() * 10);
 }
 
+/**
+  * Rounds a number to the nearest single decimal point.
+  *
+  * @param {number} number
+  *
+  * @returns rounded number
+*/
 export function round1DP(number: number) {
   return Math.round(number * 10) / 10;
 }
