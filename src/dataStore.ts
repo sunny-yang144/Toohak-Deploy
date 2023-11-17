@@ -1,6 +1,5 @@
 // YOU SHOULD MODIFY THIS OBJECT BELOW
 import * as fs from 'fs';
-import { NumberLiteralType } from 'typescript';
 
 export const MAX_COLOUR_VAL = 6;
 
@@ -46,11 +45,11 @@ export interface timerIDs {
 export interface Timers {
   timeouts: timerIDs[];
 }
-const Timers: Timers = {
+const timerStorage: Timers = {
   timeouts: []
 };
 
-export const getTimers = (): Timers => Timers;
+export const getTimers = (): Timers => timerStorage;
 export interface User {
   userId: number;
   email: string;

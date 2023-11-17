@@ -485,12 +485,12 @@ export const questionResults = (playerId: number, questionPosition: number): que
       throw HTTPError(400, 'The session is currently not on this question');
     }
     const qnPosition = questionPosition - 1;
-    let qnResult: questionResultsReturn = {
+    const qnResult: questionResultsReturn = {
       questionId: session.questionResults[qnPosition].questionId,
       playersCorrectList: session.questionResults[qnPosition].playersCorrectList,
       averageAnswerTime: calculateRoundedAverage(session.questionResults[qnPosition].AnswersTimes),
       percentCorrect: Math.round((session.questionResults[qnPosition].playersCorrectList.length / session.players.length) * 100),
-    }
+    };
     return qnResult;
   }
 };

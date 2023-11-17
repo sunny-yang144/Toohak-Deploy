@@ -91,11 +91,11 @@ function sleepSync(ms: number) {
 beforeEach(() => {
   clear();
 });
-/*
+
 afterAll(() => {
   clear();
 });
-*/
+
 
 /// /////////////////////////////////////////////////////////////////////////////////////
 /// ///////////////////////////     NEW ITERATION 3      ////////////////////////////////
@@ -1084,7 +1084,7 @@ describe('Test: Results for a question', () => {
     expect(() => requestQuestionResults(player.body.playerId, 2)).toThrow(HTTPError[400]);
   });
 });
-//FAIL
+// FAIL
 describe.skip('Test: Final results for a session', () => {
   let user: {
     body: {token: string},

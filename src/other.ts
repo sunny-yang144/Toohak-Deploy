@@ -229,26 +229,22 @@ export function moveStates(timers: Timers, session: Session, action: actions) {
       clearTimeout(timers.timeouts[index].timeout);
       timers.timeouts.splice(index, 1);
     }
-  } 
-  else if (action === 'NEXT_QUESTION') {
+  } else if (action === 'NEXT_QUESTION') {
     session.state = 'QUESTION_COUNTDOWN';
     session.atQuestion++;
-  } 
-  else if (action === 'SKIP_COUNTDOWN') {
+  } else if (action === 'SKIP_COUNTDOWN') {
     session.state = 'QUESTION_OPEN';
     if (index !== -1) {
       clearTimeout(timers.timeouts[index].timeout);
       timers.timeouts.splice(index, 1);
     }
-  } 
-  else if (action === 'GO_TO_ANSWER') {
+  } else if (action === 'GO_TO_ANSWER') {
     session.state = 'ANSWER_SHOW';
     if (index !== -1) {
       clearTimeout(timers.timeouts[index].timeout);
       timers.timeouts.splice(index, 1);
     }
-  } 
-  else if (action === 'GO_TO_FINAL_RESULTS') {
+  } else if (action === 'GO_TO_FINAL_RESULTS') {
     session.state = 'FINAL_RESULTS';
   }
   // Making the assumption that a quiz can only have one timeout at a time.
@@ -262,7 +258,7 @@ export function moveStates(timers: Timers, session: Session, action: actions) {
     const timerInfo: timerIDs = {
       sessionId: session.sessionId,
       timeout: timeout,
-    }
+    };
     timers.timeouts.push(timerInfo);
     session.qnStartTime = Date.now();
   }
@@ -273,7 +269,7 @@ export function moveStates(timers: Timers, session: Session, action: actions) {
     const timerInfo: timerIDs = {
       sessionId: session.sessionId,
       timeout: timeout,
-    }
+    };
     timers.timeouts.push(timerInfo);
   }
 }
