@@ -740,8 +740,8 @@ describe('Test: Get session status', () => {
     expect(() => requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user2.body.token)).toThrow(HTTPError[403]);
   });
 });
-// FAIL
-describe.skip('Test: Get quiz session final results in CSV format', () => {
+
+describe('Test: Get quiz session final results in CSV format', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -764,35 +764,31 @@ describe.skip('Test: Get quiz session final results in CSV format', () => {
   });
 
   test('Successful retrieval of final results in a CSV file', () => {
-    const response = requestGetQuizSessionResultsCSV(quiz.body.quizId, session.body.sessionId, user.body.token);
-    const checkFile = checkCSV(response.body);
+    const csv = requestGetQuizSessionResultsCSV(quiz.body.quizId, session.body.sessionId, user.body.token).body;
+    const checkFile = checkCSV(csv.url);
     expect(checkFile).toStrictEqual(true);
   });
 
   test('Session ID does not refer to a valid session within this quiz', () => {
     const quiz2 = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME2, VD.QUIZDESCRIPTION2);
+    requestAdminQuizQuestionCreateV2(quiz2.body.quizId, user.body.token, sampleQuestion2);
     const session2 = requestNewSessionQuiz(quiz2.body.quizId, user.body.token, 3);
-    const response = requestGetQuizSessionResults(quiz.body.quizId, session2.body.sessionId, user.body.token);
-    requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
-    expect(response).toThrow(HTTPError[400]);
+    expect(() => requestGetQuizSessionResults(quiz.body.quizId, session2.body.sessionId, user.body.token)).toThrow(HTTPError[400]);
   });
 
   test('Session is not in FINAL_RESULTS state', () => {
-    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token);
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'END');
-    expect(response).toThrow(HTTPError[400]);
+    expect(() => requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user.body.token)).toThrow(HTTPError[400]);
   });
 
   test('Token is empty or invalid', () => {
     const invalidId = uuidv4();
-    const response = requestNewSessionQuiz(quiz.body.quizId, invalidId, 3);
-    expect(response).toThrow(HTTPError[401]);
+    expect(() => requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, invalidId)).toThrow(HTTPError[401]);
   });
 
   test('Valid token, however user is unauthorised to view this session', () => {
     const user2 = requestAdminAuthRegister(VD.EMAIL2, VD.PASSWORD2, VD.NAMEFIRST2, VD.NAMELAST2);
-    const response = requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token);
-    expect(response).toThrow(HTTPError[403]);
+    expect(() => requestGetQuizSessionResults(quiz.body.quizId, session.body.sessionId, user2.body.token)).toThrow(HTTPError[403]);
   });
 });
 

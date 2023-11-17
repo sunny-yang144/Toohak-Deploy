@@ -1241,6 +1241,12 @@ export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, toke
 
   // Create and convert array into CSV
   const resArray: string[][] = [];
+  for (let i = 0; i < session.players.length + 1; i++) {
+    resArray[i] = [];
+    for (let j = 0; j < 2 * session.atQuestion + 1; j++) {
+      resArray[i][j] = '0';
+    }
+  }
   resArray[0][0] = 'Player';
   // Establishes a header e.g. Player, question1score, question1rank...
   for (let i = 0; i < 2 * session.questionResults.length; i += 2) {
@@ -1274,9 +1280,10 @@ export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, toke
 
   const csv = arraytoCSV(resArray);
   const filename = `csv-${Date.now()}.csv`;
-  const filepath = path.join(__dirname, 'src', 'csv_files', filename);
+  const filepath = path.join(__dirname, 'csv_files');
   fs.writeFileSync(filepath, csv);
   setData(data);
+  console.log(resArray);
   return {
     url: `${url}:${port}/csv/uploads/${filename}`,
   };
