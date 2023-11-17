@@ -12,6 +12,7 @@ import {
   actions,
   Player,
   SessionQuestionResults,
+  getTimers,
   // Message
 } from './dataStore';
 import {
@@ -1150,7 +1151,8 @@ export const updateSessionState = (quizId: number, sessionId: number, token: str
   if (session === undefined || session.quiz.quizId !== quizId) {
     throw HTTPError(400, 'Session ID does not refer to a valid session within this quiz or is invalid');
   }
-  moveStates(session, action as actions);
+  const timers = getTimers();
+  moveStates(timers, session, action as actions);
   return {};
 };
 

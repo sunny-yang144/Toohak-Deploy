@@ -10,6 +10,7 @@ import {
   Message,
   MessageBody,
   Player,
+  getTimers,
 } from './dataStore';
 import {
   generateToken,
@@ -342,7 +343,8 @@ export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoi
   data.players.push(newPlayer);
   if (session.autoStartNum !== 0) {
     if (data.players.length >= session.autoStartNum) {
-      moveStates(session, 'NEXT_QUESTION');
+      const timers = getTimers();
+      moveStates(timers, session, 'NEXT_QUESTION');
     }
   }
   return { playerId };
@@ -408,7 +410,6 @@ export const playerAnswers = (answerIds: number[], playerId: number, questionPos
     throw HTTPError(400, 'The player ID does not exist');
   }
   const session = data.sessions.find((s: Session) => s.players.some((p: Player) => p.playerId === playerId));
-  console.log(session);
   if (session !== undefined) {
     if (session.quiz.numQuestions < questionPosition) {
       throw HTTPError(400, 'The question position is invalid for the session this player is in');
@@ -461,6 +462,7 @@ export const playerAnswers = (answerIds: number[], playerId: number, questionPos
       player.questionResults.questionScore[qnPosition] = score;
       player.questionResults.questionRank[qnPosition] = rank;
     }
+    setData(data);
     return {};
   }
 };
@@ -483,11 +485,12 @@ export const questionResults = (playerId: number, questionPosition: number): que
       throw HTTPError(400, 'The session is currently not on this question');
     }
     const qnPosition = questionPosition - 1;
-    let qnResult: questionResultsReturn;
-    qnResult.questionId = session.questionResults[qnPosition].questionId;
-    qnResult.playersCorrectList = session.questionResults[qnPosition].playersCorrectList;
-    qnResult.averageAnswerTime = calculateRoundedAverage(session.questionResults[qnPosition].AnswersTimes);
-    qnResult.percentCorrect = Math.round((session.questionResults[qnPosition].playersCorrectList.length / session.players.length) * 100);
+    let qnResult: questionResultsReturn = {
+      questionId: session.questionResults[qnPosition].questionId,
+      playersCorrectList: session.questionResults[qnPosition].playersCorrectList,
+      averageAnswerTime: calculateRoundedAverage(session.questionResults[qnPosition].AnswersTimes),
+      percentCorrect: Math.round((session.questionResults[qnPosition].playersCorrectList.length / session.players.length) * 100),
+    }
     return qnResult;
   }
 };
@@ -507,17 +510,14 @@ export const finalResults = (playerId: number): finalResultsReturn | ErrorObject
       usersRankedByScore: [],
       questionResults: []
     };
-
-    for (let i = 0; i < SesResult.questionResults.length; i++) {
+    for (let i = 0; i < session.atQuestion; i++) {
       SesResult.questionResults[i].questionId = session.questionResults[i].questionId;
       SesResult.questionResults[i].playersCorrectList = session.questionResults[i].playersCorrectList;
       SesResult.questionResults[i].averageAnswerTime = calculateRoundedAverage(session.questionResults[i].AnswersTimes);
       SesResult.questionResults[i].percentCorrect = Math.round((session.questionResults[i].playersCorrectList.length / session.players.length) * 100);
     }
-
     const unsortedScores: UserScore[] = session.players.map((p: Player) => ({ name: p.name, score: p.score }));
     SesResult.usersRankedByScore = unsortedScores.sort((a, b) => b.score - a.score);
-
     return SesResult;
   }
 };

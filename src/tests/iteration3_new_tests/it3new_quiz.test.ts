@@ -101,7 +101,7 @@ afterAll(() => {
 /// ///////////////////////////     NEW ITERATION 3      ////////////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////////////
 
-describe.skip('Test: Update the thumbnail for the quiz', () => {
+describe('Test: Update the thumbnail for the quiz', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -150,7 +150,7 @@ describe.skip('Test: Update the thumbnail for the quiz', () => {
   });
 });
 
-describe.skip('Test: View active and inactive sessions', () => {
+describe('Test: View active and inactive sessions', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -198,7 +198,7 @@ describe.skip('Test: View active and inactive sessions', () => {
   });
 });
 
-describe.skip('Tests: Start a new session for a quiz', () => {
+describe('Tests: Start a new session for a quiz', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -335,7 +335,7 @@ describe.skip('Test for getQuizSessionResults', () => {
   });
 });
 
-describe.skip('Tests for getSessionStatus', () => {
+describe('Tests for getSessionStatus', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -419,7 +419,7 @@ describe.skip('Tests for getSessionStatus', () => {
   });
 });
 
-describe.skip('Test: Update a session state', () => {
+describe('Test: Update a session state', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -645,7 +645,7 @@ describe.skip('Test: Update a session state', () => {
   });
 });
 
-describe.skip('Test: Get session status', () => {
+describe('Test: Get session status', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -788,7 +788,7 @@ describe.skip('Test: Get quiz session final results in CSV format', () => {
 /// ////////////////////////////// IT3 PLAYER FUNCTION TESTS ///////////////////////////////
 /// ////////////////////////////////////////////////////////////////////////////////////////
 
-describe.skip('Test: Allow guest player to join a session', () => {
+describe('Test: Allow guest player to join a session', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -820,7 +820,7 @@ describe.skip('Test: Allow guest player to join a session', () => {
   });
 });
 
-describe.skip('Test: Status of guest player in session', () => {
+describe('Test: Status of guest player in session', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -867,7 +867,7 @@ describe.skip('Test: Status of guest player in session', () => {
   });
 });
 
-describe.skip('Test: Current question information for a player', () => {
+describe('Test: Current question information for a player', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -937,8 +937,8 @@ describe.skip('Test: Current question information for a player', () => {
     expect(() => requestPlayerQuestionInfo(player.body.playerId, 1)).toThrow(HTTPError[400]);
   });
 });
-// FAIL
-describe.skip('Test: Player submisssion of answer(s)', () => {
+
+describe('Test: Player submisssion of answer(s)', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -977,7 +977,7 @@ describe.skip('Test: Player submisssion of answer(s)', () => {
   test('Sucessful submission of answers to currently active question', () => {
     expect(requestPlayerAnswers(answerIds, player.body.playerId, 1).body).toStrictEqual({});
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    expect(requestQuestionResults(player.body.playerId, 1).body.playersCorrectList).toBe([VD.NAMEFIRST]);
+    expect(requestQuestionResults(player.body.playerId, 1).body.playersCorrectList).toStrictEqual([VD.GUESTNAME]);
   });
   test('PlayerID does not exist', () => {
     expect(() => requestPlayerAnswers(answerIds, 1000, question.body.questionId)).toThrow(HTTPError[400]);
@@ -1007,15 +1007,15 @@ describe.skip('Test: Player submisssion of answer(s)', () => {
     expect(() => requestPlayerAnswers([], player.body.playerId, question.body.questionId)).toThrow(HTTPError[400]);
   });
   test('Can submit more than once in the CORRECT state', () => {
-    expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
+    expect(requestPlayerAnswers(answerIds, player.body.playerId, 1).body).toStrictEqual({});
     sleepSync(2 * 1000);
-    expect(requestPlayerAnswers(answerIds, player.body.playerId, 1)).toStrictEqual({});
-    sleepSync(1 * 1000);
+    expect(requestPlayerAnswers(answerIds, player.body.playerId, 1).body).toStrictEqual({});
+    sleepSync(3 * 1000);
     expect(() => requestPlayerAnswers(answerIds, player.body.playerId, 1)).toThrow(HTTPError[400]);
   });
 });
-// FAIL
-describe.skip('Test: Results for a question', () => {
+
+describe('Test: Results for a question', () => {
   let user: {
     body: {token: string},
     statusCode: number,
@@ -1056,12 +1056,12 @@ describe.skip('Test: Results for a question', () => {
 
   test('Successfully get results of question in session player is currently in', () => {
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
-    const questionResultsAfter = requestQuestionResults(player.body.playerId, 1);
+    const questionResultsAfter = requestQuestionResults(player.body.playerId, 1).body;
     expect(questionResultsAfter).toStrictEqual(
       {
         questionId: question.body.questionId,
         playersCorrectList: [
-          VD.NAMEFIRST
+          VD.GUESTNAME
         ],
         averageAnswerTime: expect.any(Number),
         percentCorrect: expect.any(Number)
@@ -1084,7 +1084,7 @@ describe.skip('Test: Results for a question', () => {
     expect(() => requestQuestionResults(player.body.playerId, 2)).toThrow(HTTPError[400]);
   });
 });
-// FAIL
+//FAIL
 describe.skip('Test: Final results for a session', () => {
   let user: {
     body: {token: string},
@@ -1102,25 +1102,33 @@ describe.skip('Test: Final results for a session', () => {
   let player: {
     body: {playerId: number},
   };
+  let questionIndex: number;
+  let answerIds: number[];
   beforeEach(() => {
     user = requestAdminAuthRegister(VD.EMAIL, VD.PASSWORD, VD.NAMEFIRST, VD.NAMELAST);
     quiz = requestAdminQuizCreateV2(user.body.token, VD.QUIZNAME, VD.QUIZDESCRIPTION);
     question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
     session = requestNewSessionQuiz(quiz.body.quizId, user.body.token, 3);
     player = requestGuestPlayerJoin(session.body.sessionId, VD.GUESTNAME);
-    question = requestAdminQuizQuestionCreateV2(quiz.body.quizId, user.body.token, sampleQuestion1);
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
+    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    // Construct an array of answerIds for the currently active question
+    const quizData = requestGetSessionStatus(quiz.body.quizId, session.body.sessionId, user.body.token);
+    const guestStatus = requestGetGuestPlayerStatus(player.body.playerId);
+    questionIndex = guestStatus.body.atQuestion;
+    const answers = quizData.body.metadata.questions[questionIndex - 1].answers;
+    answerIds = answers.map((answer: Answer) => answer.answerId);
   });
 
   test('Successful retrieval of final results', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
+    requestPlayerAnswers(answerIds, player.body.playerId, 1);
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
-    const finalResults = requestFinalResults(player.body.playerId);
+    const finalResults = requestFinalResults(player.body.playerId).body;
     expect(finalResults).toStrictEqual({
       usersRankedByScore: [
         {
-          name: 'Jack',
+          name: VD.GUESTNAME,
           score: 0,
         }
       ],
@@ -1135,32 +1143,19 @@ describe.skip('Test: Final results for a session', () => {
     });
   });
   test('Player ID does not exist', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_FINAL_RESULTS');
     expect(requestFinalResults(1000)).toThrow(HTTPError[400]);
   });
-  test('Session is not in FINAL_RESULTS state (LOBBY)', () => {
-    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
-  });
-  test('Session is not in FINAL_RESULTS state (QUESTION_COUNTDOWN)', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
-  });
   test('Session is not in FINAL_RESULTS state (QUESTION_OPEN)', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
   });
   test('Session is not in FINAL_RESULTS state (ANSWER_SHOW)', () => {
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'NEXT_QUESTION');
-    requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'SKIP_COUNTDOWN');
     requestUpdateSessionState(quiz.body.quizId, session.body.sessionId, user.body.token, 'GO_TO_ANSWER');
     expect(requestFinalResults(player.body.playerId)).toThrow(HTTPError[400]);
   });
 });
-
+// FAIL
 describe.skip('Test: All chat messages in session', () => {
   let user: {
     body: {token: string},

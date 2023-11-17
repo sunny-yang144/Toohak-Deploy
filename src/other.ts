@@ -11,7 +11,9 @@ import {
   Session,
   actions,
   states,
-  Player
+  Player,
+  Timers,
+  timerIDs,
 } from './dataStore';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
@@ -218,21 +220,35 @@ export function isValidAction(action: string, state: states) {
   }
 }
 
-export function moveStates(session: Session, action: actions) {
+export function moveStates(timers: Timers, session: Session, action: actions) {
   isValidAction(action, session.state);
+  const index = timers.timeouts.findIndex(timer => timer.sessionId === session.sessionId);
   if (action === 'END') {
     session.state = 'END';
-    clearTimeout(session.qnTimeout);
-  } else if (action === 'NEXT_QUESTION') {
+    if (index !== -1) {
+      clearTimeout(timers.timeouts[index].timeout);
+      timers.timeouts.splice(index, 1);
+    }
+  } 
+  else if (action === 'NEXT_QUESTION') {
     session.state = 'QUESTION_COUNTDOWN';
     session.atQuestion++;
-  } else if (action === 'SKIP_COUNTDOWN') {
+  } 
+  else if (action === 'SKIP_COUNTDOWN') {
     session.state = 'QUESTION_OPEN';
-    clearTimeout(session.qnTimeout);
-  } else if (action === 'GO_TO_ANSWER') {
+    if (index !== -1) {
+      clearTimeout(timers.timeouts[index].timeout);
+      timers.timeouts.splice(index, 1);
+    }
+  } 
+  else if (action === 'GO_TO_ANSWER') {
     session.state = 'ANSWER_SHOW';
-    clearTimeout(session.qnTimeout);
-  } else if (action === 'GO_TO_FINAL_RESULTS') {
+    if (index !== -1) {
+      clearTimeout(timers.timeouts[index].timeout);
+      timers.timeouts.splice(index, 1);
+    }
+  } 
+  else if (action === 'GO_TO_FINAL_RESULTS') {
     session.state = 'FINAL_RESULTS';
   }
   // Making the assumption that a quiz can only have one timeout at a time.
@@ -242,14 +258,23 @@ export function moveStates(session: Session, action: actions) {
     const timeout = setTimeout(() => {
       session.state = 'QUESTION_CLOSE';
     }, qnDuration * 1000);
-    session.qnTimeout = timeout;
+    // TODO: FOR EVERY PLAYER, IF NOT ANSWERED AND TIMED OUT -> DEFAULT INCORRECT ANSWER
+    const timerInfo: timerIDs = {
+      sessionId: session.sessionId,
+      timeout: timeout,
+    }
+    timers.timeouts.push(timerInfo);
     session.qnStartTime = Date.now();
   }
   if (session.state === 'QUESTION_COUNTDOWN') {
     const timeout = setTimeout(() => {
       session.state = 'QUESTION_OPEN';
     }, 3 * 1000);
-    session.qnTimeout = timeout;
+    const timerInfo: timerIDs = {
+      sessionId: session.sessionId,
+      timeout: timeout,
+    }
+    timers.timeouts.push(timerInfo);
   }
 }
 

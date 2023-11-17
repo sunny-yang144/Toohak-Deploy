@@ -1,5 +1,6 @@
 // YOU SHOULD MODIFY THIS OBJECT BELOW
 import * as fs from 'fs';
+import { NumberLiteralType } from 'typescript';
 
 export const MAX_COLOUR_VAL = 6;
 
@@ -34,10 +35,22 @@ export interface Token {
   userId: number; // Associate a user from a inputted token.
 }
 
+// Store timeOuts in memory to prevent JSON.stringify errors
 export interface NodeJS {
   Timeout: number;
 }
+export interface timerIDs {
+  sessionId: number;
+  timeout: NodeJS.Timeout;
+}
+export interface Timers {
+  timeouts: timerIDs[];
+}
+const Timers: Timers = {
+  timeouts: []
+};
 
+export const getTimers = (): Timers => Timers;
 export interface User {
   userId: number;
   email: string;
@@ -112,7 +125,6 @@ export interface Session {
   state: states;
   questionResults: SessionQuestionResults[];
   autoStartNum: number;
-  qnTimeout?: NodeJS.Timeout;
   qnStartTime?: number;
   messages: Message[];
 }
