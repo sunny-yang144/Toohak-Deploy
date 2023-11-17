@@ -98,13 +98,13 @@ describe('Testing adminUserDetailsUpdate', () => {
   });
 
   test.each([
-    { email: 'helloworld@VeryLegitEmailscom', firstName: VD.NAMEFIRST2, lastName: VD.NAMELAST2}, // Invalid email
-    { email: VD.EMAIL2, firstName: 'J&m!e', lastName: VD.NAMELAST2}, // Firstname contains invalid characters
-    { email: VD.EMAIL2, firstName: 'J', lastName: VD.NAMELAST2}, // Firstname is less than two characters
-    { email: VD.EMAIL2, firstName: 'j'.repeat(21), lastName: VD.NAMELAST2}, // Firstname is larger than 20 characters
-    { email: VD.EMAIL2, firstName: VD.NAMEFIRST2, lastName: 'Ol!v#r'}, // Lastname contains invalid characters
-    { email: VD.EMAIL2, firstName: VD.NAMEFIRST2, lastName: 'O'}, // Lastname is less than two characters
-    { email: VD.EMAIL2, firstName: VD.NAMEFIRST2, lastName: 'O'.repeat(21)}, // Lastname is greater than 20 characters
+    { email: 'helloworld@VeryLegitEmailscom', firstName: VD.NAMEFIRST2, lastName: VD.NAMELAST2 }, // Invalid email
+    { email: VD.EMAIL2, firstName: 'J&m!e', lastName: VD.NAMELAST2 }, // Firstname contains invalid characters
+    { email: VD.EMAIL2, firstName: 'J', lastName: VD.NAMELAST2 }, // Firstname is less than two characters
+    { email: VD.EMAIL2, firstName: 'j'.repeat(21), lastName: VD.NAMELAST2 }, // Firstname is larger than 20 characters
+    { email: VD.EMAIL2, firstName: VD.NAMEFIRST2, lastName: 'Ol!v#r' }, // Lastname contains invalid characters
+    { email: VD.EMAIL2, firstName: VD.NAMEFIRST2, lastName: 'O' }, // Lastname is less than two characters
+    { email: VD.EMAIL2, firstName: VD.NAMEFIRST2, lastName: 'O'.repeat(21) }, // Lastname is greater than 20 characters
   ])('Errors for invalid emails and names', ({ email, firstName, lastName }) => {
     const response = requestAdminUserDetailsUpdate(user.body.token, email, firstName, lastName);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
@@ -158,9 +158,9 @@ describe('Testing adminUserPasswordUpdate', () => {
     expect(result2.statusCode).toStrictEqual(400);
   });
   test.each([
-    { password: '2Short'}, // Password less than 8 characters
-    { password: 'noNumbers'}, // Passwords need atleast 1 number
-    { password: '12345678'}, // Passwords must contain atleast 1 letter
+    { password: '2Short' }, // Password less than 8 characters
+    { password: 'noNumbers' }, // Passwords need atleast 1 number
+    { password: '12345678' }, // Passwords must contain atleast 1 letter
   ])('Errors for invalid emails and names', ({ password }) => {
     const response = requestAdminUserPasswordUpdate(user.body.token, VD.PASSWORD, password);
     expect(response.body).toStrictEqual({ error: expect.any(String) });
