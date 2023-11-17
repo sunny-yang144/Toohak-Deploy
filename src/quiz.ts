@@ -1025,6 +1025,16 @@ export const adminQuizQuestionDuplicate = async (quizId: number, questionId: num
 /// /////////////////////////////// ITERATION 3 NEW ///////////////////////////////////////////////
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+  * Updates the thumbnail for the quiz.
+  * Ensures the image url does not end with file types: jpg, jpeg, png
+  * 
+  * @param { number } quizId - Identifies the quiz to change the thumbnail of.
+  * @param { number } token 
+  * @param { string } imgUrl 
+  * 
+  * @returns {} 
+*/
 export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: string): EmptyObject => {
   const data = getData();
   const user = getUserViaToken(token, data);
@@ -1041,6 +1051,16 @@ export const updateQuizThumbNail = (quizId: number, token: string, imgUrl: strin
   quiz.thumbnailUrl = imgUrl;
   return {};
 };
+
+/**
+  * Gets sessionId from both active and inactive sessions.
+  * 
+  * @param {string} token - session token
+  * @param {number} quizId - 
+  * ...
+  * 
+  * @returns {object} quizSessions  
+*/
 
 export const viewSessionActivity = (token: string, quizId: number): viewSessionActivityReturn | ErrorObject => {
   const data = getData();
@@ -1068,6 +1088,16 @@ export const viewSessionActivity = (token: string, quizId: number): viewSessionA
   }
   return quizSessions;
 };
+
+/**
+  * Creates a new session for quizzes.
+  * 
+  * @param {number} quizId
+  * @param {string} token
+  * @param {number} autoStartNum
+  * 
+  * @returns {number} sessionId
+*/
 
 export const newSessionQuiz = (quizId: number, token: string, autoStartNum: number): newSessionQuizReturn | ErrorObject => {
   const data = getData();
@@ -1136,6 +1166,17 @@ export const newSessionQuiz = (quizId: number, token: string, autoStartNum: numb
   };
 };
 
+/**
+  * Changes the state of the session while a quiz is running.
+  * 
+  * @param {number} quizId
+  * @param {number} sessionId
+  * @param {string} token
+  * @param {string} action
+  * 
+  * @returns {}
+*/
+
 export const updateSessionState = (quizId: number, sessionId: number, token: string, action: string): EmptyObject | ErrorObject => {
   const data = getData();
   const user = getUserViaToken(token, data);
@@ -1155,6 +1196,16 @@ export const updateSessionState = (quizId: number, sessionId: number, token: str
   moveStates(timers, session, action as actions);
   return {};
 };
+
+/**
+  * Get the status of a quiz session.
+  * 
+  * @param {number} quizId
+  * @param {number} sessionId
+  * @param {string} token
+  * 
+  * @returns {object} - containing properties: state, atQuestion, players, metadata
+*/
 
 export const getSessionStatus = (quizId: number, sessionId: number, token: string): getSessionStatusReturn | ErrorObject => {
   const data = getData();
@@ -1180,6 +1231,16 @@ export const getSessionStatus = (quizId: number, sessionId: number, token: strin
     metadata: session.quiz
   };
 };
+
+/**
+  * Get the results for the quiz in the session.
+  * 
+  * @param {number} quizId
+  * @param {number} sessionId
+  * @param {string} token
+  * 
+  * @returns {object} - SesResult, containing objects: usersRankedByScore, questionResults
+*/
 
 export const getQuizSessionResults = (quizId: number, sessionId: number, token: string): getQuizSessionResultsReturn | ErrorObject => {
   const data = getData();
@@ -1220,6 +1281,15 @@ export const getQuizSessionResults = (quizId: number, sessionId: number, token: 
   return SesResult;
 };
 
+/**
+  * Get the results for the quiz in the session in a CSV format.
+  * 
+  * @param {number} quizId
+  * @param {number} sessionId
+  * @param {string} token
+  * 
+  * @returns {object} - Containing property: url 
+*/
 export const getQuizSessionResultsCSV = (quizId: number, sessionId: number, token: string): getQuizSessionResultsCSVReturn | ErrorObject => {
   const data = getData();
   const user = getUserViaToken(token, data);

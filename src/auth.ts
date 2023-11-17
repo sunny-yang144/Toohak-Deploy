@@ -319,6 +319,14 @@ export const adminUserPasswordUpdate = (token: string, oldPassword: string, newP
 /// /////////////////////////////// ITERATION 3 NEW ///////////////////////////////////////////////
 /// ///////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+  * Create a player, someone who doesn’t have an account and allow them to join a quiz.
+  * 
+  * @param {number} sessionId
+  * @param {string} name
+  * 
+  * @returns {number} playerId
+*/
 export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoinReturn => {
   const data = getData();
   const session = data.sessions.find((s: Session) => s.sessionId === sessionId);
@@ -350,6 +358,13 @@ export const guestPlayerJoin = (sessionId: number, name: string): guestPlayerJoi
   return { playerId };
 };
 
+/**
+  * Get the status of a guest player.
+  * 
+  * @param {number} playerId
+  * 
+  * @returns {object} 
+*/
 export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn => {
   const data = getData();
   const player = data.players.find((p: Player) => p.playerId === playerId);
@@ -367,6 +382,15 @@ export const guestPlayerStatus = (playerId: number): guestPlayerStatusReturn => 
   };
 };
 
+/**
+  * Information about the question the guest player is on.
+  * 
+  * @param {number} playerId
+  * @param {number} questionPosition
+  * ...
+  * 
+  * @returns {object} - Containing properties: questionId, question, duration, thumbnailUrl, points, answers[]
+*/
 export const currentQuestionInfoPlayer = (playerId: number, questionPosition: number): currentQuestionInfoPlayerReturn => {
   const data = getData();
   const player = data.players.find((p: Player) => p.playerId === playerId);
@@ -403,6 +427,15 @@ export const currentQuestionInfoPlayer = (playerId: number, questionPosition: nu
   };
 };
 
+/**
+  * Allow player to answer/submit answers to the question.
+  * 
+  * @param {array} answerIds
+  * @param {number} playerId
+  * @param {number} questionPosition
+  * 
+  * @returns {}
+*/
 export const playerAnswers = (answerIds: number[], playerId: number, questionPosition: number): EmptyObject | undefined => {
   const data = getData();
   const player = data.players.find((p: Player) => p.playerId === playerId);
@@ -465,6 +498,14 @@ export const playerAnswers = (answerIds: number[], playerId: number, questionPos
   }
 };
 
+/**
+  * All the results for a specific question.
+  * 
+  * @param {number} playerId
+  * @param {number} questionPosition
+  * 
+  * @returns {object} qnResult - Containing properties: questionId, playersCorrectList[], averageAnswertime, percentCorrect
+*/
 export const questionResults = (playerId: number, questionPosition: number): questionResultsReturn | ErrorObject => {
   const data = getData();
   const player = data.players.find((p: Player) => p.playerId === playerId);
@@ -493,6 +534,13 @@ export const questionResults = (playerId: number, questionPosition: number): que
   }
 };
 
+/**
+  * Final results for the session that the player is in
+  * 
+  * @param {number} playerId
+  * 
+  * @returns {object} SesResult - Containing objects: usersRankedByScore, questionResults
+*/
 export const finalResults = (playerId: number): finalResultsReturn | ErrorObject => {
   const data = getData();
   const player = data.players.find((p: Player) => p.playerId === playerId);
@@ -522,6 +570,14 @@ export const finalResults = (playerId: number): finalResultsReturn | ErrorObject
   }
 };
 
+/**
+  * Get all chat messages
+  * 
+  * @param {number} playerId
+  * 
+  * @returns {object} - Containing property: messages
+  * Which contains an array of objects, each containing properties: messageBody, playerId, playerName, timeSent
+*/
 export const allChatMessages = (playerId: number): allChatMessagesReturn | ErrorObject => {
   const data = getData();
   const existingPlayerId = data.players.map((p: Player) => p.playerId).includes(playerId);
@@ -538,6 +594,14 @@ export const allChatMessages = (playerId: number): allChatMessagesReturn | Error
   return allMessages;
 };
 
+/**
+  * Send a message to the chat.
+  * 
+  * @param {number} playerId
+  * @param {string} message
+  * 
+  * @returns {}
+*/
 export const sendChatMessages = (playerId: number, message: MessageBody): Record<string, never> | ErrorObject => {
   const data = getData();
   const existingPlayerId = data.players.map((p: Player) => p.playerId).includes(playerId);
