@@ -321,11 +321,11 @@ components:
         averageAnswerTime:
           type: integer
           example: 45
-          description: The average answer time for the question across all players who attempted the question.
+          description: The average answer time for the question across all players who attempted the question, rounded to the nearest second. If no answers are submitted then the value is 0.
         percentCorrect:
           type: integer
           example: 54
-          description: A percentage rounded to the nearest whole number that describes the percentage of questions they got completely correct.
+          description: A percentage rounded to the nearest whole number that describes the percentage of players that got the question completely correct.
 
     ResultsFinal:
       type: object
@@ -340,7 +340,7 @@ components:
                 example: Hayden
                 description: The name of the player that is a top ranker
               score:
-                type: integer
+                type: number
                 example: 45
                 description: The final score for the user
           description: A list of all users who played ranked in descending order by score
@@ -1697,7 +1697,9 @@ paths:
   /v1/admin/quiz/{quizid}/thumbnail:
     put:
       summary: Update the quiz thumbnail
-      description: Update the thumbnail for the quiz
+      description: |
+        Update the thumbnail for the quiz.
+        When this route is called, the timeLastEdited is updated.
       tags:
         # - "By Topic: Quiz Management"
         - "Iteration 3 (New)"
@@ -2402,6 +2404,7 @@ paths:
           description: |
             If any of the following are true:
             - Name of user entered is not unique (compared to other users who have already joined)
+            - Session Id does not refer to a valid session
             - Session is not in LOBBY state
           schema:
             $ref: '#/components/return/Error'
@@ -2528,7 +2531,7 @@ paths:
     get:
       summary: All chat messages in session
       description: |
-        Return all messages that are in the same session as the player
+        Return all messages that are in the same session as the player, in the order they were sent
         In the repsonse, the timeSent is a unix timestamp that was recorded when the message was sent. You can find more information that here: https://en.wikipedia.org/wiki/Unix_time. When testing this, it's hard to get it accurate because network delays mean there is some variability in when the server will "lodge" the request. To solve this, when testing simply check if the received message falls within a 1 second range of what you'd expect.
       tags:
         # - "By Topic: Playing a session"
